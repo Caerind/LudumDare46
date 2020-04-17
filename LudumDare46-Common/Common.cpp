@@ -1,3 +1,1 @@
-#pragma once
-
-#define TEST_VAR_FROM_COMMON 3456
+#include "Common.hpp"

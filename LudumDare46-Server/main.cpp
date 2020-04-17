@@ -35,7 +35,7 @@ public:
 
 		while (IsRunning())
 		{
-			LogInfo(en::LogChannel::All, 2, "Ticks%s", "");
+			//LogInfo(en::LogChannel::All, 2, "Ticks%s", "");
 
 			sf::Packet receivedPacket;
 			sf::IpAddress remoteAddress;
@@ -101,7 +101,7 @@ public:
 				}
 			}
 
-			sf::sleep(sf::seconds(1.0f));
+			sf::sleep(sf::milliseconds(20));
 		}
 
 		return true;
@@ -124,7 +124,7 @@ private:
 		}
 		mSocket.setBlocking(false);
 		mRunning = true;
-		LogInfo(en::LogChannel::All, 5, "Started%s", "");
+		LogInfo(en::LogChannel::All, 5, "Started at %s:%d", sf::IpAddress::getPublicAddress().toString().c_str(), mSocket.getLocalPort());
 		return true;
 	}
 
