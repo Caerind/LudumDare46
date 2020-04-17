@@ -4,6 +4,7 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+#include <string>
 
 #include <Enlivengine/System/PrimitiveTypes.hpp>
 #include <Enlivengine/System/Singleton.hpp>
