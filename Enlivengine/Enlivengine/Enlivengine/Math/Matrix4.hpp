@@ -357,7 +357,7 @@ inline Matrix4<T>& Matrix4<T>::set(const T& a11, const T& a21, const T& a31, con
 {
 	data[0] = a11;
 	data[1] = a21;
-	data[2] = a21;
+	data[2] = a31;
 	data[3] = a41;
 	data[4] = a12;
 	data[5] = a22;
