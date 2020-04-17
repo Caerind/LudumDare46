@@ -68,6 +68,8 @@ template<typename T>
 inline T RandomEngine::get(T min, T max)
 {
 	assert(false); // Not implemented
+	ENLIVE_UNUSED(min);
+	ENLIVE_UNUSED(max);
 	return T();
 }
 
@@ -75,6 +77,8 @@ template<typename T>
 inline T RandomEngine::getDev(T middle, T deviation)
 {
 	assert(false); // Not implemented
+	ENLIVE_UNUSED(middle);
+	ENLIVE_UNUSED(deviation);
 	return T();
 }
 
@@ -121,6 +125,5 @@ inline F32 RandomEngine::getDev(F32 middle, F32 deviation)
 	assert(deviation >= 0.0f);
 	return get(middle - deviation, middle + deviation);
 }
-
 
 } // namespace en
