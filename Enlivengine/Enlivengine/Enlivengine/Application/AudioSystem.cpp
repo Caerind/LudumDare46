@@ -544,15 +544,15 @@ MusicPtr AudioSystem::PlayMusic(MusicID id, bool loop /*= true*/)
 			{
 				music->Pause();
 			}
-			return std::move(MusicPtr(this, music->GetMusicID(), music->GetUID()));
+			return MusicPtr(this, music->GetMusicID(), music->GetUID());
 		}
 	}
-	return std::move(MusicPtr());
+	return MusicPtr();
 }
 
 MusicPtr AudioSystem::PlayMusic(const char* id, bool loop /*= true*/)
 {
-	return std::move(PlayMusic(priv::StringToResourceID(id), loop));
+	return PlayMusic(priv::StringToResourceID(id), loop);
 }
 
 U32 AudioSystem::GetCurrentMusicsCount() const
@@ -681,16 +681,16 @@ SoundPtr AudioSystem::PlaySound(SoundID id)
 				{
 					sound->Pause();
 				}
-				return std::move(SoundPtr(this, sound->GetSoundID(), sound->GetUID()));
+				return SoundPtr(this, sound->GetSoundID(), sound->GetUID());
 			}
 		}
 	}
-	return std::move(SoundPtr());
+	return SoundPtr();
 }
 
 SoundPtr AudioSystem::PlaySound(const char* id)
 {
-	return std::move(PlaySound(priv::StringToResourceID(id)));
+	return PlaySound(priv::StringToResourceID(id));
 }
 
 U32 AudioSystem::GetCurrentSoundsCount() const
