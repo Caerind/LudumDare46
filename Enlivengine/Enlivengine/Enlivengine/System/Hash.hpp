@@ -31,7 +31,7 @@ public:
 			h = crc32Table[h & 0x0f] ^ (h >> 4);
 			h = crc32Table[h & 0x0f] ^ (h >> 4);
 		}
-		return { ~h }; // TODO : Endianness ?
+		return ~h; // TODO : Endianness ?
 	}
 
 	static constexpr U32 CRC32(std::string_view key)
@@ -48,7 +48,7 @@ public:
 			h = crc32Table[h & 0x0f] ^ (h >> 4);
 			h = crc32Table[h & 0x0f] ^ (h >> 4);
 		}
-		return { ~h }; // TODO : Endianness ?
+		return ~h; // TODO : Endianness ?
 	}
 
 	static constexpr inline U32 CombineHash(U32 hash1, U32 hash2)
