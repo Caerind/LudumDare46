@@ -1,5 +1,8 @@
 set(SRC_LUDUMDARE46_SERVER
 	main.cpp
+	Player.hpp
+	Server.hpp
+	ServerSocket.hpp
 )
 source_group("" FILES ${SRC_LUDUMDARE46_SERVER})
 
