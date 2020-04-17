@@ -117,7 +117,7 @@ private:
 		sf::Packet receivedPacket;
 		sf::IpAddress remoteAddress;
 		en::U16 remotePort;
-		while (mSocket.PollPacket(receivedPacket, remoteAddress, remotePort) == sf::Socket::Done)
+		while (mSocket.PollPacket(receivedPacket, remoteAddress, remotePort))
 		{
 			bool ignorePacket = false;
 
