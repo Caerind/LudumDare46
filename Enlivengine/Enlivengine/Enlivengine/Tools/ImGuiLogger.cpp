@@ -70,14 +70,14 @@ void ImGuiLogger::Write(LogType type, LogChannel channel, U32 importance, const 
 	logMessage.type = type;
 	logMessage.channel = channel;
 	logMessage.verbosity = importance;
-	logMessage.message = std::move(std::string("[" + std::string(en::LogTypeToString(type)) + "] : " + message));
+	logMessage.message = std::string("[" + std::string(en::LogTypeToString(type)) + "] : " + message);
 
 	if (GetCurrentSize() + 1 > GetMaxSize())
 	{
 		mMessages.erase(mMessages.begin());
 	}
 
-	mMessages.push_back(std::move(logMessage));
+	mMessages.push_back(logMessage);
 
 	AskForResize();
 }
