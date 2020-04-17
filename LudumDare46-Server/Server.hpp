@@ -100,7 +100,7 @@ public:
 			if (mPlayers[i].positionChanged || mUpdateAllPlayers)
 			{
 				sf::Packet positionPacket;
-				positionPacket << static_cast<en::U32>(ServerPacketID::PlayerPosition);
+				positionPacket << static_cast<en::U8>(ServerPacketID::PlayerPosition);
 				positionPacket << mPlayers[i].clientID;
 				positionPacket << mPlayers[i].position.x;
 				positionPacket << mPlayers[i].position.y;

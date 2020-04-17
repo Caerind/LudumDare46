@@ -16,6 +16,8 @@ class GameSingleton
 	public:
 		static en::Application* mApplication;
 		static ClientSocket mClient;
+		static en::Vector2f mLocalPosition;
+		static bool mInvalidLocalPosition;
 		static GameMap mMap;
 		static en::View mMenuView;
 		static en::View mView;

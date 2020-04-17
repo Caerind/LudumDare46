@@ -26,6 +26,4 @@ private:
 
 private:
 	std::vector<Player> mPlayers;
-	en::Vector2f mLocalPosition;
-	bool mInvalidLocalPosition;
 };
