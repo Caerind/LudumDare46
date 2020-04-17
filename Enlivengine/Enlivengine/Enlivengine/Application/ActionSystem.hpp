@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <string>
+#include <vector>
 
 #include <Enlivengine/System/PrimitiveTypes.hpp>
 #include <Enlivengine/System/Singleton.hpp>
