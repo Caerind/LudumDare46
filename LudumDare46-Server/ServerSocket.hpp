@@ -37,7 +37,7 @@ public:
 	}
 
 	void SetBlocking(bool blocking) { mSocket.setBlocking(blocking); }
-	bool IsBlocking() const { mSocket.isBlocking(); }
+	bool IsBlocking() const { return mSocket.isBlocking(); }
 	
 	void SendPacket(sf::Packet& packet, const sf::IpAddress& remoteAddress, en::U16 remotePort)
 	{

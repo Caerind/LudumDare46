@@ -7,7 +7,7 @@ int main(int argc, char** argv)
 	en::LogManager::GetInstance().Initialize();
 
 	Server server;
-	if (!server.Start(argc, argv));
+	if (!server.Start(argc, argv))
 	{
 		return -1;
 	}

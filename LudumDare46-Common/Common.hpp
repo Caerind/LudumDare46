@@ -26,7 +26,6 @@ enum class ServerPacketID : en::U8
 	PlayerPosition,
 
 
-
 	// Last packet ID
 	Count
 };
@@ -56,6 +55,5 @@ enum class RejectReason : en::U8
 	TooManyPlayers,
 	Blacklisted,
 	Kicked,
-	Banned,
-
+	Banned
 };

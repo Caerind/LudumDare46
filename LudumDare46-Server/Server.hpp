@@ -17,6 +17,7 @@ public:
 		: mSocket()
 		, mRunning(false)
 		, mPlayers()
+		, mUpdateAllPlayers(false)
 	{
 	}
 
@@ -107,6 +108,7 @@ public:
 				mPlayers[i].positionChanged = false;
 			}
 		}
+		mUpdateAllPlayers = false;
 	}
 
 private:
