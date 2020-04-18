@@ -289,7 +289,7 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 		const en::F32 distanceSqr = delta.getSquaredLength();
 		if (DefaultSeedTooCloseDistanceSqr < distanceSqr && distanceSqr < DefaultSeedImpactDistanceSqr)
 		{
-			const en::F32 factor = (DefaultSeedImpactDistanceSqr - distanceSqr) - DefaultSeedImpactDistanceSqr;
+			const en::F32 factor = (DefaultSeedImpactDistanceSqr - distanceSqr) / DefaultSeedImpactDistanceSqr;
 			movement += delta * factor;
 		}
 	}

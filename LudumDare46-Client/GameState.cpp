@@ -7,6 +7,8 @@ GameState::GameState(en::StateManager& manager)
 {
 	mView.setSize(1024.0f, 768.0f);
 	mView.setCenter(1024.0f * 0.5f, 768.0f * 0.5f);
+
+	GameSingleton::mMap.load();
 }
 
 bool GameState::handleEvent(const sf::Event& event)
