@@ -1,5 +1,8 @@
 #include "GameSingleton.hpp"
 
+#include <Enlivengine/Application/ResourceManager.hpp>
+#include <Enlivengine/Graphics/SFMLResources.hpp>
+
 #include <Common.hpp>
 
 en::Application* GameSingleton::mApplication;
@@ -76,6 +79,8 @@ void GameSingleton::HandleIncomingPackets()
 				newPlayer.clientID = clientID;
 				newPlayer.nickname = nickname;
 				newPlayer.chicken = chicken;
+				newPlayer.sprite.setOrigin({32.0f, 32.0f});
+				//newPlayer.UpdateSprite();
 				mPlayers.push_back(newPlayer);
 			}
 			else
@@ -113,6 +118,7 @@ void GameSingleton::HandleIncomingPackets()
 			if (playerIndex >= 0)
 			{
 				packet >> mPlayers[playerIndex].chicken;
+				//mPlayers[playerIndex].UpdateSprite();
 			}
 			else
 			{
