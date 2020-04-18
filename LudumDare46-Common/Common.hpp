@@ -15,7 +15,7 @@
 #define DefaultMaxPlayers 16
 
 #define DefaultSeedInterval en::seconds(0.3f)
-#define DefaultSeedLifetime en::seconds(0.8f)
+#define DefaultSeedLifetime en::seconds(3.0f)
 #define DefaultSeedImpactDistance 400.0f
 #define DefaultSeedImpactDistanceSqr 400.0f * 400.0f
 #define DefaultSeedTooCloseDistance 50.0f

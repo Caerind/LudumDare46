@@ -49,6 +49,7 @@ bool GameState::update(en::Time dt)
 		if (GameSingleton::mPlayers[i].clientID == GameSingleton::mClient.GetClientID())
 		{
 			mView.setCenter(GameSingleton::mPlayers[i].chicken.position);
+			LogInfo(en::LogChannel::Map, 5, "Position: %f %f", GameSingleton::mPlayers[i].chicken.position.x, GameSingleton::mPlayers[i].chicken.position.y)
 		}
 	}
 

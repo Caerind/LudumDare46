@@ -109,9 +109,32 @@ void Server::UpdateLogic(en::Time dt)
 			}
 			if (moved > 0)
 			{
-				movement.normalize();
-				movement *= dtSeconds * mPlayers[i].chicken.speed;
-				mPlayers[i].chicken.position += movement;
+				en::Vector2f antiChickenMovement = { 0.0f, 0.0f };
+				for (en::U32 j = 0; j < playerSize; ++j)
+				{
+					if (i != j)
+					{
+						const en::Vector2f delta = mPlayers[i].chicken.position - mPlayers[j].chicken.position;
+						const en::F32 distanceSqr = delta.getSquaredLength();
+						if (DefaultSeedTooCloseDistanceSqr < distanceSqr && distanceSqr < DefaultSeedImpactDistanceSqr)
+						{
+							const en::F32 x = distanceSqr * 0.01f;
+							const en::F32 factor = (0.125f * x * x - 2.2f * x + 12.0f) * 0.1f;
+							antiChickenMovement += delta * factor;
+						}
+						else if (DefaultSeedTooCloseDistanceSqr >= distanceSqr)
+						{
+							antiChickenMovement += delta;
+						}
+					}
+				}
+				movement += antiChickenMovement * 0.8f;
+				if (movement.getSquaredLength() > 0.0f)
+				{
+					movement.normalize();
+					movement *= dtSeconds * mPlayers[i].chicken.speed;
+					mPlayers[i].chicken.position += movement;
+				}
 			}
 		}
 	}
