@@ -39,6 +39,7 @@ enum class ServerPacketID : en::U8
 	Stopping,
 
 	// Game specific packets
+	PlayerInfo,
 	UpdateChicken, 
 	CancelSeed,
 	AddSeed,
@@ -77,11 +78,20 @@ enum class RejectReason : en::U8
 	Banned
 };
 
+enum class ItemID : en::U32
+{
+	None,
+	Shuriken,
+	Laser,
+
+	Count
+};
+
 struct Chicken
 {
 	en::Vector2f position;
 	en::F32 rotation;
-	en::U32 itemID;
+	ItemID itemID;
 
 	en::F32 life;
 	en::F32 speed;

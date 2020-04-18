@@ -31,11 +31,6 @@ public:
 	{
 		ENLIVE_PROFILE_FUNCTION();
 
-		if (event.type == sf::Event::Closed)
-		{
-			GameSingleton::SendLeavePacket();
-		}
-
 		return false;
 	}
 

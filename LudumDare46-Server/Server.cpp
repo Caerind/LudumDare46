@@ -18,6 +18,7 @@ Server::Server()
 	, mStepTime(en::Time::Zero)
 	, mTickTime(en::Time::Zero)
 	, mPlayers()
+	, mSeeds()
 {
 }
 
@@ -83,8 +84,9 @@ bool Server::IsRunning() const
 
 void Server::UpdateLogic(en::Time dt)
 {
+	const en::F32 dtSeconds = dt.asSeconds();
+
 	en::U32 seedSize = static_cast<en::U32>(mSeeds.size());
-	en::F32 dtSeconds = dt.asSeconds();
 
 	const en::U32 playerSize = static_cast<en::U32>(mPlayers.size());
 	for (en::U32 i = 0; i < playerSize; ++i)
@@ -169,16 +171,22 @@ void Server::HandleIncomingPackets()
 				newPlayer.nickname = "Player" + std::to_string(clientID); // TODO : nickname
 				newPlayer.chicken.position = { en::Random::get<en::F32>(0.0f, 1024.f - 100.0f), en::Random::get<en::F32>(0.0f, 768.0f - 100.0f) };
 				newPlayer.chicken.rotation = 0.0f;
-				newPlayer.chicken.itemID = 0;
+				newPlayer.chicken.itemID = static_cast<ItemID>(en::Random::get<en::U32>(1, 2));
 				newPlayer.chicken.life = DefaultChickenLife;
 				newPlayer.chicken.speed = DefaultChickenSpeed;
 				newPlayer.chicken.attack = DefaultChickenAttack;
 				newPlayer.state = PlayingState::Playing;
 				newPlayer.lastSeedTime = en::Time::Zero;
 
-				mPlayers.push_back(newPlayer);
-
 				SendConnectionAcceptedPacket(remoteAddress, remotePort, clientID);
+
+				const en::U32 playerSize = static_cast<en::U32>(mPlayers.size());
+				for (en::U32 i = 0; i < playerSize; ++i)
+				{
+					SendPlayerInfo(remoteAddress, remotePort, mPlayers[i]);
+				}
+
+				mPlayers.push_back(newPlayer);
 
 				SendClientJoinedPacket(clientID, newPlayer.nickname, newPlayer.chicken);
 			}
@@ -206,11 +214,16 @@ void Server::HandleIncomingPackets()
 		} break;
 		case ClientPacketID::Leave:
 		{
-			const en::U32 clientID = GetClientIDFromIpAddress(remoteAddress, remotePort);
+			en::I32 playerIndex = -1;
+			const en::U32 clientID = GetClientIDFromIpAddress(remoteAddress, remotePort, &playerIndex);
 			if (clientID != en::U32_Max)
 			{
 				LogInfo(en::LogChannel::All, 5, "Player left ClientID %d from %s:%d", clientID, remoteAddress.toString().c_str(), remotePort);
 				SendClientLeftPacket(clientID);
+				if (playerIndex >= 0)
+				{
+					mPlayers.erase(mPlayers.begin() + playerIndex);
+				}
 			}
 			else
 			{
@@ -485,6 +498,19 @@ void Server::SendServerStopPacket()
 		mSocket.SetBlocking(true);
 		SendToAllPlayers(packet);
 		mSocket.SetBlocking(false);
+	}
+}
+
+void Server::SendPlayerInfo(const sf::IpAddress& remoteAddress, en::U16 remotePort, const Player& player)
+{
+	if (mSocket.IsRunning())
+	{
+		sf::Packet packet;
+		packet << static_cast<en::U8>(ServerPacketID::PlayerInfo);
+		packet << player.clientID;
+		packet << player.nickname;
+		packet << player.chicken;
+		mSocket.SendPacket(packet, remoteAddress, remotePort);
 	}
 }
 

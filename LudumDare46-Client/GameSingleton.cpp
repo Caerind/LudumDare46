@@ -13,6 +13,12 @@ en::View GameSingleton::mView;
 std::vector<Player> GameSingleton::mPlayers;
 std::vector<Seed> GameSingleton::mSeeds;
 std::vector<en::Vector2f> GameSingleton::mCancelSeeds;
+en::Application::onApplicationStoppedType::ConnectionGuard GameSingleton::mApplicationStoppedSlot;
+
+void GameSingleton::ConnectWindowCloseSlot()
+{
+	mApplicationStoppedSlot.connect(mApplication->onApplicationStopped, [&](const en::Application*) { SendLeavePacket(); });
+}
 
 void GameSingleton::HandleIncomingPackets()
 {
@@ -109,6 +115,29 @@ void GameSingleton::HandleIncomingPackets()
 			LogInfo(en::LogChannel::All, 5, "ServerStopping%s", "");
 			mClient.SetClientID(en::U32_Max);
 			mClient.Stop();
+		} break;
+		case ServerPacketID::PlayerInfo:
+		{
+			en::U32 clientID;
+			std::string nickname;
+			Chicken chicken;
+			packet >> clientID >> nickname >> chicken;
+			LogInfo(en::LogChannel::All, 5, "PlayerInfo, ClientID %d, Nickname %s", clientID, nickname.c_str());
+			const en::I32 playerIndex = GetPlayerIndexFromClientID(clientID);
+			if (playerIndex == -1)
+			{
+				Player newPlayer;
+				newPlayer.clientID = clientID;
+				newPlayer.nickname = nickname;
+				newPlayer.chicken = chicken;
+				newPlayer.sprite.setOrigin({ 32.0f, 32.0f });
+				newPlayer.UpdateSprite();
+				mPlayers.push_back(newPlayer);
+			}
+			else
+			{
+				LogWarning(en::LogChannel::All, 6, "Player info already herer%s", "");
+			}
 		} break;
 		case ServerPacketID::UpdateChicken:
 		{

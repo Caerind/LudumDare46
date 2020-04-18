@@ -24,8 +24,9 @@ public:
 	static std::vector<Player> mPlayers;
 	static std::vector<Seed> mSeeds;
 	static std::vector<en::Vector2f> mCancelSeeds;
+	static en::Application::onApplicationStoppedType::ConnectionGuard mApplicationStoppedSlot;
 
-
+	static void ConnectWindowCloseSlot();
 	static void HandleIncomingPackets();
 	static en::I32 GetPlayerIndexFromClientID(en::U32 clientID);
 

@@ -17,9 +17,9 @@ int main()
 	app.GetWindow().getMainView().setSize({ 1024.0f, 768.0f });
 	en::PathManager::GetInstance().SetScreenshotPath("Screenshots/"); // TODO
 
-	app.Start<ConnectingState>();
+	GameSingleton::ConnectWindowCloseSlot();
 
-	GameSingleton::SendLeavePacket(); // Probably shouldnot work but still try to handle last chance case
+	app.Start<ConnectingState>();
 
 	return 0;
 }

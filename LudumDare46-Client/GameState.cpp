@@ -15,11 +15,6 @@ bool GameState::handleEvent(const sf::Event& event)
 {
 	ENLIVE_PROFILE_FUNCTION();
 
-	if (event.type == sf::Event::Closed)
-	{
-		GameSingleton::SendLeavePacket();
-	}
-
 	if (event.type == sf::Event::MouseButtonPressed)
 	{
 		const en::Vector2f cursorPos = GameSingleton::mApplication->GetWindow().getCursorPositionView(GameSingleton::mView);
@@ -48,7 +43,6 @@ bool GameState::update(en::Time dt)
 	*/
 
 	{
-		ENLIVE_PROFILE_SCOPE(CenterView);
 		const en::U32 playerSize = static_cast<en::U32>(GameSingleton::mPlayers.size());
 		for (en::U32 i = 0; i < playerSize; ++i)
 		{
@@ -72,23 +66,12 @@ void GameState::render(sf::RenderTarget& target)
 	GameSingleton::mMap.render(target);
 
 	static bool seedInitialized = false;
-	static sf::CircleShape seed;
+	static sf::Sprite seed;
 	if (!seedInitialized)
 	{
-		seed.setRadius(3.0f);
-		seed.setFillColor(sf::Color::Green);
-		seed.setOrigin(3.0f, 3.0f);
+		seed.setTexture(en::ResourceManager::GetInstance().Get<en::Texture>("seeds").Get());
+		seed.setOrigin(8.0f, 8.0f);
 		seedInitialized = true;
-	}
-
-	static bool playerInitialized = false;
-	static sf::CircleShape player;
-	if (!playerInitialized)
-	{
-		player.setRadius(30.0f);
-		player.setFillColor(sf::Color::Red);
-		player.setOrigin(30.0f, 30.0f);
-		playerInitialized = true;
 	}
 
 	const en::U32 seedSize = static_cast<en::U32>(GameSingleton::mSeeds.size());
@@ -101,12 +84,7 @@ void GameState::render(sf::RenderTarget& target)
 	const en::U32 playerSize = static_cast<en::U32>(GameSingleton::mPlayers.size());
 	for (en::U32 i = 0; i < playerSize; ++i)
 	{
-		if (GameSingleton::mPlayers[i].clientID == GameSingleton::mClient.GetClientID())
-		{
-			player.setFillColor(sf::Color::Yellow);
-		}
-		player.setPosition(en::toSF(GameSingleton::mPlayers[i].chicken.position));
-		target.draw(player);
+		target.draw(GameSingleton::mPlayers[i].sprite);
 	}
 
 	target.setView(previousView);

@@ -71,6 +71,8 @@ Window& Application::GetWindow()
 
 void Application::Stop()
 {
+	onApplicationStopped(this);
+
 	AudioSystem::GetInstance().Stop();
 	AudioSystem::GetInstance().Clear();
 

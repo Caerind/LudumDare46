@@ -42,6 +42,8 @@ public:
 	bool LoadResources();
 	bool LoadResource(I32 type, const std::string& identifier, const std::string& filename, ResourceID& resourceID);
 
+	EnSignal(onApplicationStopped, const Application*);
+
 private:
 	~Application();
 

@@ -21,8 +21,9 @@ struct Player
 	void UpdateSprite()
 	{
 		sprite.setTexture(en::ResourceManager::GetInstance().Get<en::Texture>("shuriken_chicken").Get());
+		sprite.setTextureRect(sf::IntRect(0, 0, 64, 64));
 		sprite.setPosition(en::toSF(chicken.position));
-		sprite.setRotation(chicken.rotation);
+		sprite.setRotation(chicken.rotation + 90.0f);
 	}
 };
 
