@@ -189,9 +189,9 @@ void Server::HandleIncomingPackets()
 				newPlayer.chicken.position = { en::Random::get<en::F32>(0.0f, 1024.f - 100.0f), en::Random::get<en::F32>(0.0f, 768.0f - 100.0f) };
 				newPlayer.chicken.rotation = 0.0f;
 				newPlayer.chicken.itemID = 0;
-				newPlayer.chicken.life = 100.0f;
-				newPlayer.chicken.speed = 200.0f;
-				newPlayer.chicken.attack = 20.0f;
+				newPlayer.chicken.life = DefaultChickenLife;
+				newPlayer.chicken.speed = DefaultChickenSpeed;
+				newPlayer.chicken.attack = DefaultChickenAttack;
 				newPlayer.state = PlayingState::Playing;
 				newPlayer.lastSeedTime = en::Time::Zero;
 
