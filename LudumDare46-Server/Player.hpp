@@ -23,6 +23,7 @@ struct Player
 
 	PlayingState state;
 	en::Time lastSeedTime;
+	bool needUpdate;
 };
 
 struct Seed

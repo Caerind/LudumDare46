@@ -90,6 +90,7 @@ void Server::UpdateLogic(en::Time dt)
 	for (en::U32 i = 0; i < playerSize; ++i)
 	{
 		mPlayers[i].lastSeedTime += dt;
+		mPlayers[i].lastPacketTime += dt;
 
 		UpdatePlayerMovement(dtSeconds, mPlayers[i]);
 	}
@@ -115,8 +116,10 @@ void Server::Tick(en::Time dt)
 	const en::U32 size = static_cast<en::U32>(mPlayers.size());
 	for (en::U32 i = 0; i < size; ++i)
 	{
-		SendUpdateChickenPacket(mPlayers[i].clientID, mPlayers[i].chicken);
-		mPlayers[i].lastPacketTime += dt;
+		if (mPlayers[i].needUpdate)
+		{
+			SendUpdateChickenPacket(mPlayers[i].clientID, mPlayers[i].chicken);
+		}
 	}
 }
 
@@ -334,7 +337,7 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 			}
 		}
 		player.chicken.rotation = movement.getPolarAngle();
-		player.moved = true;
+		player.needUpdate = true;
 	}
 }
 
