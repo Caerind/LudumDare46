@@ -17,24 +17,27 @@ public:
 	{
 		LogInfo(en::LogChannel::All, 2, "Switching to ConnectingState%s", "");
 
-		mShape.setRadius(50.0f);
-		mShape.setPosition(0.0f, 0.0f);
-		mShape.setFillColor(sf::Color::Green);
-
+		if (GameSingleton::mClient.IsRunning() || GameSingleton::mClient.IsConnected())
+		{
+			GameSingleton::mClient.SetClientID(en::U32_Max);
+			GameSingleton::mClient.Stop();
+		}
 		GameSingleton::mClient.SetServerAddress(DefaultServerAddress);
 		GameSingleton::mClient.SetServerPort(DefaultServerPort);
 		GameSingleton::mClient.Start();
 		GameSingleton::mLocalPosition = en::Vector2f::zero;
-		GameSingleton::mInvalidLocalPosition = true;
 
-		sf::Packet joinPacket;
-		joinPacket << static_cast<en::U8>(ClientPacketID::Join);
-		GameSingleton::mClient.SendPacket(joinPacket);
+		mWaitingTime = en::seconds(2.0f);
 	}
 	
 	bool handleEvent(const sf::Event& event)
 	{
 		ENLIVE_PROFILE_FUNCTION();
+
+		if (event.type == sf::Event::Closed)
+		{
+			GameSingleton::SendLeavePacket();
+		}
 
 		return false;
 	}
@@ -42,87 +45,46 @@ public:
 	bool update(en::Time dt)
 	{
 		ENLIVE_PROFILE_FUNCTION();
-
+		LogInfo(en::LogChannel::All, 1, "ConnectingState", "");
+		
 		if (GameSingleton::mClient.IsRunning())
 		{
+			const bool wasConnected = GameSingleton::mClient.IsConnected();
+
+			if (mWaitingTime >= en::seconds(1.0f))
+			{
+				GameSingleton::SendJoinPacket();
+				mWaitingTime = en::Time::Zero;
+				LogInfo(en::LogChannel::All, 3, "Try to connect", "");
+			}
 			if (!GameSingleton::mClient.IsConnected())
 			{
 				mWaitingTime += dt;
+				LogInfo(en::LogChannel::All, 1, "Waiting", "");
 			}
 
-			sf::Packet packet;
-			while (GameSingleton::mClient.PollPacket(packet))
+			GameSingleton::HandleIncomingPackets();
+			if (GameSingleton::mClient.IsConnected())
 			{
-				en::U8 packetIDRaw;
-				packet >> packetIDRaw;
-				assert(packetIDRaw < static_cast<en::U8>(ServerPacketID::Count));
-
-				LogInfo(en::LogChannel::All, 2, "Received PacketID (%d)", packetIDRaw);
-				const ServerPacketID packetID = static_cast<ServerPacketID>(packetIDRaw);
-				switch (packetID)
+				GameSingleton::mLastPacketTime += dt;
+				if (GameSingleton::mLastPacketTime > DefaultTimeout)
 				{
-				case ServerPacketID::Ping:
-				{
-					LogInfo(en::LogChannel::All, 5, "Ping%s", "");
-					sf::Packet pongPacket;
-					pongPacket << static_cast<en::U8>(ClientPacketID::Pong);
-					GameSingleton::mClient.SendPacket(pongPacket);
-				} break;
-				case ServerPacketID::Pong:
-				{
-					LogInfo(en::LogChannel::All, 5, "Pong%s", "");
-				} break;
-				case ServerPacketID::ClientAccept:
-				{
-					en::U32 clientID;
-					packet >> clientID;
-					LogInfo(en::LogChannel::All, 5, "ClientAccepted, ClientID %d %d", clientID, en::U32_Max);
-					GameSingleton::mClient.SetClientID(clientID);
-					GameSingleton::mApplication->ClearStates();
-					GameSingleton::mApplication->PushState<GameState>();
-				} break;
-				case ServerPacketID::ClientReject:
-				{
-					en::U32 rejectReason;
-					packet >> rejectReason;
-					LogInfo(en::LogChannel::All, 5, "ClientRejected %d", rejectReason);
-					mShape.setFillColor(sf::Color::Red);
-					GameSingleton::mApplication->ClearStates();
-				} break;
-				case ServerPacketID::ClientJoined:
-				{
-					en::U32 clientID;
-					en::Vector2f position;
-					packet >> clientID >> position.x >> position.y;
-					LogInfo(en::LogChannel::All, 5, "SomeoneJoined, ClientID %d", clientID);
-					if (clientID == GameSingleton::mClient.GetClientID())
-					{
-						GameSingleton::mLocalPosition = position;
-						GameSingleton::mInvalidLocalPosition = false;
-					}
-				} break;
-				case ServerPacketID::ClientLeft:
-				{
-					en::U32 clientID;
-					packet >> clientID;
-					LogInfo(en::LogChannel::All, 5, "SomeoneLeft, ClientID %d", clientID);
-				} break;
-				case ServerPacketID::Stopping:
-				{
-					LogInfo(en::LogChannel::All, 5, "ServerStopping%s", "");
-					mShape.setFillColor(sf::Color::Yellow);
-				} break;
-				case ServerPacketID::PlayerPosition:
-				{
-					LogWarning(en::LogChannel::All, 5, "PlayerPosition%s", "");
-					// Don't care now
-				} break;
-				default:
-				{
-					LogWarning(en::LogChannel::All, 6, "Unknown ClientPacketID %d received", packetIDRaw);
-				} break;
+					GameSingleton::mClient.SetClientID(en::U32_Max);
+					GameSingleton::mClient.Stop();
+					clearStates();
 				}
 			}
+
+			if (!wasConnected && GameSingleton::mClient.IsConnected())
+			{
+				clearStates();
+				pushState<GameState>();
+			}
+		}
+		else
+		{
+			clearStates();
+			LogWarning(en::LogChannel::All, 5, "Invalid socket%s", "");
 		}
 
 		return false;
@@ -131,10 +93,8 @@ public:
 	void render(sf::RenderTarget& target)
 	{
 		ENLIVE_PROFILE_FUNCTION();
-		target.draw(mShape);
 	}
 
 private:
-	sf::CircleShape mShape;
 	en::Time mWaitingTime;
 };

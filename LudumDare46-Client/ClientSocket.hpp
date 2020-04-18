@@ -42,7 +42,7 @@ public:
 	}
 
 	void SetBlocking(bool blocking) { mSocket.setBlocking(blocking); }
-	bool IsBlocking() const { mSocket.isBlocking(); }
+	bool IsBlocking() const { return mSocket.isBlocking(); }
 
 	void SendPacket(sf::Packet& packet) 
 	{ 
@@ -73,7 +73,7 @@ public:
 	void SetServerPort(en::U16 serverPort) { mServerPort = serverPort; }
 
 	bool IsRunning() const { return mRunning; }
-	bool IsConnected() const { return mClientID != en::U32_Max; }
+	bool IsConnected() const { return IsRunning() && mClientID != en::U32_Max; }
 	en::U32 GetClientID() const { return mClientID; }
 	void SetClientID(en::U32 clientID) { mClientID = clientID; }
 

@@ -1,6 +1,7 @@
 set(SRC_LUDUMDARE46_SERVER
 	main.cpp
 	Player.hpp
+	Server.cpp
 	Server.hpp
 	ServerSocket.hpp
 )

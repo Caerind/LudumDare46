@@ -19,5 +19,7 @@ int main()
 
 	app.Start<ConnectingState>();
 
+	GameSingleton::SendLeavePacket(); // Probably shouldnot work but still try to handle last chance case
+
 	return 0;
 }

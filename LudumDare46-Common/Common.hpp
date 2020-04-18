@@ -9,15 +9,15 @@
 #define DefaultStepInterval en::seconds(1.0f / 60.f)
 #define DefaultTickInterval en::seconds(1.0f / 20.f)
 #define DefaultSleepTime sf::milliseconds(5)
-#define DefaultMaxPlayers 8
+#define DefaultMaxPlayers 16
 
 // Server -> Client
 enum class ServerPacketID : en::U8
 {
 	Ping = 0, // "Just want the client to send back a Pong"
 	Pong, // "Just sending back a Pong when some client asked for Ping"
-	ClientAccept, // "Ok, you can come in"
-	ClientReject, // "I don't want you here"
+	ConnectionAccepted, // "Ok, you can come in"
+	ConnectionRejected, // "I don't want you here"
 	ClientJoined, // "Someone joined"
 	ClientLeft, // "Someone left"
 	Stopping, // "The server is stopping"

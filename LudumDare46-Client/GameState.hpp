@@ -17,13 +17,4 @@ public:
 	bool update(en::Time dt);
 
 	void render(sf::RenderTarget& target);
-
-private:
-	void HandleIncomingPackets();
-
-
-	en::I32 GetPlayerIndexFromClientID(en::U32 clientID) const;
-
-private:
-	std::vector<Player> mPlayers;
 };
