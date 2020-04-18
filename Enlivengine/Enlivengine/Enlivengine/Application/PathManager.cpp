@@ -11,6 +11,7 @@ PathManager::PathManager()
 const std::string& PathManager::GetAssetsPath() const
 {
 #ifdef ENLIVE_DEBUG
+	//static std::string assetsPath = "Assets/";
 	static std::string assetsPath = "../../Assets/";
 #else
 	static std::string assetsPath = "Assets/";

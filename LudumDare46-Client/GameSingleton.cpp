@@ -26,7 +26,6 @@ void GameSingleton::HandleIncomingPackets()
 		packet >> packetIDRaw;
 		assert(packetIDRaw < static_cast<en::U8>(ServerPacketID::Count));
 
-		LogInfo(en::LogChannel::All, 2, "Received PacketID (%d)", packetIDRaw);
 		const ServerPacketID packetID = static_cast<ServerPacketID>(packetIDRaw);
 		switch (packetID)
 		{
@@ -63,11 +62,6 @@ void GameSingleton::HandleIncomingPackets()
 		} break;
 		case ServerPacketID::ClientJoined:
 		{
-			if (!mClient.IsConnected())
-			{
-				LogError(en::LogChannel::All, 2, "ClientJoined but not connected%s", "");
-				return;
-			}
 			en::U32 clientID;
 			std::string nickname;
 			Chicken chicken;
@@ -89,11 +83,6 @@ void GameSingleton::HandleIncomingPackets()
 		} break;
 		case ServerPacketID::ClientLeft:
 		{
-			if (!mClient.IsConnected())
-			{
-				LogError(en::LogChannel::All, 2, "ClientJoined but not connected%s", "");
-				return;
-			}
 			en::U32 clientID;
 			packet >> clientID;
 			LogInfo(en::LogChannel::All, 5, "ClientLeft, ClientID %d", clientID);
@@ -115,11 +104,6 @@ void GameSingleton::HandleIncomingPackets()
 		} break;
 		case ServerPacketID::UpdateChicken:
 		{
-			if (!mClient.IsConnected())
-			{
-				LogError(en::LogChannel::All, 2, "PlayerPosition but not connected%s", "");
-				return;
-			}
 			en::U32 clientID;
 			packet >> clientID;
 			LogInfo(en::LogChannel::All, 5, "PlayerPosition, ClientID %d", clientID);

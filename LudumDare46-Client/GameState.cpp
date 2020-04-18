@@ -5,8 +5,6 @@
 GameState::GameState(en::StateManager& manager)
 	: en::State(manager)
 {
-	LogInfo(en::LogChannel::All, 2, "Switching to GameState%s", "");
-
 	mView.setSize(1024.0f, 768.0f);
 	mView.setCenter(1024.0f * 0.5f, 768.0f * 0.5f);
 }
@@ -32,7 +30,6 @@ bool GameState::handleEvent(const sf::Event& event)
 bool GameState::update(en::Time dt)
 {
 	ENLIVE_PROFILE_FUNCTION();
-	LogInfo(en::LogChannel::All, 1, "GameState", "");
 
 	GameSingleton::HandleIncomingPackets();
 	if (GameSingleton::mClient.IsConnected())

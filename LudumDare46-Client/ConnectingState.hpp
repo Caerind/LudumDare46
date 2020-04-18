@@ -15,8 +15,6 @@ public:
 		: en::State(manager)
 		, mWaitingTime(en::Time::Zero)
 	{
-		LogInfo(en::LogChannel::All, 2, "Switching to ConnectingState%s", "");
-
 		if (GameSingleton::mClient.IsRunning() || GameSingleton::mClient.IsConnected())
 		{
 			GameSingleton::mClient.SetClientID(en::U32_Max);
@@ -44,7 +42,6 @@ public:
 	bool update(en::Time dt)
 	{
 		ENLIVE_PROFILE_FUNCTION();
-		LogInfo(en::LogChannel::All, 1, "ConnectingState", "");
 		
 		if (GameSingleton::mClient.IsRunning())
 		{
@@ -59,7 +56,6 @@ public:
 			if (!GameSingleton::mClient.IsConnected())
 			{
 				mWaitingTime += dt;
-				LogInfo(en::LogChannel::All, 1, "Waiting", "");
 			}
 
 			GameSingleton::HandleIncomingPackets();

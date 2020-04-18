@@ -158,7 +158,6 @@ void Server::HandleIncomingPackets()
 			ignorePacket = true;
 		}
 
-		LogInfo(en::LogChannel::All, 2, "Received PacketID (%d) from %s:%d", packetIDRaw, remoteAddress.toString().c_str(), remotePort);
 		const ClientPacketID packetID = static_cast<ClientPacketID>(packetIDRaw);
 		switch (packetID)
 		{
@@ -200,7 +199,7 @@ void Server::HandleIncomingPackets()
 
 				SendConnectionAcceptedPacket(remoteAddress, remotePort, clientID);
 
-				SendClientJoinedPacket(clientID, newPlayer.nickname, newPlayer.chicken); // T
+				SendClientJoinedPacket(clientID, newPlayer.nickname, newPlayer.chicken);
 			}
 			else
 			{
@@ -251,11 +250,13 @@ void Server::HandleIncomingPackets()
 				{
 					if (mPlayers[playerIndex].lastSeedTime >= DefaultSeedInterval)
 					{
+						LogInfo(en::LogChannel::All, 2, "Player %d dropped seed at %f %f", mPlayers[playerIndex].clientID, position.x, position.y);
 						mPlayers[playerIndex].lastSeedTime = en::Time::Zero;
 						AddNewSeed(position);
 					}
 					else
 					{
+						LogInfo(en::LogChannel::All, 2, "Player %d seed cooldown", mPlayers[playerIndex].clientID);
 						SendCancelSeedPacket(remoteAddress, remotePort, position);
 					}
 				}
@@ -395,7 +396,7 @@ void Server::SendClientJoinedPacket(en::U32 clientID, const std::string& nicknam
 	if (mSocket.IsRunning())
 	{
 		sf::Packet packet;
-		packet << static_cast<en::U8>(ServerPacketID::ClientLeft);
+		packet << static_cast<en::U8>(ServerPacketID::ClientJoined);
 		packet << clientID;
 		packet << nickname;
 		packet << chicken;
