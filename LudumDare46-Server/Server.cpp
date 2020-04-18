@@ -102,7 +102,7 @@ void Server::UpdateLogic(en::Time dt)
 				if (DefaultSeedTooCloseDistanceSqr < distanceSqr && distanceSqr < DefaultSeedImpactDistanceSqr)
 				{
 					const en::F32 x = distanceSqr * 0.01f;
-					const en::F32 factor = 0.125f * x * x - 2.2f * x + 12.0f;
+					const en::F32 factor = (0.125f * x * x - 2.2f * x + 12.0f) * 0.1f;
 					movement += delta * factor;
 					moved++;
 				}
@@ -110,7 +110,7 @@ void Server::UpdateLogic(en::Time dt)
 			if (moved > 0)
 			{
 				movement.normalize();
-				movement *= dtSeconds;
+				movement *= dtSeconds * mPlayers[i].chicken.speed;
 				mPlayers[i].chicken.position += movement;
 			}
 		}
