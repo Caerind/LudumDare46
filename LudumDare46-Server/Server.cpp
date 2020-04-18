@@ -183,7 +183,7 @@ void Server::HandleIncomingPackets()
 				const en::U32 playerSize = static_cast<en::U32>(mPlayers.size());
 				for (en::U32 i = 0; i < playerSize; ++i)
 				{
-					SendPlayerInfo(remoteAddress, remotePort, mPlayers[i]);
+					//SendPlayerInfo(remoteAddress, remotePort, mPlayers[i]);
 				}
 
 				mPlayers.push_back(newPlayer);
