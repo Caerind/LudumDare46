@@ -29,7 +29,6 @@ bool GameState::update(en::Time dt)
 	ENLIVE_PROFILE_FUNCTION();
 
 	GameSingleton::HandleIncomingPackets();
-	/*
 	if (GameSingleton::mClient.IsConnected())
 	{
 		GameSingleton::mLastPacketTime += dt;
@@ -40,7 +39,6 @@ bool GameState::update(en::Time dt)
 			clearStates();
 		}
 	}
-	*/
 
 	{
 		const en::U32 playerSize = static_cast<en::U32>(GameSingleton::mPlayers.size());

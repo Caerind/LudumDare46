@@ -8,10 +8,10 @@
 #define DefaultServerAddress "92.222.79.62"
 #define DefaultServerPort 3457
 
-#define DefaultTimeout en::seconds(1.0f)
+#define DefaultTimeout en::seconds(60.0f)
 #define DefaultStepInterval en::seconds(1.0f / 60.f)
 #define DefaultTickInterval en::seconds(1.0f / 20.f)
-#define DefaultSleepTime sf::milliseconds(5)
+#define DefaultSleepTime sf::seconds(1.0f / 10.f)
 #define DefaultMaxPlayers 16
 
 #define DefaultSeedInterval en::seconds(0.3f)
@@ -75,6 +75,7 @@ enum class RejectReason : en::U8
 	TooManyPlayers,
 	Blacklisted,
 	Kicked,
+	Timeout,
 	Banned
 };
 

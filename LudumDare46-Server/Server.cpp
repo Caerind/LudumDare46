@@ -55,11 +55,11 @@ bool Server::Run()
 	en::Clock clock;
 	while (IsRunning())
 	{
-		HandleIncomingPackets();
-
 		const en::Time dt = clock.restart();
 		mStepTime += dt;
 		mTickTime += dt;
+
+		HandleIncomingPackets();
 
 		while (mStepTime >= stepInterval)
 		{
@@ -94,10 +94,7 @@ void Server::UpdateLogic(en::Time dt)
 		mPlayers[i].lastSeedTime += dt;
 		mPlayers[i].lastPacketTime += dt;
 
-		if (mPlayers[i].needUpdate)
-		{
-			UpdatePlayerMovement(dtSeconds, mPlayers[i]);
-		}
+		UpdatePlayerMovement(dtSeconds, mPlayers[i]);
 	}
 
 	for (en::U32 i = 0; i < seedSize;)
@@ -118,12 +115,27 @@ void Server::UpdateLogic(en::Time dt)
 
 void Server::Tick(en::Time dt)
 {
-	const en::U32 size = static_cast<en::U32>(mPlayers.size());
-	for (en::U32 i = 0; i < size; ++i)
+	en::U32 size = static_cast<en::U32>(mPlayers.size());
+	for (en::U32 i = 0; i < size; )
 	{
 		if (mPlayers[i].needUpdate)
 		{
 			SendUpdateChickenPacket(mPlayers[i].clientID, mPlayers[i].chicken);
+			mPlayers[i].needUpdate = false;
+		}
+
+
+		// Timeout detection
+		if (mPlayers[i].lastPacketTime > DefaultTimeout)
+		{
+			SendConnectionRejectedPacket(mPlayers[i].remoteAddress, mPlayers[i].remotePort, RejectReason::Timeout);
+			SendClientLeftPacket(mPlayers[i].clientID);
+			mPlayers.erase(mPlayers.begin() + i);
+			size--;
+		}
+		else
+		{
+			i++;
 		}
 	}
 }
@@ -143,6 +155,8 @@ void Server::HandleIncomingPackets()
 		{
 			ignorePacket = true;
 		}
+
+		UpdateLastPacketTime(remoteAddress, remotePort);
 
 		const ClientPacketID packetID = static_cast<ClientPacketID>(packetIDRaw);
 		switch (packetID)
@@ -359,6 +373,19 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 		}
 		player.chicken.rotation = movement.getPolarAngle();
 		player.needUpdate = true;
+	}
+}
+
+void Server::UpdateLastPacketTime(const sf::IpAddress& remoteAddress, en::U16 remotePort)
+{
+	const en::U32 size = static_cast<en::U32>(mPlayers.size());
+	for (en::U32 i = 0; i < size; ++i)
+	{
+		if (mPlayers[i].remotePort == remotePort && mPlayers[i].remoteAddress == remoteAddress)
+		{
+			mPlayers[i].lastPacketTime = en::Time::Zero;
+			return;
+		}
 	}
 }
 

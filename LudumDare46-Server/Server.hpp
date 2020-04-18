@@ -31,6 +31,8 @@ private:
 
 	void UpdatePlayerMovement(en::F32 dtSeconds, Player& player);
 
+	void UpdateLastPacketTime(const sf::IpAddress& remoteAddress, en::U16 remotePort);
+
 	en::U32 GenerateClientID(const sf::IpAddress& remoteAddress, en::U16 remotePort) const;
 	
 	// Check with a generated client ID from address/port
