@@ -2,6 +2,7 @@
 
 #include <Enlivengine/Application/StateManager.hpp>
 #include <Enlivengine/Math/Vector2.hpp>
+#include <Enlivengine/Graphics/View.hpp>
 
 #include <Common.hpp>
 
@@ -17,4 +18,7 @@ public:
 	bool update(en::Time dt);
 
 	void render(sf::RenderTarget& target);
+
+private:
+	en::View mView;
 };

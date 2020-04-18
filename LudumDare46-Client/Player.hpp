@@ -12,3 +12,9 @@ struct Player
 	std::string nickname;
 	Chicken chicken;
 };
+
+struct Seed
+{
+	en::U32 seedID;
+	en::Vector2f position;
+};

@@ -254,6 +254,10 @@ void Server::HandleIncomingPackets()
 						mPlayers[playerIndex].lastSeedTime = en::Time::Zero;
 						AddNewSeed(position);
 					}
+					else
+					{
+						SendCancelSeedPacket(remoteAddress, remotePort, position);
+					}
 				}
 				else
 				{
@@ -431,6 +435,18 @@ void Server::SendUpdateChickenPacket(en::U32 clientID, const Chicken& chicken)
 		packet << clientID;
 		packet << chicken;
 		SendToAllPlayers(packet);
+	}
+}
+
+void Server::SendCancelSeedPacket(const sf::IpAddress& remoteAddress, en::U16 remotePort, const en::Vector2f& position)
+{
+	if (mSocket.IsRunning())
+	{
+		sf::Packet packet;
+		packet << static_cast<en::U8>(ServerPacketID::CancelSeed);
+		packet << position.x;
+		packet << position.y;
+		mSocket.SendPacket(packet, remoteAddress, remotePort);
 	}
 }
 

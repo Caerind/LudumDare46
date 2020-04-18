@@ -25,7 +25,6 @@ public:
 		GameSingleton::mClient.SetServerAddress(DefaultServerAddress);
 		GameSingleton::mClient.SetServerPort(DefaultServerPort);
 		GameSingleton::mClient.Start();
-		GameSingleton::mLocalPosition = en::Vector2f::zero;
 
 		mWaitingTime = en::seconds(2.0f);
 	}

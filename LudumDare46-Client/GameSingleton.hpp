@@ -19,10 +19,10 @@ public:
 	static en::Application* mApplication;
 	static ClientSocket mClient;
 	static en::Time mLastPacketTime;
-	static en::Vector2f mLocalPosition;
 	static GameMap mMap;
-	static en::View mView;
 	static std::vector<Player> mPlayers;
+	static std::vector<Seed> mSeeds;
+	static std::vector<en::Vector2f> mCancelSeeds;
 
 
 	static void HandleIncomingPackets();
@@ -32,5 +32,5 @@ public:
 	static void SendPongPacket();
 	static void SendJoinPacket();
 	static void SendLeavePacket();
-	static void SendPositionPacket(const en::Vector2f& position);
+	static void SendDropSeedPacket(const en::Vector2f& position);
 };

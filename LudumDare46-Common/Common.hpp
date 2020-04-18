@@ -35,6 +35,7 @@ enum class ServerPacketID : en::U8
 
 	// Game specific packets
 	UpdateChicken, 
+	CancelSeed,
 	AddSeed,
 	RemoveSeed,
 

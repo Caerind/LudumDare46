@@ -5,10 +5,10 @@
 en::Application* GameSingleton::mApplication;
 ClientSocket GameSingleton::mClient;
 en::Time GameSingleton::mLastPacketTime;
-en::Vector2f GameSingleton::mLocalPosition;
 GameMap GameSingleton::mMap;
-en::View GameSingleton::mView;
 std::vector<Player> GameSingleton::mPlayers;
+std::vector<Seed> GameSingleton::mSeeds;
+std::vector<en::Vector2f> GameSingleton::mCancelSeeds;
 
 void GameSingleton::HandleIncomingPackets()
 {
@@ -44,11 +44,9 @@ void GameSingleton::HandleIncomingPackets()
 			if (!mClient.IsConnected())
 			{
 				en::U32 clientID;
-				en::Vector2f position;
-				packet >> clientID >> position.x >> position.y;
-				LogInfo(en::LogChannel::All, 5, "ConnectionAccepted, ClientID %d at %f %f", clientID, position.x, position.y);
+				packet >> clientID;
+				LogInfo(en::LogChannel::All, 5, "ConnectionAccepted, ClientID %d", clientID);
 				mClient.SetClientID(clientID);
-				mLocalPosition = position;
 			}
 			else
 			{
@@ -62,7 +60,6 @@ void GameSingleton::HandleIncomingPackets()
 			LogInfo(en::LogChannel::All, 5, "ConnectionRejected %d", rejectReason);
 			mClient.SetClientID(en::U32_Max);
 			mClient.Stop();
-			mLocalPosition = {0.0f, 0.0f};
 		} break;
 		case ServerPacketID::ClientJoined:
 		{
@@ -72,17 +69,17 @@ void GameSingleton::HandleIncomingPackets()
 				return;
 			}
 			en::U32 clientID;
-			en::Vector2f position;
-			packet >> clientID >> position.x >> position.y;
-			LogInfo(en::LogChannel::All, 5, "ClientJoined, ClientID %d at %f %f", clientID, position.x, position.y);
+			std::string nickname;
+			Chicken chicken;
+			packet >> clientID >> nickname >> chicken;
+			LogInfo(en::LogChannel::All, 5, "ClientJoined, ClientID %d, Nickname %s", clientID, nickname.c_str());
 			const en::I32 playerIndex = GetPlayerIndexFromClientID(clientID);
 			if (playerIndex == -1)
 			{
 				Player newPlayer;
-				newPlayer.shape.setSize({ 100.0f, 100.0f });
-				newPlayer.shape.setFillColor(sf::Color::Green);
-				newPlayer.shape.setPosition(en::toSF(position));
 				newPlayer.clientID = clientID;
+				newPlayer.nickname = nickname;
+				newPlayer.chicken = chicken;
 				mPlayers.push_back(newPlayer);
 			}
 			else
@@ -116,7 +113,7 @@ void GameSingleton::HandleIncomingPackets()
 			mClient.SetClientID(en::U32_Max);
 			mClient.Stop();
 		} break;
-		case ServerPacketID::PlayerPosition:
+		case ServerPacketID::UpdateChicken:
 		{
 			if (!mClient.IsConnected())
 			{
@@ -124,19 +121,54 @@ void GameSingleton::HandleIncomingPackets()
 				return;
 			}
 			en::U32 clientID;
-			en::Vector2f position;
-			packet >> clientID >> position.x >> position.y;
-			LogInfo(en::LogChannel::All, 5, "PlayerPosition, ClientID %d at %f %f", clientID, position.x, position.y);
+			packet >> clientID;
+			LogInfo(en::LogChannel::All, 5, "PlayerPosition, ClientID %d", clientID);
 			const en::I32 playerIndex = GetPlayerIndexFromClientID(clientID);
 			if (playerIndex >= 0)
 			{
-				mPlayers[playerIndex].shape.setPosition(en::toSF(position));
+				packet >> mPlayers[playerIndex].chicken;
 			}
 			else
 			{
 				LogWarning(en::LogChannel::All, 6, "Unknown player moved %d", packetIDRaw);
 			}
 		} break;
+		case ServerPacketID::CancelSeed:
+		{
+			en::Vector2f position;
+			packet >> position.x >> position.y;
+			LogInfo(en::LogChannel::All, 4, "Cancel seed %f %f", position.x, position.y);
+			mCancelSeeds.push_back(position);
+		} break;
+		case ServerPacketID::AddSeed:
+		{
+			Seed seed;
+			packet >> seed.seedID >> seed.position.x >> seed.position.y;
+			LogInfo(en::LogChannel::All, 4, "New seed %d %f %f", seed.seedID, seed.position.x, seed.position.y);
+			mSeeds.push_back(seed);
+		} break;
+		case ServerPacketID::RemoveSeed:
+		{
+			en::U32 seedID;
+			packet >> seedID;
+			LogInfo(en::LogChannel::All, 4, "Remove seed %d", seedID);
+			bool removed = false;
+			en::U32 size = static_cast<en::U32>(mSeeds.size());
+			for (en::U32 i = 0; i < size && !removed; )
+			{
+				if (mSeeds[i].seedID == seedID)
+				{
+					mSeeds.erase(mSeeds.begin() + i);
+					size--;
+					removed = true;
+				}
+				else
+				{
+					++i;
+				}
+			}
+		} break;
+
 		default:
 		{
 			LogWarning(en::LogChannel::All, 6, "Unknown ServerPacketID %d received", packetIDRaw);
@@ -195,12 +227,12 @@ void GameSingleton::SendLeavePacket()
 	}
 }
 
-void GameSingleton::SendPositionPacket(const en::Vector2f& position)
+void GameSingleton::SendDropSeedPacket(const en::Vector2f& position)
 {
 	if (mClient.IsRunning() && mClient.IsConnected())
 	{
 		sf::Packet positionPacket;
-		positionPacket << static_cast<en::U8>(ClientPacketID::PlayerPosition);
+		positionPacket << static_cast<en::U8>(ClientPacketID::DropSeed);
 		positionPacket << mClient.GetClientID();
 		positionPacket << position.x;
 		positionPacket << position.y;
