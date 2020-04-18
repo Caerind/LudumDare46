@@ -29,6 +29,8 @@ public:
 private:
 	void HandleIncomingPackets();
 
+	void UpdatePlayerMovement(en::F32 dtSeconds, Player& player);
+
 	en::U32 GenerateClientID(const sf::IpAddress& remoteAddress, en::U16 remotePort) const;
 	
 	// Check with a generated client ID from address/port

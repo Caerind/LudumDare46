@@ -91,52 +91,7 @@ void Server::UpdateLogic(en::Time dt)
 	{
 		mPlayers[i].lastSeedTime += dt;
 
-		// Update movements
-		{
-			en::I32 moved = 0;
-			en::Vector2f movement(0.0f, 0.0f);
-			for (en::U32 j = 0; j < seedSize; ++j)
-			{
-				const en::Vector2f delta = mSeeds[j].position - mPlayers[i].chicken.position;
-				const en::F32 distanceSqr = delta.getSquaredLength();
-				if (DefaultSeedTooCloseDistanceSqr < distanceSqr && distanceSqr < DefaultSeedImpactDistanceSqr)
-				{
-					const en::F32 x = distanceSqr * 0.01f;
-					const en::F32 factor = (0.125f * x * x - 2.2f * x + 12.0f) * 0.1f;
-					movement += delta * factor;
-					moved++;
-				}
-			}
-			if (moved > 0)
-			{
-				en::Vector2f antiChickenMovement = { 0.0f, 0.0f };
-				for (en::U32 j = 0; j < playerSize; ++j)
-				{
-					if (i != j)
-					{
-						const en::Vector2f delta = mPlayers[i].chicken.position - mPlayers[j].chicken.position;
-						const en::F32 distanceSqr = delta.getSquaredLength();
-						if (DefaultSeedTooCloseDistanceSqr < distanceSqr && distanceSqr < DefaultSeedImpactDistanceSqr)
-						{
-							const en::F32 x = distanceSqr * 0.01f;
-							const en::F32 factor = (0.125f * x * x - 2.2f * x + 12.0f) * 0.1f;
-							antiChickenMovement += delta * factor;
-						}
-						else if (DefaultSeedTooCloseDistanceSqr >= distanceSqr)
-						{
-							antiChickenMovement += delta;
-						}
-					}
-				}
-				movement += antiChickenMovement * 0.8f;
-				if (movement.getSquaredLength() > 0.0f)
-				{
-					movement.normalize();
-					movement *= dtSeconds * mPlayers[i].chicken.speed;
-					mPlayers[i].chicken.position += movement;
-				}
-			}
-		}
+		UpdatePlayerMovement(mPlayers[i]);
 	}
 
 	for (en::U32 i = 0; i < seedSize;)
@@ -305,6 +260,80 @@ void Server::HandleIncomingPackets()
 		{
 			LogWarning(en::LogChannel::All, 4, "Ignore packet %d from %s:%d", packetIDRaw, remoteAddress.toString().c_str(), remotePort);
 		}
+	}
+}
+
+void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
+{
+	// Select base seed
+	en::I32 bestSeedIndex = -1;
+	en::F32 bestSeedDistanceSqr = 999999.0f;
+	const en::U32 seedSize = static_cast<en::U32>(mSeeds.size());
+	for (en::U32 i = 0; i < seedSize; ++i)
+	{
+		const en::Vector2f delta = mSeeds[i].position - player.chicken.position;
+		const en::F32 distanceSqr = delta.getSquaredLength();
+		if (distanceSqr < bestSeedDistanceSqr)
+		{
+			bestSeedDistanceSqr = distanceSqr;
+			bestSeedIndex = static_cast<en::I32>(i);
+		}
+	}
+
+	// Movement based on seed
+	en::Vector2f movement(0.0f, 0.0f);
+	if (bestSeedIndex >= 0)
+	{
+		const Seed& seed = mSeeds[bestSeedIndex];
+		const en::Vector2f delta = seed.position - player.chicken.position;
+		const en::F32 distanceSqr = delta.getSquaredLength();
+		if (DefaultSeedTooCloseDistanceSqr < distanceSqr && distanceSqr < DefaultSeedImpactDistanceSqr)
+		{
+			const en::F32 factor = (DefaultSeedTooCloseDistanceSqr / distanceSqr) - DefaultSeedImpactMinFactor;
+			movement += delta * factor;
+		}
+	}
+
+	// Avoidance
+	const en::U32 playerSize = static_cast<en::U32>(mPlayers.size());
+	for (en::U32 i = 0; i < playerSize; ++i)
+	{
+		const Player& otherPlayer = mPlayers[i];
+		if (otherPlayer.clientID != player.clientID)
+		{
+			const en::Vector2f delta = player.chicken.position - otherPlayer.chicken.position;
+			const en::F32 distanceSqr = delta.getSquaredLength();
+			if (0.01f <= distanceSqr && distanceSqr < DefaultChickenAvoidanceMinDistance)
+			{
+				const en::F32 factor = (distanceSqr - DefaultChickenAvoidanceMinDistance) / DefaultChickenAvoidanceMinDistance;
+				movement += delta * factor;
+			}
+			else if (distanceSqr < 0.01f)
+			{
+				player.chicken.position += { 10.0f, 10.0f };
+			}
+		}
+	}
+
+	// Update the movement
+	if (movement.getSquaredLength() > 0.0f)
+	{
+		movement.normalize();
+		movement *= dtSeconds * player.chicken.speed;
+		player.chicken.position += movement;
+		if (en::Math::Equals(movement.x, 0.0f))
+		{ 
+			// Cheating a bit
+			if (movement.x > 0.0f)
+			{
+				movement.x += 0.01f;
+			}
+			else
+			{
+				movement.x -= 0.01f;
+			}
+		}
+		player.chicken.rotation = movement.getPolarAngle();
 	}
 }
 
