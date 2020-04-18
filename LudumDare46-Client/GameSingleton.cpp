@@ -12,6 +12,8 @@ std::vector<en::Vector2f> GameSingleton::mCancelSeeds;
 
 void GameSingleton::HandleIncomingPackets()
 {
+	ENLIVE_PROFILE_FUNCTION();
+
 	if (!mClient.IsRunning())
 	{
 		return;

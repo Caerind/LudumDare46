@@ -164,7 +164,7 @@ void ImGuiProfiler::DisplayFrame(const ProfilerFrame& frame) const
 
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 1));
 	const U32 tasks = static_cast<U32>(frame.tasks.size());
-	for (U32 level = 0; level < maxDepth; ++level)
+	for (U32 level = 0; level <= maxDepth; ++level)
 	{
 		Time levelTime = frame.start;
 		if (level > 0)

@@ -34,6 +34,7 @@ bool GameState::update(en::Time dt)
 	ENLIVE_PROFILE_FUNCTION();
 
 	GameSingleton::HandleIncomingPackets();
+	/*
 	if (GameSingleton::mClient.IsConnected())
 	{
 		GameSingleton::mLastPacketTime += dt;
@@ -44,14 +45,17 @@ bool GameState::update(en::Time dt)
 			clearStates();
 		}
 	}
+	*/
 
-	const en::U32 playerSize = static_cast<en::U32>(GameSingleton::mPlayers.size());
-	for (en::U32 i = 0; i < playerSize; ++i)
 	{
-		if (GameSingleton::mPlayers[i].clientID == GameSingleton::mClient.GetClientID())
+		ENLIVE_PROFILE_SCOPE(CenterView);
+		const en::U32 playerSize = static_cast<en::U32>(GameSingleton::mPlayers.size());
+		for (en::U32 i = 0; i < playerSize; ++i)
 		{
-			mView.setCenter(GameSingleton::mPlayers[i].chicken.position);
-			LogInfo(en::LogChannel::Map, 5, "Position: %f %f", GameSingleton::mPlayers[i].chicken.position.x, GameSingleton::mPlayers[i].chicken.position.y)
+			if (GameSingleton::mPlayers[i].clientID == GameSingleton::mClient.GetClientID())
+			{
+				mView.setCenter(GameSingleton::mPlayers[i].chicken.position);
+			}
 		}
 	}
 
@@ -62,10 +66,10 @@ void GameState::render(sf::RenderTarget& target)
 {
 	ENLIVE_PROFILE_FUNCTION();
 
-	GameSingleton::mMap.render(target);
-
 	const sf::View previousView = target.getView();
 	target.setView(mView.getHandle());
+
+	GameSingleton::mMap.render(target);
 
 	static bool seedInitialized = false;
 	static sf::CircleShape seed;

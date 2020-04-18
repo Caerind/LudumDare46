@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SFML/Graphics/CircleShape.hpp>
+#include <SFML/Graphics/Sprite.hpp>
 #include <Enlivengine/System/PrimitiveTypes.hpp>
 
 #include <Common.hpp>
@@ -11,6 +11,8 @@ struct Player
 	en::U32 clientID;
 	std::string nickname;
 	Chicken chicken;
+
+	sf::Sprite sprite;
 };
 
 struct Seed

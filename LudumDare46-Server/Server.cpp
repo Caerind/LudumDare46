@@ -334,6 +334,7 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 			}
 		}
 		player.chicken.rotation = movement.getPolarAngle();
+		player.moved = true;
 	}
 }
 

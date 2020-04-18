@@ -58,7 +58,11 @@ public:
 				mWaitingTime += dt;
 			}
 
-			GameSingleton::HandleIncomingPackets();
+			{
+				ENLIVE_PROFILE_FUNCTION();
+				GameSingleton::HandleIncomingPackets();
+			}
+			/*
 			if (GameSingleton::mClient.IsConnected())
 			{
 				GameSingleton::mLastPacketTime += dt;
@@ -69,6 +73,7 @@ public:
 					clearStates();
 				}
 			}
+			*/
 
 			if (!wasConnected && GameSingleton::mClient.IsConnected())
 			{
