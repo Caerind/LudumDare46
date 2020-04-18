@@ -22,7 +22,7 @@ bool GameState::handleEvent(const sf::Event& event)
 
 	if (event.type == sf::Event::MouseButtonPressed)
 	{
-		const en::Vector2f cursorPos = GameSingleton::mApplication->GetWindow().getCursorPositionView(mView);
+		const en::Vector2f cursorPos = GameSingleton::mApplication->GetWindow().getCursorPositionView(GameSingleton::mView);
 		GameSingleton::SendDropSeedPacket(cursorPos);
 	}
 
