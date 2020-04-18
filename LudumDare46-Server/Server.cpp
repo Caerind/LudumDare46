@@ -91,7 +91,7 @@ void Server::UpdateLogic(en::Time dt)
 	{
 		mPlayers[i].lastSeedTime += dt;
 
-		UpdatePlayerMovement(mPlayers[i]);
+		UpdatePlayerMovement(dtSeconds, mPlayers[i]);
 	}
 
 	for (en::U32 i = 0; i < seedSize;)
