@@ -60,7 +60,7 @@ private:
 	void SendUpdateChickenPacket(en::U32 clientID, const Chicken& chicken);
 	void SendCancelSeedPacket(const sf::IpAddress& remoteAddress, en::U16 remotePort, const en::Vector2f& position);
 	void SendAddSeedPacket(const Seed& seed);
-	void SendRemoveSeedPacket(en::U32 seedID);
+	void SendRemoveSeedPacket(en::U32 seedID, bool eated);
 
 private:
 	ServerSocket mSocket;

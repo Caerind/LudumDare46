@@ -20,6 +20,7 @@ public:
 	static ClientSocket mClient;
 	static en::Time mLastPacketTime;
 	static GameMap mMap;
+	static en::View mView;
 	static std::vector<Player> mPlayers;
 	static std::vector<Seed> mSeeds;
 	static std::vector<en::Vector2f> mCancelSeeds;

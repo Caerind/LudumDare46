@@ -100,7 +100,7 @@ void Server::UpdateLogic(en::Time dt)
 		mSeeds[i].addTime += dt;
 		if (mSeeds[i].addTime >= DefaultSeedLifetime)
 		{
-			SendRemoveSeedPacket(mSeeds[i].seedID);
+			SendRemoveSeedPacket(mSeeds[i].seedID, false);
 			mSeeds.erase(mSeeds.begin() + i);
 			seedSize--;
 		}
@@ -290,7 +290,12 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 		const Seed& seed = mSeeds[bestSeedIndex];
 		const en::Vector2f delta = seed.position - player.chicken.position;
 		const en::F32 distanceSqr = delta.getSquaredLength();
-		if (DefaultSeedTooCloseDistanceSqr < distanceSqr && distanceSqr < DefaultSeedImpactDistanceSqr)
+		if (distanceSqr < DefaultSeedTooCloseDistanceSqr)
+		{
+			SendRemoveSeedPacket(seed.seedID, true);
+			mSeeds.erase(mSeeds.begin() + bestSeedIndex);
+		}
+		else if (DefaultSeedTooCloseDistanceSqr < distanceSqr && distanceSqr < DefaultSeedImpactDistanceSqr)
 		{
 			const en::F32 factor = (DefaultSeedImpactDistanceSqr - distanceSqr) / DefaultSeedImpactDistanceSqr;
 			movement += delta * factor;
@@ -520,13 +525,14 @@ void Server::SendAddSeedPacket(const Seed& seed)
 	}
 }
 
-void Server::SendRemoveSeedPacket(en::U32 seedID)
+void Server::SendRemoveSeedPacket(en::U32 seedID, bool eated)
 {
 	if (mSocket.IsRunning())
 	{
 		sf::Packet packet;
 		packet << static_cast<en::U8>(ServerPacketID::RemoveSeed);
 		packet << seedID;
+		packet << eated;
 		SendToAllPlayers(packet);
 	}
 }

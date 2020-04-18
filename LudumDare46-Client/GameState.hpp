@@ -20,5 +20,4 @@ public:
 	void render(sf::RenderTarget& target);
 
 private:
-	en::View mView;
 };

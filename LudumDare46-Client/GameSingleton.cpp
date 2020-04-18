@@ -9,6 +9,7 @@ en::Application* GameSingleton::mApplication;
 ClientSocket GameSingleton::mClient;
 en::Time GameSingleton::mLastPacketTime;
 GameMap GameSingleton::mMap;
+en::View GameSingleton::mView;
 std::vector<Player> GameSingleton::mPlayers;
 std::vector<Seed> GameSingleton::mSeeds;
 std::vector<en::Vector2f> GameSingleton::mCancelSeeds;
@@ -80,7 +81,7 @@ void GameSingleton::HandleIncomingPackets()
 				newPlayer.nickname = nickname;
 				newPlayer.chicken = chicken;
 				newPlayer.sprite.setOrigin({32.0f, 32.0f});
-				//newPlayer.UpdateSprite();
+				newPlayer.UpdateSprite();
 				mPlayers.push_back(newPlayer);
 			}
 			else
@@ -118,7 +119,7 @@ void GameSingleton::HandleIncomingPackets()
 			if (playerIndex >= 0)
 			{
 				packet >> mPlayers[playerIndex].chicken;
-				//mPlayers[playerIndex].UpdateSprite();
+				mPlayers[playerIndex].UpdateSprite();
 			}
 			else
 			{
@@ -142,7 +143,8 @@ void GameSingleton::HandleIncomingPackets()
 		case ServerPacketID::RemoveSeed:
 		{
 			en::U32 seedID;
-			packet >> seedID;
+			bool eated;
+			packet >> seedID >> eated;
 			LogInfo(en::LogChannel::All, 4, "Remove seed %d", seedID);
 			bool removed = false;
 			en::U32 size = static_cast<en::U32>(mSeeds.size());
@@ -150,6 +152,12 @@ void GameSingleton::HandleIncomingPackets()
 			{
 				if (mSeeds[i].seedID == seedID)
 				{
+					const bool isInView = true; // TODO ; Is in view
+					if (eated && isInView)
+					{
+						// TODO : Play sound
+					}
+
 					mSeeds.erase(mSeeds.begin() + i);
 					size--;
 					removed = true;

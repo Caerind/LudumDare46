@@ -5,8 +5,8 @@
 GameState::GameState(en::StateManager& manager)
 	: en::State(manager)
 {
-	mView.setSize(1024.0f, 768.0f);
-	mView.setCenter(1024.0f * 0.5f, 768.0f * 0.5f);
+	GameSingleton::mView.setSize(1024.0f, 768.0f);
+	GameSingleton::mView.setCenter(1024.0f * 0.5f, 768.0f * 0.5f);
 
 	GameSingleton::mMap.load();
 }
@@ -54,7 +54,7 @@ bool GameState::update(en::Time dt)
 		{
 			if (GameSingleton::mPlayers[i].clientID == GameSingleton::mClient.GetClientID())
 			{
-				mView.setCenter(GameSingleton::mPlayers[i].chicken.position);
+				GameSingleton::mView.setCenter(GameSingleton::mPlayers[i].chicken.position);
 			}
 		}
 	}
@@ -67,7 +67,7 @@ void GameState::render(sf::RenderTarget& target)
 	ENLIVE_PROFILE_FUNCTION();
 
 	const sf::View previousView = target.getView();
-	target.setView(mView.getHandle());
+	target.setView(GameSingleton::mView.getHandle());
 
 	GameSingleton::mMap.render(target);
 

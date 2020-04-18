@@ -18,8 +18,8 @@
 #define DefaultSeedLifetime en::seconds(3.0f)
 #define DefaultSeedImpactDistance 400.0f
 #define DefaultSeedImpactDistanceSqr 400.0f * 400.0f
-#define DefaultSeedTooCloseDistance 20.0f
-#define DefaultSeedTooCloseDistanceSqr 20.0f * 20.0f
+#define DefaultSeedTooCloseDistance 30.0f
+#define DefaultSeedTooCloseDistanceSqr 30.0f * 30.0f
 
 #define DefaultChickenAvoidanceMinDistanceSqr 200.0f * 200.0f
 
