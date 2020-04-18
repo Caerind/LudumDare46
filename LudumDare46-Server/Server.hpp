@@ -23,8 +23,8 @@ public:
 	bool Run();
 	bool IsRunning() const;
 
-	void UpdateLogic();
-	void Tick();
+	void UpdateLogic(en::Time dt);
+	void Tick(en::Time dt);
 
 private:
 	void HandleIncomingPackets();
@@ -40,19 +40,24 @@ private:
 	// Get player index from ID
 	en::I32 GetPlayerIndexFromClientID(en::U32 clientID) const;
 
-	bool IsBlacklisted(const sf::IpAddress& remoteAddress) const;
+	bool IsBlacklisted(const sf::IpAddress& remoteAddress) const { return false; } // TODO
+
+private:
+	void AddNewSeed(const en::Vector2f& position);
 
 private:
 	void SendToAllPlayers(sf::Packet& packet);
 
 	void SendPingPacket(const sf::IpAddress& remoteAddress, en::U16 remotePort);
 	void SendPongPacket(const sf::IpAddress& remoteAddress, en::U16 remotePort);
-	void SendConnectionAcceptedPacket(const sf::IpAddress& remoteAddress, en::U16 remotePort, en::U32 clientID, const en::Vector2f& position);
+	void SendConnectionAcceptedPacket(const sf::IpAddress& remoteAddress, en::U16 remotePort, en::U32 clientID);
 	void SendConnectionRejectedPacket(const sf::IpAddress& remoteAddress, en::U16 remotePort, RejectReason reason);
-	void SendClientJoinedPacket(en::U32 clientID, const en::Vector2f& position);
+	void SendClientJoinedPacket(en::U32 clientID, const std::string& nickname, const Chicken& chicken);
 	void SendClientLeftPacket(en::U32 clientID);
 	void SendServerStopPacket();
-	void SendPlayerPositionPacket(en::U32 clientID, const en::Vector2f& position);
+	void SendUpdateChickenPacket(en::U32 clientID, const Chicken& chicken);
+	void SendAddSeedPacket(const Seed& seed);
+	void SendRemoveSeedPacket(en::U32 seedID);
 
 private:
 	ServerSocket mSocket;
@@ -61,5 +66,5 @@ private:
 	en::Time mTickTime;
 
 	std::vector<Player> mPlayers;
-	bool mUpdateAllPlayers;
+	std::vector<Seed> mSeeds;
 };

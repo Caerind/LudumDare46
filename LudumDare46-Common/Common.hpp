@@ -1,6 +1,9 @@
 #pragma once
 
 #include <Enlivengine/System/PrimitiveTypes.hpp>
+#include <Enlivengine/System/Time.hpp>
+#include <Enlivengine/Math/Vector2.hpp>
+#include <SFML/Network/Packet.hpp>
 
 #define DefaultServerAddress "92.222.79.62"
 #define DefaultServerPort 3457
@@ -11,19 +14,29 @@
 #define DefaultSleepTime sf::milliseconds(5)
 #define DefaultMaxPlayers 16
 
+#define DefaultSeedInterval en::seconds(0.3f)
+#define DefaultSeedLifetime en::seconds(0.8f)
+
+#define DefaultSeedImpactDistance 400.0f
+#define DefaultSeedImpactDistanceSqr 400.0f * 400.0f
+#define DefaultSeedTooCloseDistance 50.0f
+#define DefaultSeedTooCloseDistanceSqr 50.0f * 50.0f
+
 // Server -> Client
 enum class ServerPacketID : en::U8
-{
-	Ping = 0, // "Just want the client to send back a Pong"
-	Pong, // "Just sending back a Pong when some client asked for Ping"
-	ConnectionAccepted, // "Ok, you can come in"
-	ConnectionRejected, // "I don't want you here"
-	ClientJoined, // "Someone joined"
-	ClientLeft, // "Someone left"
-	Stopping, // "The server is stopping"
+{ 
+	Ping = 0, // Request a ClientPacketID::Pong
+	Pong, // Reply to ClientPacketID::Ping
+	ConnectionAccepted,
+	ConnectionRejected,
+	ClientJoined,
+	ClientLeft,
+	Stopping,
 
 	// Game specific packets
-	PlayerPosition,
+	UpdateChicken, 
+	AddSeed,
+	RemoveSeed,
 
 
 	// Last packet ID
@@ -40,7 +53,7 @@ enum class ClientPacketID : en::U8
 	Leave, // "I'm leaving the server"
 
 	// Game specific packet
-	PlayerPosition,
+	DropSeed,
 
 
 	// Last packet ID
@@ -57,3 +70,17 @@ enum class RejectReason : en::U8
 	Kicked,
 	Banned
 };
+
+struct Chicken
+{
+	en::Vector2f position;
+	en::F32 rotation;
+	en::U32 itemID;
+
+	en::F32 life;
+	en::F32 speed;
+	en::F32 attack;
+};
+
+sf::Packet& operator <<(sf::Packet& packet, const Chicken& chicken);
+sf::Packet& operator >>(sf::Packet& packet, Chicken& chicken);

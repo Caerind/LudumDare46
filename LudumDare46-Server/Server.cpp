@@ -18,7 +18,6 @@ Server::Server()
 	, mStepTime(en::Time::Zero)
 	, mTickTime(en::Time::Zero)
 	, mPlayers()
-	, mUpdateAllPlayers(false)
 {
 }
 
@@ -63,12 +62,12 @@ bool Server::Run()
 
 		while (mStepTime >= stepInterval)
 		{
-			UpdateLogic();
+			UpdateLogic(stepInterval);
 			mStepTime -= stepInterval;
 		}
 		while (mTickTime >= tickInterval)
 		{
-			Tick();
+			Tick(tickInterval);
 			mTickTime -= tickInterval;
 		}
 
@@ -82,23 +81,65 @@ bool Server::IsRunning() const
 	return mRunning;
 }
 
-void Server::UpdateLogic()
+void Server::UpdateLogic(en::Time dt)
 {
-	// Nothing yet
+	en::U32 seedSize = static_cast<en::U32>(mSeeds.size());
+	en::F32 dtSeconds = dt.asSeconds();
+
+	const en::U32 playerSize = static_cast<en::U32>(mPlayers.size());
+	for (en::U32 i = 0; i < playerSize; ++i)
+	{
+		mPlayers[i].lastSeedTime += dt;
+
+		// Update movements
+		{
+			en::I32 moved = 0;
+			en::Vector2f movement(0.0f, 0.0f);
+			for (en::U32 j = 0; j < seedSize; ++j)
+			{
+				const en::Vector2f delta = mSeeds[j].position - mPlayers[i].chicken.position;
+				const en::F32 distanceSqr = delta.getSquaredLength();
+				if (DefaultSeedTooCloseDistanceSqr < distanceSqr && distanceSqr < DefaultSeedImpactDistanceSqr)
+				{
+					const en::F32 x = distanceSqr * 0.01f;
+					const en::F32 factor = 0.125f * x * x - 2.2f * x + 12.0f;
+					movement += delta * factor;
+					moved++;
+				}
+			}
+			if (moved > 0)
+			{
+				movement.normalize();
+				movement *= dtSeconds;
+				mPlayers[i].chicken.position += movement;
+			}
+		}
+	}
+
+	for (en::U32 i = 0; i < seedSize;)
+	{
+		mSeeds[i].addTime += dt;
+		if (mSeeds[i].addTime >= DefaultSeedLifetime)
+		{
+			SendRemoveSeedPacket(mSeeds[i].seedID);
+			mSeeds.erase(mSeeds.begin() + i);
+			seedSize--;
+		}
+		else
+		{
+			i++;
+		}
+	}
 }
 
-void Server::Tick()
+void Server::Tick(en::Time dt)
 {
 	const en::U32 size = static_cast<en::U32>(mPlayers.size());
 	for (en::U32 i = 0; i < size; ++i)
 	{
-		if (mPlayers[i].positionChanged || mUpdateAllPlayers)
-		{
-			SendPlayerPositionPacket(mPlayers[i].clientID, mPlayers[i].position);
-			mPlayers[i].positionChanged = false;
-		}
+		SendUpdateChickenPacket(mPlayers[i].clientID, mPlayers[i].chicken);
+		mPlayers[i].lastPacketTime += dt;
 	}
-	mUpdateAllPlayers = false;
 }
 
 void Server::HandleIncomingPackets()
@@ -145,14 +186,21 @@ void Server::HandleIncomingPackets()
 				newPlayer.remotePort = remotePort;
 				newPlayer.clientID = clientID;
 				newPlayer.lastPacketTime = en::Time::Zero;
-				newPlayer.position = { en::Random::get<en::F32>(0.0f, 1024.f - 100.0f), en::Random::get<en::F32>(0.0f, 768.0f - 100.0f) };
-				newPlayer.positionChanged = true;
+				newPlayer.nickname = "Player" + std::to_string(clientID); // TODO : nickname
+				newPlayer.chicken.position = { en::Random::get<en::F32>(0.0f, 1024.f - 100.0f), en::Random::get<en::F32>(0.0f, 768.0f - 100.0f) };
+				newPlayer.chicken.rotation = 0.0f;
+				newPlayer.chicken.itemID = 0;
+				newPlayer.chicken.life = 100.0f;
+				newPlayer.chicken.speed = 200.0f;
+				newPlayer.chicken.attack = 20.0f;
+				newPlayer.state = PlayingState::Playing;
+				newPlayer.lastSeedTime = en::Time::Zero;
 
 				mPlayers.push_back(newPlayer);
 
-				SendConnectionAcceptedPacket(remoteAddress, remotePort, clientID, newPlayer.position);
-				SendClientJoinedPacket(clientID, newPlayer.position);
-				mUpdateAllPlayers = true; // To force resend the position/data of other players
+				SendConnectionAcceptedPacket(remoteAddress, remotePort, clientID);
+
+				SendClientJoinedPacket(clientID, newPlayer.nickname, newPlayer.chicken); // T
 			}
 			else
 			{
@@ -191,7 +239,7 @@ void Server::HandleIncomingPackets()
 			}
 		} break;
 
-		case ClientPacketID::PlayerPosition:
+		case ClientPacketID::DropSeed:
 		{
 			en::U32 clientID;
 			en::Vector2f position;
@@ -201,8 +249,11 @@ void Server::HandleIncomingPackets()
 				const en::I32 playerIndex = GetPlayerIndexFromClientID(clientID);
 				if (playerIndex >= 0)
 				{
-					mPlayers[playerIndex].position = position;
-					mPlayers[playerIndex].positionChanged = true;
+					if (mPlayers[playerIndex].lastSeedTime >= DefaultSeedInterval)
+					{
+						mPlayers[playerIndex].lastSeedTime = en::Time::Zero;
+						AddNewSeed(position);
+					}
 				}
 				else
 				{
@@ -273,9 +324,15 @@ en::I32 Server::GetPlayerIndexFromClientID(en::U32 clientID) const
 	return -1;
 }
 
-bool Server::IsBlacklisted(const sf::IpAddress& remoteAddress) const
+void Server::AddNewSeed(const en::Vector2f& position)
 {
-	return false; // TODO : Blacklisted
+	static en::U32 seedIDGenerator = 1;
+	Seed seed;
+	seed.seedID = seedIDGenerator++;
+	seed.position = position;
+	seed.addTime = en::Time::Zero;
+	mSeeds.push_back(seed);
+	SendAddSeedPacket(seed);
 }
 
 void Server::SendToAllPlayers(sf::Packet& packet)
@@ -307,15 +364,13 @@ void Server::SendPongPacket(const sf::IpAddress& remoteAddress, en::U16 remotePo
 	}
 }
 
-void Server::SendConnectionAcceptedPacket(const sf::IpAddress& remoteAddress, en::U16 remotePort, en::U32 clientID, const en::Vector2f& position)
+void Server::SendConnectionAcceptedPacket(const sf::IpAddress& remoteAddress, en::U16 remotePort, en::U32 clientID)
 {
 	if (mSocket.IsRunning())
 	{
 		sf::Packet packet;
 		packet << static_cast<en::U8>(ServerPacketID::ConnectionAccepted);
 		packet << clientID;
-		packet << position.x;
-		packet << position.y;
 		mSocket.SendPacket(packet, remoteAddress, remotePort);
 	}
 }
@@ -331,15 +386,15 @@ void Server::SendConnectionRejectedPacket(const sf::IpAddress& remoteAddress, en
 	}
 }
 
-void Server::SendClientJoinedPacket(en::U32 clientID, const en::Vector2f& position)
+void Server::SendClientJoinedPacket(en::U32 clientID, const std::string& nickname, const Chicken& chicken)
 {
 	if (mSocket.IsRunning())
 	{
 		sf::Packet packet;
 		packet << static_cast<en::U8>(ServerPacketID::ClientLeft);
 		packet << clientID;
-		packet << position.x;
-		packet << position.y;
+		packet << nickname;
+		packet << chicken;
 		SendToAllPlayers(packet);
 	}
 }
@@ -361,19 +416,44 @@ void Server::SendServerStopPacket()
 	{
 		sf::Packet packet;
 		packet << static_cast<en::U8>(ServerPacketID::Stopping);
+		mSocket.SetBlocking(true);
 		SendToAllPlayers(packet);
+		mSocket.SetBlocking(false);
 	}
 }
 
-void Server::SendPlayerPositionPacket(en::U32 clientID, const en::Vector2f& position)
+void Server::SendUpdateChickenPacket(en::U32 clientID, const Chicken& chicken)
 {
 	if (mSocket.IsRunning())
 	{
 		sf::Packet packet;
-		packet << static_cast<en::U8>(ServerPacketID::PlayerPosition);
+		packet << static_cast<en::U8>(ServerPacketID::UpdateChicken);
 		packet << clientID;
-		packet << position.x;
-		packet << position.y;
+		packet << chicken;
+		SendToAllPlayers(packet);
+	}
+}
+
+void Server::SendAddSeedPacket(const Seed& seed)
+{
+	if (mSocket.IsRunning())
+	{
+		sf::Packet packet;
+		packet << static_cast<en::U8>(ServerPacketID::AddSeed);
+		packet << seed.seedID;
+		packet << seed.position.x;
+		packet << seed.position.y;
+		SendToAllPlayers(packet);
+	}
+}
+
+void Server::SendRemoveSeedPacket(en::U32 seedID)
+{
+	if (mSocket.IsRunning())
+	{
+		sf::Packet packet;
+		packet << static_cast<en::U8>(ServerPacketID::RemoveSeed);
+		packet << seedID;
 		SendToAllPlayers(packet);
 	}
 }
