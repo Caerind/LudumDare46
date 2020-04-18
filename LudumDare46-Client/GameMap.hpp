@@ -7,7 +7,7 @@ class GameMap
 public:
 	GameMap();
 
-	void load(en::tmx::MapPtr mapPtr);
+	bool load();
 	void render(sf::RenderTarget& target);
 	
 private:

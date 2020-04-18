@@ -289,7 +289,7 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 		const en::F32 distanceSqr = delta.getSquaredLength();
 		if (DefaultSeedTooCloseDistanceSqr < distanceSqr && distanceSqr < DefaultSeedImpactDistanceSqr)
 		{
-			const en::F32 factor = (DefaultSeedTooCloseDistanceSqr / distanceSqr) - DefaultSeedImpactMinFactor;
+			const en::F32 factor = (DefaultSeedImpactDistanceSqr - distanceSqr) - DefaultSeedImpactDistanceSqr;
 			movement += delta * factor;
 		}
 	}
@@ -303,12 +303,12 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 		{
 			const en::Vector2f delta = player.chicken.position - otherPlayer.chicken.position;
 			const en::F32 distanceSqr = delta.getSquaredLength();
-			if (0.01f <= distanceSqr && distanceSqr < DefaultChickenAvoidanceMinDistance)
+			if (0.01f < distanceSqr && distanceSqr < DefaultChickenAvoidanceMinDistanceSqr)
 			{
-				const en::F32 factor = (distanceSqr - DefaultChickenAvoidanceMinDistance) / DefaultChickenAvoidanceMinDistance;
+				const en::F32 factor = (DefaultChickenAvoidanceMinDistanceSqr - distanceSqr) / DefaultChickenAvoidanceMinDistanceSqr;
 				movement += delta * factor;
 			}
-			else if (distanceSqr < 0.01f)
+			else if (distanceSqr <= 0.01f)
 			{
 				player.chicken.position += { 10.0f, 10.0f };
 			}

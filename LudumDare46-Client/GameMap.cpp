@@ -1,12 +1,16 @@
 #include "GameMap.hpp"
 
+#include <Enlivengine/Application/ResourceManager.hpp>
+
 GameMap::GameMap()
 {
 }
 
-void GameMap::load(en::tmx::MapPtr mapPtr)
+bool GameMap::load()
 {
-	mMap = mapPtr;
+	mMap = en::ResourceManager::GetInstance().Get<en::tmx::Map>("arena");
+
+	return mMap.IsValid();
 }
 
 void GameMap::render(sf::RenderTarget& target)

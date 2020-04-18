@@ -20,10 +20,8 @@
 #define DefaultSeedImpactDistanceSqr 400.0f * 400.0f
 #define DefaultSeedTooCloseDistance 20.0f
 #define DefaultSeedTooCloseDistanceSqr 20.0f * 20.0f
-#define DefaultSeedImpactMinFactor (DefaultSeedTooCloseDistanceSqr / DefaultSeedImpactDistanceSqr)
-static_assert(DefaultSeedTooCloseDistanceSqr > 0.0f);
 
-#define DefaultChickenAvoidanceMinDistance 200.0f
+#define DefaultChickenAvoidanceMinDistanceSqr 200.0f * 200.0f
 
 #define DefaultChickenLife 100.0f
 #define DefaultChickenSpeed 100.0f

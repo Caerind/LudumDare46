@@ -60,6 +60,8 @@ void GameState::render(sf::RenderTarget& target)
 {
 	ENLIVE_PROFILE_FUNCTION();
 
+	GameSingleton::mMap.render(target);
+
 	const sf::View previousView = target.getView();
 	target.setView(mView.getHandle());
 
