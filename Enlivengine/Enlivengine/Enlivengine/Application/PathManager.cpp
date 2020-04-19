@@ -32,21 +32,18 @@ const std::string& PathManager::GetAssetsPath() const
 	{
 		std::filesystem::path closeAssetsPath = std::filesystem::path(mExecutablePath + "/Assets");
 		std::filesystem::path farAssetsPath = std::filesystem::path(mExecutablePath + "/../../../Assets");
-		printf("%s\n", closeAssetsPath.generic_string().c_str());
-		printf("%s\n", farAssetsPath.generic_string().c_str());
+		std::filesystem::path midAssetsPath = std::filesystem::path(mExecutablePath + "/../../Assets");
 		if (std::filesystem::exists(closeAssetsPath))
 		{
 			assetsPath = "Assets/";
 		}
-#ifdef ENLIVE_COMPILER_MSVC
 		else if (std::filesystem::exists(farAssetsPath))
 		{
 			assetsPath = "../../Assets/";
 		}
-#endif // ENLIVE_COMPILER_MSVC
-		else
+		else if (std::filesystem::exists(midAssetsPath))
 		{
-			//assert(false);
+			assetsPath = "../Assets/";
 		}
 
 		assetsPathDefined = true;
