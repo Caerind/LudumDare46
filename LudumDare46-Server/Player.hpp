@@ -23,7 +23,6 @@ struct Player
 
 	en::Time cooldown;
 	PlayingState state;
-	en::Time lastSeedTime;
 	bool needUpdate;
 };
 

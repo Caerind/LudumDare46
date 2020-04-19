@@ -90,7 +90,6 @@ void Server::UpdateLogic(en::Time dt)
 	const en::U32 playerSize = static_cast<en::U32>(mPlayers.size());
 	for (en::U32 i = 0; i < playerSize; ++i)
 	{
-		mPlayers[i].lastSeedTime += dt;
 		mPlayers[i].lastPacketTime += dt;
 
 		UpdatePlayerMovement(dtSeconds, mPlayers[i]);
@@ -209,7 +208,6 @@ void Server::HandleIncomingPackets()
 				newPlayer.chicken.attack = DefaultChickenAttack;
 				newPlayer.cooldown = en::Time::Zero;
 				newPlayer.state = PlayingState::Playing;
-				newPlayer.lastSeedTime = en::Time::Zero;
 
 				SendConnectionAcceptedPacket(remoteAddress, remotePort, clientID);
 
@@ -280,17 +278,8 @@ void Server::HandleIncomingPackets()
 				const en::I32 playerIndex = GetPlayerIndexFromClientID(clientID);
 				if (playerIndex >= 0)
 				{
-					if (mPlayers[playerIndex].lastSeedTime >= DefaultSeedInterval)
-					{
-						LogInfo(en::LogChannel::All, 2, "Player %d dropped seed at %f %f", mPlayers[playerIndex].clientID, position.x, position.y);
-						mPlayers[playerIndex].lastSeedTime = en::Time::Zero;
-						AddNewSeed(position, clientID);
-					}
-					else
-					{
-						//LogInfo(en::LogChannel::All, 2, "Player %d seed cooldown", mPlayers[playerIndex].clientID);
-						//SendCancelSeedPacket(remoteAddress, remotePort, position);
-					}
+					LogInfo(en::LogChannel::All, 2, "Player %d dropped seed at %f %f", mPlayers[playerIndex].clientID, position.x, position.y);
+					AddNewSeed(position, clientID);
 				}
 				else
 				{
