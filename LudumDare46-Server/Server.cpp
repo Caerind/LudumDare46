@@ -196,7 +196,7 @@ void Server::HandleIncomingPackets()
 				newPlayer.nickname = "Player" + std::to_string(clientID); // TODO : nickname
 				newPlayer.chicken.position = GetRandomPositionSpawn();
 				newPlayer.chicken.rotation = 0.0f;
-				newPlayer.chicken.itemID = ItemID::None; // TODO : Default
+				newPlayer.chicken.itemID = ItemID::None;
 				newPlayer.chicken.lifeMax = DefaultChickenLife;
 				newPlayer.chicken.life = DefaultChickenLife;
 				newPlayer.chicken.speed = DefaultChickenSpeed;
@@ -206,6 +206,7 @@ void Server::HandleIncomingPackets()
 
 				SendConnectionAcceptedPacket(remoteAddress, remotePort, clientID);
 
+				SendServerInfo(remoteAddress, remotePort);
 				const en::U32 playerSize = static_cast<en::U32>(mPlayers.size());
 				for (en::U32 i = 0; i < playerSize; ++i)
 				{
@@ -301,7 +302,7 @@ void Server::HandleIncomingPackets()
 	}
 }
 
-void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
+void Server::UpdatePlayer(en::F32 dtSeconds, Player& player)
 {
 	// Select best seed
 	en::I32 bestSeedIndex = -1;
@@ -410,202 +411,57 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 		}
 	}
 
-
-
-
-
-
-	/*
-
-
-	// Movement based on seed
-	en::Vector2f movement(0.0f, 0.0f);
-	if (bestSeedIndex >= 0)
+	// Try to shoot bullet
+	player.cooldown += en::seconds(dtSeconds);
+	if (bestTargetIndex >= 0)
 	{
-		const Seed& seed = mSeeds[bestSeedIndex];
-		const en::Vector2f delta = seed.position - player.chicken.position;
-		const en::F32 distanceSqr = delta.getSquaredLength();
-		if (distanceSqr < DefaultTooCloseDistanceSqr)
+		LogInfo(en::LogChannel::All, 2, "Target valid%s", "");
+		en::Time cooldown = GetItemCooldown(player.chicken.itemID);
+		if (IsValidItemForAttack(player.chicken.itemID) && player.cooldown >= cooldown)
 		{
-			SendRemoveSeedPacket(seed.seedID, true);
-			mSeeds.erase(mSeeds.begin() + bestSeedIndex);
-		}
-		else if (DefaultTooCloseDistanceSqr < distanceSqr && distanceSqr < DefaultSeedImpactDistanceSqr)
-		{
-			const en::F32 factor = (DefaultSeedImpactDistanceSqr - distanceSqr) / DefaultSeedImpactDistanceSqr;
-			movement += delta * factor;
-		}
-	}
-
-	// Avoidance
-	en::I32 bestTargetIndex = -1;
-	en::F32 bestTargetDistanceSqr = 999999.0f;
-	const en::U32 playerSize = static_cast<en::U32>(mPlayers.size());
-	for (en::U32 i = 0; i < playerSize; ++i)
-	{
-		const Player& otherPlayer = mPlayers[i];
-		if (otherPlayer.clientID != player.clientID)
-		{
-			const en::Vector2f delta = player.chicken.position - otherPlayer.chicken.position;
-			const en::F32 distanceSqr = delta.getSquaredLength();
-
-			if (0.01f < distanceSqr && distanceSqr < DefaultChickenAvoidanceMinDistanceSqr)
+			LogInfo(en::LogChannel::All, 2, "Bullet valid%s", "");
+			en::F32 range = GetItemRange(player.chicken.itemID);
+			const en::F32 rangeSqr = (range + 15.0f) * (range + 15.0f); // Hack because we don't care exactly the offset in fact
+			if (bestTargetDistanceSqr < rangeSqr)
 			{
-				const en::F32 factor = (DefaultChickenAvoidanceMinDistanceSqr - distanceSqr) / DefaultChickenAvoidanceMinDistanceSqr;
-				movement += delta * factor;
-			}
-			else if (distanceSqr <= 0.01f)
-			{
-				player.chicken.position += { 10.0f, 10.0f };
-			}
-
-			if (distanceSqr < bestTargetDistanceSqr && distanceSqr < DefaultTargetDetectionMaxDistanceSqr)
-			{
-				bestTargetDistanceSqr = distanceSqr;
-				bestTargetIndex = static_cast<en::I32>(i);
-			}
-		}
-	}
-
-	bool moved = false;
-	en::F32 targetAngle;
-	const en::F32 currentAngle = en::Math::AngleMagnitude(player.chicken.rotation);
-
-	// Update the movement
-	if (movement.getSquaredLength() > 0.0f)
-	{
-		movement.normalize();
-		movement *= dtSeconds * player.chicken.speed * GetItemWeight(player.chicken.itemID);
-		player.chicken.position += movement;
-		player.needUpdate = true;
-		if (en::Math::Equals(movement.x, 0.0f)) // Cheating a bit to avoid 0div
-		{ 
-			if (movement.x > 0.0f)
-			{
-				movement.x += 0.01f;
-			}
-			else
-			{
-				movement.x -= 0.01f;
-			}
-		}
-		targetAngle = en::Math::AngleMagnitude(movement.getPolarAngle());
-		moved = true;
-	}
-	else
-	{
-		if (bestTargetIndex >= 0)
-		{
-			en::Vector2f delta = mPlayers[bestTargetIndex].chicken.position - player.chicken.position;
-			if (en::Math::Equals(delta.x, 0.0f)) // Cheating a bit to avoid 0div
-			{
-				if (delta.x > 0.0f)
+				LogInfo(en::LogChannel::All, 2, "Bullet in range%s", "");
+				const en::Vector2f forward = en::Vector2f::polar(player.chicken.rotation);
+				const en::F32 distance = en::Math::Sqrt(bestTargetDistanceSqr);
+				const en::Vector2f normalizedDelta = en::Vector2f(bestDeltaTarget.x / distance, bestDeltaTarget.y / distance);
+				const en::F32 dotProduct = en::Math::Abs(forward.dotProduct(normalizedDelta));
+				static const en::F32 cos30 = en::Math::Cos(30.0f);
+				if (dotProduct < cos30)
 				{
-					delta.x += 0.01f;
-				}
-				else
-				{
-					delta.x -= 0.01f;
+					LogInfo(en::LogChannel::All, 2, "Bullet striked%s", "");
+					const en::Vector2f rotatedWeaponOffset = en::Vector2f(DefaultWeaponOffset).rotated(player.chicken.rotation);
+					player.cooldown = en::Time::Zero;
+					AddNewBullet(player.chicken.position + rotatedWeaponOffset, bestDeltaTarget.getPolarAngle(), player.clientID, player.chicken.itemID, range);
 				}
 			}
-			targetAngle = en::Math::AngleMagnitude(delta.getPolarAngle());
-		}
-		else
-		{
-			targetAngle = currentAngle;
 		}
 	}
-
-	{ // Update angle
-		if (moved || en::Math::Abs(targetAngle - currentAngle) > 2.0f)
-		{
-			const en::F32 tc = targetAngle - currentAngle;
-			const en::F32 ct = currentAngle - targetAngle;
-			const en::F32 correctedTC = (tc >= 0.0f) ? tc : tc + 360.0f;
-			const en::F32 correctedCT = (ct >= 0.0f) ? ct : ct + 360.0f;
-			const en::F32 sign = (tc <= ct) ? 1.0f : -1.0f;
-			player.chicken.rotation += sign * DefaultRotDegPerSecond * dtSeconds;
-			player.needUpdate = true;
-		}
-	}
-
-	*/
 }
 
 void Server::UpdateBullets(en::Time dt)
 {
-	// Try to new shoot bullets
+	const en::F32 dtSeconds = dt.asSeconds();
+	en::U32 bulletSize = static_cast<en::U32>(mBullets.size());
+	for (en::U32 i = 0; i < bulletSize; )
 	{
-		const en::U32 playerSize = static_cast<en::U32>(mPlayers.size());
-		for (en::U32 i = 0; i < playerSize; ++i)
+		if (mBullets[i].Update(dtSeconds))
 		{
-			mPlayers[i].cooldown += dt;
-			const ItemID itemID = mPlayers[i].chicken.itemID;
-			en::Time cooldown = GetItemCooldown(itemID);
-			if (IsValidItemForAttack(itemID) && mPlayers[i].cooldown >= cooldown)
-			{
-				en::F32 range = GetItemRange(itemID);
-				const en::Vector2f forward = en::Vector2f::polar(mPlayers[i].chicken.rotation);
-				const en::F32 rangeSqr = (range + 15.0f) * (range + 15.0f); // Hack because we don't care exactly the offset in fact
-				en::I32 bestTargetIndex = -1;
-				en::F32 bestTargetDistanceSqr = 999999.0f;
-				en::F32 shootRotation = 0.0f;
-				for (en::U32 j = 0; j < playerSize; ++j)
-				{
-					if (i != j)
-					{
-						const en::Vector2f delta = mPlayers[j].chicken.position - mPlayers[i].chicken.position;
-						const en::F32 distanceSqr = delta.getSquaredLength();
-						if (distanceSqr < rangeSqr && distanceSqr > 0.0f && distanceSqr < bestTargetDistanceSqr)
-						{
-							const en::F32 distance = en::Math::Sqrt(distanceSqr);
-							const en::Vector2f normalizedDelta = en::Vector2f(delta.x / distance, delta.y / distance);
-							const en::F32 dotProduct = en::Math::Abs(forward.dotProduct(normalizedDelta));
-							static const en::F32 cos30 = en::Math::Cos(30.0f);
-							if (dotProduct < cos30)
-							{
-								bestTargetIndex = static_cast<en::I32>(j);
-								bestTargetDistanceSqr = distanceSqr;
-								shootRotation = normalizedDelta.getPolarAngle();
-							}
-						}
-					}
-				}
-				if (bestTargetIndex < 0)
-				{
-					mPlayers[i].cooldown -= 5 * dt; // Optim : Skip 5 frames
-				}
-				else
-				{
-					const en::Vector2f rotatedWeaponOffset = en::Vector2f(DefaultWeaponOffset).rotated(mPlayers[i].chicken.rotation);
-					mPlayers[i].cooldown = en::Time::Zero;
-					AddNewBullet(mPlayers[i].chicken.position + rotatedWeaponOffset, shootRotation, mPlayers[i].clientID, mPlayers[i].chicken.itemID, range);
-				}
-			}
+			mBullets.erase(mBullets.begin() + i);
+			bulletSize--;
 		}
-	}
-
-	// Update current bullets
-	{
-		const en::F32 dtSeconds = dt.asSeconds();
-		en::U32 bulletSize = static_cast<en::U32>(mBullets.size());
-		for (en::U32 i = 0; i < bulletSize; )
+		else
 		{
-			const en::F32 distance = dtSeconds * DefaultProjectileSpeed;
-			mBullets[i].position += en::Vector2f::polar(mBullets[i].rotation, distance);
-			mBullets[i].remainingDistance -= distance;
-			if (mBullets[i].remainingDistance <= 0.0f)
+			if (false) // Bullet collision detection
 			{
 				mBullets.erase(mBullets.begin() + i);
 				bulletSize--;
 			}
 			else
 			{
-
-
-
-
-
 				i++;
 			}
 		}

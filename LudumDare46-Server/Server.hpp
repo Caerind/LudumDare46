@@ -30,7 +30,7 @@ public:
 private:
 	void HandleIncomingPackets();
 
-	void UpdatePlayerMovement(en::F32 dtSeconds, Player& player);
+	void UpdatePlayer(en::F32 dtSeconds, Player& player);
 	void UpdateBullets(en::Time dt);
 	void UpdateLoots(en::Time dt);
 
