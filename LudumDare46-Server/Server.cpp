@@ -102,7 +102,7 @@ void Server::UpdateLogic(en::Time dt)
 	{
 		mPlayers[i].lastPacketTime += dt;
 
-		UpdatePlayerMovement(dtSeconds, mPlayers[i]);
+		UpdatePlayer(dtSeconds, mPlayers[i]);
 	}
 
 	static en::U32 optim = 0;
