@@ -407,6 +407,7 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 	if (focusSeed)
 	{
 		player.chicken.position += en::Vector2f::polar(player.chicken.rotation) * dtSeconds * player.chicken.speed * GetItemWeight(player.chicken.itemID);
+		player.needUpdate = true;
 	}
 
 
