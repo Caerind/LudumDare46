@@ -55,7 +55,7 @@
 // Visuals
 #define DefaultBloodCount 3
 #define DefaultShurikenRotDegSpeed 720.0f
-#define DefaultServerMapPath "../../Assets/Map/arena.tmx"
+#define DefaultServerMapPath "../Assets/Map/arena.tmx"
 
 
 // Server -> Client
