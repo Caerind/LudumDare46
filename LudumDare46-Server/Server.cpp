@@ -396,6 +396,13 @@ void Server::UpdatePlayer(en::F32 dtSeconds, Player& player)
 	if (!focusSeed && bestTargetIndex == -1)
 		return;
 
+	if (bestTargetIndex >= 0 && bestTargetDistanceSqr > 1.0f && bestTargetDistanceSqr < DefaultTooCloseTargetDistanceSqr)
+	{
+		en::F32 distance = en::Math::Sqrt(bestTargetDistanceSqr);
+		player.chicken.position -= 2.0f * dtSeconds * (bestDeltaTarget / distance);
+		player.needUpdate = true;
+	}
+
 	if (focusSeed)
 	{
 		player.chicken.position += en::Vector2f::polar(player.chicken.rotation) * dtSeconds * player.chicken.speed * GetItemWeight(player.chicken.itemID);
@@ -415,24 +422,23 @@ void Server::UpdatePlayer(en::F32 dtSeconds, Player& player)
 	player.cooldown += en::seconds(dtSeconds);
 	if (bestTargetIndex >= 0)
 	{
-		LogInfo(en::LogChannel::All, 2, "Target valid%s", "");
 		en::Time cooldown = GetItemCooldown(player.chicken.itemID);
 		if (IsValidItemForAttack(player.chicken.itemID) && player.cooldown >= cooldown)
 		{
-			LogInfo(en::LogChannel::All, 2, "Bullet valid%s", "");
 			en::F32 range = GetItemRange(player.chicken.itemID);
 			const en::F32 rangeSqr = (range + 15.0f) * (range + 15.0f); // Hack because we don't care exactly the offset in fact
 			if (bestTargetDistanceSqr < rangeSqr)
 			{
-				LogInfo(en::LogChannel::All, 2, "Bullet in range%s", "");
+				static const en::F32 cos30 = en::Math::Cos(30.0f);
 				const en::Vector2f forward = en::Vector2f::polar(player.chicken.rotation);
 				const en::F32 distance = en::Math::Sqrt(bestTargetDistanceSqr);
 				const en::Vector2f normalizedDelta = en::Vector2f(bestDeltaTarget.x / distance, bestDeltaTarget.y / distance);
 				const en::F32 dotProduct = en::Math::Abs(forward.dotProduct(normalizedDelta));
-				static const en::F32 cos30 = en::Math::Cos(30.0f);
+				LogInfo(en::LogChannel::All, 2, "%f:%f %f, %f %f", player.chicken.rotation, forward.x, forward.y, normalizedDelta.x, normalizedDelta.y);
+				LogInfo(en::LogChannel::All, 2, "%d Bullet in range cos30:%f dotProduct:%f", player.clientID, cos30, dotProduct);
 				if (dotProduct < cos30)
 				{
-					LogInfo(en::LogChannel::All, 2, "Bullet striked%s", "");
+					LogInfo(en::LogChannel::All, 2, "%d Bullet striked", player.clientID);
 					const en::Vector2f rotatedWeaponOffset = en::Vector2f(DefaultWeaponOffset).rotated(player.chicken.rotation);
 					player.cooldown = en::Time::Zero;
 					AddNewBullet(player.chicken.position + rotatedWeaponOffset, bestDeltaTarget.getPolarAngle(), player.clientID, player.chicken.itemID, range);
@@ -455,7 +461,17 @@ void Server::UpdateBullets(en::Time dt)
 		}
 		else
 		{
-			if (false) // Bullet collision detection
+			bool hit = false;
+			en::U32 size = static_cast<en::U32>(mPlayers.size());
+			for (en::U32 j = 0; j < size && !hit; ++j)
+			{
+				if ((mPlayers[j].chicken.position - mBullets[i].position).getSquaredLength() < 35.0f * 35.0f)
+				{
+					hit = true;
+					SendHitChickenPacket(mPlayers[j].clientID, mBullets[i].clientID);
+				}
+			}
+			if (hit)
 			{
 				mBullets.erase(mBullets.begin() + i);
 				bulletSize--;

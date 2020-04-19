@@ -1,23 +1,17 @@
 <?xml version="1.0"?>
-<Resources resourceCount="21" typeCount="8">
+<Resources resourceCount="14" typeCount="8">
 	<Resource identifier="MainFont" filename="Fonts/EndlessBossBattle.ttf" type="0" />
-	<Resource identifier="ground_sand" filename="Textures/ground_sand.png" type="1" />
+	<Resource identifier="blood" filename="Textures/blood.png" type="1" />
+	<Resource identifier="bullets" filename="Textures/bullets.png" type="1" />
 	<Resource identifier="chicken_body" filename="Textures/chicken_body.png" type="1" />
-	<Resource identifier="chicken_vanilla" filename="Textures/chicken_vanilla.png" type="1" />
+	<Resource identifier="chicken_crossbow" filename="Textures/chicken_crossbow.png" type="1" />
 	<Resource identifier="chicken_laser" filename="Textures/chicken_laser.png" type="1" />
 	<Resource identifier="chicken_shuriken" filename="Textures/chicken_shuriken.png" type="1" />
+	<Resource identifier="chicken_vanilla" filename="Textures/chicken_vanilla.png" type="1" />
 	<Resource identifier="cursor" filename="Textures/cursor.png" type="1" />
-	<Resource identifier="blood" filename="Textures/blood.png" type="1" />
+	<Resource identifier="ground_sand" filename="Textures/ground_sand.png" type="1" />
 	<Resource identifier="loots" filename="Textures/loots.png" type="1" />
 	<Resource identifier="seeds" filename="Textures/seeds.png" type="1" />
-	<Resource identifier="bullets" filename="Textures/bullets.png" type="1" />
-	<Resource identifier="ground_sand-tileset" filename="Maps/ground_tileset.tsx" type="2" />
-	<Resource identifier="arena" filename="Maps/map.tmx" type="3" />
-	<Resource identifier="shuriken_soundtrack" filename="Musics/shuriken_soundtrack.ogg" type="6" />
-	<Resource identifier="chicken_damage" filename="Sounds/chicken_damage.wav" type="7" />
-	<Resource identifier="chicken_kill" filename="Sounds/chicken_kill.wav" type="7" />
-	<Resource identifier="chicken_move" filename="Sounds/chicken_move.wav" type="7" />
-	<Resource identifier="shuriken_fire" filename="Sounds/shuriken_fire.wav" type="7" />
-	<Resource identifier="shuriken_hit" filename="Sounds/shuriken_hit.wav" type="7" />
-	<Resource identifier="shuriken_loot" filename="Sounds/shuriken_loot.wav" type="7" />
+	<Resource identifier="ground_sand-tileset" filename="Maps/ground_sand.tsx" type="2" />
+	<Resource identifier="arena" filename="Maps/arena.tmx" type="3" />
 </Resources>

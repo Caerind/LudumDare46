@@ -240,7 +240,7 @@ void GameSingleton::HandleIncomingPackets()
 								mMusic.Stop();
 							}
 							mMusic = en::MusicPtr();
-							const char* name = GetItemMusicName(GameSingleton::mPlayers[i].chicken.itemID);
+							const char* name = GetItemMusicName(GameSingleton::mItems[i].itemID);
 							if (name != nullptr && strlen(name) > 0)
 							{
 								mMusic = en::AudioSystem::GetInstance().PlayMusic(name);

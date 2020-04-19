@@ -56,7 +56,16 @@ bool GameState::update(en::Time dt)
 		}
 		else
 		{
-			if (false) // Bullet collision detection
+			bool hit = false;
+			en::U32 size = static_cast<en::U32>(GameSingleton::mPlayers.size());
+			for (en::U32 j = 0; j < size && !hit; ++j)
+			{
+				if ((GameSingleton::mPlayers[j].chicken.position - GameSingleton::mBullets[i].position).getSquaredLength() < 35.0f * 35.0f)
+				{
+					hit = true;
+				}
+			}
+			if (hit)
 			{
 				GameSingleton::mBullets.erase(GameSingleton::mBullets.begin() + i);
 				bulletSize--;

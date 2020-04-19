@@ -28,6 +28,8 @@
 #define DefaultItemPickUpDistanceSqr 35.0f * 35.0f
 #define DefaultTooCloseDistance 25.0f
 #define DefaultTooCloseDistanceSqr 25.0f * 25.0f
+#define DefaultTooCloseTargetDistance 50.0f
+#define DefaultTooCloseTargetDistanceSqr 50.0f * 50.0f
 #define DefaultChickenAvoidanceMinDistance 200.0f
 #define DefaultChickenAvoidanceMinDistanceSqr 200.0f * 200.0f
 #define DefaultOwnerPriority 0.6f
