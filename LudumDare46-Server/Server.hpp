@@ -50,6 +50,7 @@ private:
 	bool IsBlacklisted(const sf::IpAddress& remoteAddress) const { return false; } // TODO
 
 private:
+	bool IsInMap(const en::Vector2f& position) const;
 	en::Vector2f GetRandomPositionSpawn();
 	en::Vector2f GetRandomPositionItem();
 
@@ -85,8 +86,6 @@ private:
 	ServerSocket mSocket;
 	bool mRunning;
 
-	bool mMapLoaded;
-	en::tmx::Map mMap;
 	en::Vector2f mMapSize;
 	std::vector<Player> mPlayers;
 	std::vector<Seed> mSeeds;

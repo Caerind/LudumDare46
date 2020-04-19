@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Resources resourceCount="14" typeCount="8">
+<Resources resourceCount="39" typeCount="8">
 	<Resource identifier="MainFont" filename="Fonts/EndlessBossBattle.ttf" type="0" />
 	<Resource identifier="blood" filename="Textures/blood.png" type="1" />
 	<Resource identifier="bullets" filename="Textures/bullets.png" type="1" />
@@ -7,6 +7,7 @@
 	<Resource identifier="chicken_crossbow" filename="Textures/chicken_crossbow.png" type="1" />
 	<Resource identifier="chicken_laser" filename="Textures/chicken_laser.png" type="1" />
 	<Resource identifier="chicken_shuriken" filename="Textures/chicken_shuriken.png" type="1" />
+	<Resource identifier="chicken_uzi" filename="Textures/chicken_uzi.png" type="1" />
 	<Resource identifier="chicken_vanilla" filename="Textures/chicken_vanilla.png" type="1" />
 	<Resource identifier="cursor" filename="Textures/cursor.png" type="1" />
 	<Resource identifier="ground_tileset" filename="Textures/ground_tileset.png" type="1" />
@@ -26,9 +27,12 @@
 	<Resource identifier="crossbow_fire" filename="Sounds/crossbow_fire.wav" type="7" />
 	<Resource identifier="crossbow_hit" filename="Sounds/crossbow_hit.wav" type="7" />
 	<Resource identifier="crossbow_loot" filename="Sounds/crossbow_loot.wav" type="7" />
+	<Resource identifier="eat" filename="Sounds/eat.wav" type="7" />
 	<Resource identifier="laser_fire" filename="Sounds/laser_fire.wav" type="7" />
 	<Resource identifier="laser_hit" filename="Sounds/laser_hit.wav" type="7" />
 	<Resource identifier="laser_loot" filename="Sounds/laser_loot.wav" type="7" />
+	<Resource identifier="reward" filename="Sounds/reward.wav" type="7" />
+	<Resource identifier="seedsSound" filename="Sounds/seeds.wav" type="7" />
 	<Resource identifier="shuriken_fire" filename="Sounds/shuriken_fire.wav" type="7" />
 	<Resource identifier="shuriken_hit" filename="Sounds/shuriken_hit.wav" type="7" />
 	<Resource identifier="shuriken_loot" filename="Sounds/shuriken_loot.wav" type="7" />

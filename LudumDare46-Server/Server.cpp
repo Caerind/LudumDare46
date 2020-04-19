@@ -17,9 +17,7 @@
 Server::Server()
 	: mSocket()
 	, mRunning(false)
-	, mMapLoaded(false)
-	, mMap()
-	, mMapSize(2000.0f, 2000.0f)
+	, mMapSize(DefaultMapSizeX, DefaultMapSizeY)
 	, mPlayers()
 	, mSeeds()
 	, mItems()
@@ -31,30 +29,14 @@ bool Server::Start(int argc, char** argv)
 {
 	en::LogManager::GetInstance().Initialize();
 
-	if (argc >= 1)
-	{
-		en::PathManager::GetInstance().SetExecutablePath(argv[0]);
-		std::string a = en::PathManager::GetInstance().GetAssetsPath();
-	}
-
 	mSocket.SetSocketPort((argc >= 2) ? static_cast<en::U16>(std::atoi(argv[1])) : DefaultServerPort);
 	if (!mSocket.Start())
 	{
 		return false;
 	}
 
-	if (mMap.LoadFromFile(DefaultServerMapPath))
-	{
-		mMapLoaded = true;
-		mMapSize.x = 1.0f * mMap.GetSize().x * mMap.GetTileSize().x;
-		mMapSize.y = 1.0f * mMap.GetSize().y * mMap.GetTileSize().y;
-	}
-	else
-	{
-		mMapLoaded = false;
-		mMapSize.x = DefaultMapSizeX;
-		mMapSize.y = DefaultMapSizeY;
-	}
+	mMapSize.x = DefaultMapSizeX;
+	mMapSize.y = DefaultMapSizeY;
 
 	mRunning = true;
 
@@ -596,34 +578,19 @@ en::I32 Server::GetPlayerIndexFromClientID(en::U32 clientID) const
 	return -1;
 }
 
+bool Server::IsInMap(const en::Vector2f& position) const
+{
+	return position.x > 0.0f && position.x < mMapSize.x && position.y > 0.0f && position.y < mMapSize.y;
+}
+
 en::Vector2f Server::GetRandomPositionSpawn()
 {
-	if (mMapLoaded)
-	{
-		// TODO : Avoid water
-		mMapSize.x = 1.0f * mMap.GetSize().x * mMap.GetTileSize().x;
-		mMapSize.y = 1.0f * mMap.GetSize().y * mMap.GetTileSize().y;
-		return { en::Random::get<en::F32>(64.0f, mMapSize.x - 64.0f), en::Random::get<en::F32>(64.0f, mMapSize.y - 64.0f) };
-	}
-	else
-	{
-		return { en::Random::get<en::F32>(64.0f, mMapSize.x - 64.0f), en::Random::get<en::F32>(64.0f, mMapSize.y - 64.0f) };
-	}
+	return { en::Random::get<en::F32>(64.0f, mMapSize.x - 64.0f), en::Random::get<en::F32>(64.0f, mMapSize.y - 64.0f) };
 }
 
 en::Vector2f Server::GetRandomPositionItem()
 {
-	if (mMapLoaded)
-	{
-		// TODO : Avoid water
-		mMapSize.x = 1.0f * mMap.GetSize().x * mMap.GetTileSize().x;
-		mMapSize.y = 1.0f * mMap.GetSize().y * mMap.GetTileSize().y;
-		return { en::Random::get<en::F32>(64.0f, mMapSize.x - 64.0f), en::Random::get<en::F32>(64.0f, mMapSize.y - 64.0f) };
-	}
-	else
-	{
-		return { en::Random::get<en::F32>(64.0f, mMapSize.x - 64.0f), en::Random::get<en::F32>(64.0f, mMapSize.y - 64.0f) };
-	}
+	return { en::Random::get<en::F32>(64.0f, mMapSize.x - 64.0f), en::Random::get<en::F32>(64.0f, mMapSize.y - 64.0f) };
 }
 
 void Server::AddNewSeed(const en::Vector2f& position, en::U32 clientID)
