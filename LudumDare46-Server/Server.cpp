@@ -408,6 +408,15 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 	{
 		player.chicken.position += en::Vector2f::polar(player.chicken.rotation) * dtSeconds * player.chicken.speed * GetItemWeight(player.chicken.itemID);
 		player.needUpdate = true;
+
+		// Eat seed
+		const en::Vector2f deltaSeed2 = mSeeds[bestSeedIndex].position - player.chicken.position;
+		const en::F32 distanceSqr = deltaSeed2.getSquaredLength();
+		if (distanceSqr < DefaultTooCloseDistanceSqr)
+		{
+			SendRemoveSeedPacket(mSeeds[bestSeedIndex].seedID, true);
+			mSeeds.erase(mSeeds.begin() + bestSeedIndex);
+		}
 	}
 
 
