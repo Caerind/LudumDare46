@@ -43,7 +43,7 @@
 
 // Stats
 #define DefaultChickenLife 100.0f
-#define DefaultChickenSpeed 120.0f
+#define DefaultChickenSpeed 140.0f
 #define DefaultChickenAttack 20.0f
 #define DefaultProjectileSpeed 300.0f
 #define DefaultItemRange 400.0f
@@ -53,6 +53,7 @@
 #define DefaultSpawnItemInterval en::seconds(2.0f)
 #define DefaultMapSizeX 64.0f * 64.0f
 #define DefaultMapSizeY 64.0f * 48.0f
+#define DefaultMapBorder 64.0f * 6.0f
 
 // Visuals
 #define DefaultBloodCount 3

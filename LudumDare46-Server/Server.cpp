@@ -270,7 +270,7 @@ void Server::HandleIncomingPackets()
 			if (IsClientIDAssignedToThisPlayer(clientID, remoteAddress, remotePort))
 			{
 				const en::I32 playerIndex = GetPlayerIndexFromClientID(clientID);
-				if (playerIndex >= 0)
+				if (playerIndex >= 0 && IsInMap(position))
 				{
 					LogInfo(en::LogChannel::All, 2, "Player %d dropped seed at %f %f", mPlayers[playerIndex].clientID, position.x, position.y);
 					AddNewSeed(position, clientID);
@@ -330,7 +330,41 @@ void Server::UpdatePlayer(en::F32 dtSeconds, Player& player)
 			bestDeltaSeed = deltaSeed;
 		}
 	}
-	
+
+	// Rotate
+	if (bestSeedIndex >= 0)
+	{
+		if (bestDeltaSeed.x == 0.0f)
+		{
+			bestDeltaSeed.x += 0.001f;
+		}
+		en::F32 targetAngle = en::Math::AngleMagnitude(bestDeltaSeed.getPolarAngle());
+
+		const en::F32 currentAngle = en::Math::AngleMagnitude(player.chicken.rotation);
+		const en::F32 angleWithTarget = en::Math::AngleBetween(currentAngle, targetAngle);
+		if (angleWithTarget > DefaultIgnoreRotDeg)
+		{
+			const en::F32 tc = targetAngle - currentAngle;
+			const en::F32 ct = currentAngle - targetAngle;
+			const en::F32 correctedTC = (tc >= 0.0f) ? tc : tc + 360.0f;
+			const en::F32 correctedCT = (ct >= 0.0f) ? ct : ct + 360.0f;
+			const en::F32 sign = (correctedTC <= correctedCT) ? 1.0f : -1.0f;
+			player.chicken.rotation = en::Math::AngleMagnitude(player.chicken.rotation + sign * DefaultRotDegPerSecond * dtSeconds);
+		}
+
+		player.chicken.position += en::Vector2f::polar(player.chicken.rotation) * dtSeconds * player.chicken.speed * GetItemWeight(player.chicken.itemID);
+		player.needUpdate = true;
+
+		// Eat seed
+		const en::Vector2f deltaSeed2 = mSeeds[bestSeedIndex].position - player.chicken.position;
+		const en::F32 distanceSqr = deltaSeed2.getSquaredLength();
+		if (distanceSqr < DefaultTooCloseDistanceSqr)
+		{
+			SendRemoveSeedPacket(mSeeds[bestSeedIndex].seedUID, true, player.clientID);
+			mSeeds.erase(mSeeds.begin() + bestSeedIndex);
+		}
+	}
+
 	// Select best target
 	en::I32 bestTargetIndex = -1;
 	en::F32 bestTargetDistanceSqr = 999999.0f;
@@ -351,64 +385,6 @@ void Server::UpdatePlayer(en::F32 dtSeconds, Player& player)
 			}
 		}
 	}
-
-	if (bestSeedIndex == -1 && bestTargetIndex == -1)
-		return;
-
-	// Rotate
-	bool rotated = false;
-	const bool focusSeed = bestSeedDistanceSqr * DefaultSeedPrefFactor < bestTargetDistanceSqr;
-	en::F32 targetAngle;
-	if (focusSeed)
-	{
-		if (bestDeltaSeed.x == 0.0f)
-		{
-			bestDeltaSeed.x += 0.001f;
-		}
-		targetAngle = en::Math::AngleMagnitude(bestDeltaSeed.getPolarAngle());
-	}
-	else
-	{
-		if (bestDeltaTarget.x == 0.0f)
-		{
-			bestDeltaTarget.x += 0.001f;
-		}
-		targetAngle = en::Math::AngleMagnitude(bestDeltaTarget.getPolarAngle());
-	}
-	const en::F32 currentAngle = en::Math::AngleMagnitude(player.chicken.rotation);
-	const en::F32 angleWithTarget = en::Math::AngleBetween(currentAngle, targetAngle);
-	if (angleWithTarget > DefaultIgnoreRotDeg)
-	{
-		const en::F32 tc = targetAngle - currentAngle;
-		const en::F32 ct = currentAngle - targetAngle;
-		const en::F32 correctedTC = (tc >= 0.0f) ? tc : tc + 360.0f;
-		const en::F32 correctedCT = (ct >= 0.0f) ? ct : ct + 360.0f;
-		const en::F32 sign = (correctedTC <= correctedCT) ? 1.0f : -1.0f;
-		player.chicken.rotation = en::Math::AngleMagnitude(player.chicken.rotation + sign * DefaultRotDegPerSecond * dtSeconds);
-		player.needUpdate = true;
-		rotated = true;
-	}
-
-	if (focusSeed && bestSeedIndex == -1)
-		return;
-	if (!focusSeed && bestTargetIndex == -1)
-		return;
-
-	if (focusSeed)
-	{
-		player.chicken.position += en::Vector2f::polar(player.chicken.rotation) * dtSeconds * player.chicken.speed * GetItemWeight(player.chicken.itemID);
-		player.needUpdate = true;
-
-		// Eat seed
-		const en::Vector2f deltaSeed2 = mSeeds[bestSeedIndex].position - player.chicken.position;
-		const en::F32 distanceSqr = deltaSeed2.getSquaredLength();
-		if (distanceSqr < DefaultTooCloseDistanceSqr)
-		{
-			SendRemoveSeedPacket(mSeeds[bestSeedIndex].seedUID, true, player.clientID);
-			mSeeds.erase(mSeeds.begin() + bestSeedIndex);
-		}
-	}
-
 	// Try to shoot bullet
 	player.cooldown += en::seconds(dtSeconds);
 	if (bestTargetIndex >= 0)
@@ -425,11 +401,8 @@ void Server::UpdatePlayer(en::F32 dtSeconds, Player& player)
 				const en::F32 distance = en::Math::Sqrt(bestTargetDistanceSqr);
 				const en::Vector2f normalizedDelta = en::Vector2f(bestDeltaTarget.x / distance, bestDeltaTarget.y / distance);
 				const en::F32 dotProduct = en::Math::Abs(forward.dotProduct(normalizedDelta));
-				LogInfo(en::LogChannel::All, 2, "%f:%f %f, %f %f", player.chicken.rotation, forward.x, forward.y, normalizedDelta.x, normalizedDelta.y);
-				LogInfo(en::LogChannel::All, 2, "%d Bullet in range cos30:%f dotProduct:%f", player.clientID, cos30, dotProduct);
-				if (dotProduct < cos30)
+				if (dotProduct > cos30)
 				{
-					LogInfo(en::LogChannel::All, 2, "%d Bullet striked", player.clientID);
 					const en::Vector2f rotatedWeaponOffset = en::Vector2f(DefaultWeaponOffset).rotated(player.chicken.rotation);
 					player.cooldown = en::Time::Zero;
 					AddNewBullet(player.chicken.position + rotatedWeaponOffset, bestDeltaTarget.getPolarAngle(), player.clientID, player.chicken.itemID, range);
@@ -456,10 +429,16 @@ void Server::UpdateBullets(en::Time dt)
 			en::U32 size = static_cast<en::U32>(mPlayers.size());
 			for (en::U32 j = 0; j < size && !hit; ++j)
 			{
-				if ((mPlayers[j].chicken.position - mBullets[i].position).getSquaredLength() < 35.0f * 35.0f)
+				if (mBullets[i].clientID != mPlayers[j].clientID && (mPlayers[j].chicken.position - mBullets[i].position).getSquaredLength() < 35.0f * 35.0f)
 				{
 					hit = true;
 					SendHitChickenPacket(mPlayers[j].clientID, mBullets[i].clientID);
+					mPlayers[j].chicken.life -= DefaultChickenAttack + 1.0f; // To avoid 0 imprecision (just in case)
+					mPlayers[j].needUpdate = true;
+					if (mPlayers[j].chicken.life <= 0.0f)
+					{
+						SendKillChickenPacket(mPlayers[j].clientID, mBullets[i].clientID);
+					}
 				}
 			}
 			if (hit)
@@ -585,12 +564,12 @@ bool Server::IsInMap(const en::Vector2f& position) const
 
 en::Vector2f Server::GetRandomPositionSpawn()
 {
-	return { en::Random::get<en::F32>(64.0f, mMapSize.x - 64.0f), en::Random::get<en::F32>(64.0f, mMapSize.y - 64.0f) };
+	return { en::Random::get<en::F32>(DefaultMapBorder, mMapSize.x - DefaultMapBorder), en::Random::get<en::F32>(DefaultMapBorder, mMapSize.y - DefaultMapBorder) };
 }
 
 en::Vector2f Server::GetRandomPositionItem()
 {
-	return { en::Random::get<en::F32>(64.0f, mMapSize.x - 64.0f), en::Random::get<en::F32>(64.0f, mMapSize.y - 64.0f) };
+	return { en::Random::get<en::F32>(DefaultMapBorder, mMapSize.x - DefaultMapBorder), en::Random::get<en::F32>(DefaultMapBorder, mMapSize.y - DefaultMapBorder) };
 }
 
 void Server::AddNewSeed(const en::Vector2f& position, en::U32 clientID)
