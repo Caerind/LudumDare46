@@ -75,6 +75,8 @@ private:
 	void SendAddItemPacket(const Item& item);
 	void SendRemoveItemPacket(en::U32 itemID, bool pickedUp);
 	void SendShootBulletPacket(const en::Vector2f& position, en::F32 rotation, ItemID itemID, en::F32 remainingDistance);
+	void SendHitChickenPacket(en::U32 clientID, en::U32 killerClientID);
+	void SendKillChickenPacket(en::U32 clientID, en::U32 killerClientID);
 
 private:
 	ServerSocket mSocket;

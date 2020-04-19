@@ -282,7 +282,7 @@ void Server::HandleIncomingPackets()
 				{
 					if (mPlayers[playerIndex].lastSeedTime >= DefaultSeedInterval)
 					{
-						//LogInfo(en::LogChannel::All, 2, "Player %d dropped seed at %f %f", mPlayers[playerIndex].clientID, position.x, position.y);
+						LogInfo(en::LogChannel::All, 2, "Player %d dropped seed at %f %f", mPlayers[playerIndex].clientID, position.x, position.y);
 						mPlayers[playerIndex].lastSeedTime = en::Time::Zero;
 						AddNewSeed(position, clientID);
 					}
@@ -979,6 +979,30 @@ void Server::SendShootBulletPacket(const en::Vector2f& position, en::F32 rotatio
 		packet << rotation;
 		packet << static_cast<en::U32>(itemID);
 		packet << remainingDistance;
+		SendToAllPlayers(packet);
+	}
+}
+
+void Server::SendHitChickenPacket(en::U32 clientID, en::U32 killerClientID)
+{
+	if (mSocket.IsRunning())
+	{
+		sf::Packet packet;
+		packet << static_cast<en::U8>(ServerPacketID::HitChicken);
+		packet << clientID;
+		packet << killerClientID;
+		SendToAllPlayers(packet);
+	}
+}
+
+void Server::SendKillChickenPacket(en::U32 clientID, en::U32 killerClientID)
+{
+	if (mSocket.IsRunning())
+	{
+		sf::Packet packet;
+		packet << static_cast<en::U8>(ServerPacketID::KillChicken);
+		packet << clientID;
+		packet << killerClientID;
 		SendToAllPlayers(packet);
 	}
 }

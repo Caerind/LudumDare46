@@ -72,8 +72,8 @@ enum class ServerPacketID : en::U8
 	AddItem,
 	RemoveItem,
 	ShootBullet,
-	KillChicken,
 	HitChicken,
+	KillChicken,
 
 	// Last packet ID
 	Count
