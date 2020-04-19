@@ -200,7 +200,7 @@ void Server::HandleIncomingPackets()
 				newPlayer.nickname = "Player" + std::to_string(clientID); // TODO : nickname
 				newPlayer.chicken.position = { en::Random::get<en::F32>(0.0f, 1024.f - 100.0f), en::Random::get<en::F32>(0.0f, 768.0f - 100.0f) };
 				newPlayer.chicken.rotation = 0.0f;
-				newPlayer.chicken.itemID = ItemID::Shuriken; // TODO : Default
+				newPlayer.chicken.itemID = ItemID::None; // TODO : Default
 				newPlayer.chicken.lifeMax = DefaultChickenLife;
 				newPlayer.chicken.life = DefaultChickenLife;
 				newPlayer.chicken.speed = DefaultChickenSpeed;
@@ -519,7 +519,8 @@ void Server::UpdateLoots(en::Time dt)
 			if (delta.getSquaredLength() < DefaultTooCloseDistanceSqr)
 			{
 				mPlayers[i].chicken.itemID = mItems[j].item;
-				SendGiveItemPacket(mPlayers[i].remoteAddress, mPlayers[i].remotePort, mItems[j].item);
+				mPlayers[i].needUpdate = true;
+
 				SendRemoveItemPacket(mItems[j].itemID, true);
 				mItems.erase(mItems.begin() + j);
 				itemSize--;
@@ -796,17 +797,6 @@ void Server::SendRemoveItemPacket(en::U32 itemID, bool pickedUp)
 		packet << itemID;
 		packet << pickedUp;
 		SendToAllPlayers(packet);
-	}
-}
-
-void Server::SendGiveItemPacket(const sf::IpAddress& remoteAddress, en::U16 remotePort, ItemID itemID)
-{
-	if (mSocket.IsRunning())
-	{
-		sf::Packet packet;
-		packet << static_cast<en::U8>(ServerPacketID::GiveItem);
-		packet << static_cast<en::U32>(itemID);
-		mSocket.SendPacket(packet, remoteAddress, remotePort);
 	}
 }
 

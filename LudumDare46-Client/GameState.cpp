@@ -17,8 +17,7 @@ bool GameState::handleEvent(const sf::Event& event)
 
 	if (event.type == sf::Event::MouseButtonPressed)
 	{
-		const en::Vector2f cursorPos = GameSingleton::mApplication->GetWindow().getCursorPositionView(GameSingleton::mView);
-		GameSingleton::SendDropSeedPacket(cursorPos);
+		GameSingleton::SendDropSeedPacket(GameSingleton::mApplication->GetWindow().getCursorPositionView(GameSingleton::mView));
 	}
 
 	return false;
@@ -83,6 +82,25 @@ void GameState::render(sf::RenderTarget& target)
 
 	// Maps
 	GameSingleton::mMap.render(target);
+
+	// Bloods
+	static bool bloodInitialized = false;
+	static sf::Sprite bloodSprite;
+	if (!bloodInitialized)
+	{
+		bloodSprite.setTexture(en::ResourceManager::GetInstance().Get<en::Texture>("blood").Get());
+		bloodSprite.setTextureRect(sf::IntRect(0, 0, 16, 16));
+		bloodSprite.setOrigin(8.0f, 8.0f);
+		bloodSprite.setScale(1.5f, 1.5f);
+		bloodInitialized = true;
+	}
+	const en::U32 bloodSize = static_cast<en::U32>(GameSingleton::mBloods.size());
+	for (en::U32 i = 0; i < bloodSize; ++i)
+	{
+		bloodSprite.setTextureRect(sf::IntRect(GameSingleton::mBloods[i].index * 16, 0, 16, 16));
+		bloodSprite.setPosition(en::toSF(GameSingleton::mBloods[i].position));
+		target.draw(bloodSprite);
+	}
 
 	// Items
 	static bool itemInitialized = false;

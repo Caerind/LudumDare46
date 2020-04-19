@@ -70,7 +70,6 @@ private:
 	void SendRemoveSeedPacket(en::U32 seedID, bool eated);
 	void SendAddItemPacket(const Item& item);
 	void SendRemoveItemPacket(en::U32 itemID, bool pickedUp);
-	void SendGiveItemPacket(const sf::IpAddress& remoteAddress, en::U16 remotePort, ItemID itemID); 
 	void SendShootBulletPacket(const en::Vector2f& position, en::F32 rotation, ItemID itemID, en::F32 remainingDistance);
 
 private:

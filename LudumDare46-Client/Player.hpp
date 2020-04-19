@@ -59,3 +59,10 @@ struct Bullet
 	ItemID itemID;
 	en::F32 remainingDistance;
 };
+
+struct Blood
+{
+	en::Vector2f position;
+	en::U32 index;
+	en::Time delay;
+};

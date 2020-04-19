@@ -14,6 +14,7 @@ std::vector<Player> GameSingleton::mPlayers;
 std::vector<Seed> GameSingleton::mSeeds;
 std::vector<Item> GameSingleton::mItems;
 std::vector<Bullet> GameSingleton::mBullets;
+std::vector<Blood> GameSingleton::mBloods;
 std::vector<en::Vector2f> GameSingleton::mCancelSeeds;
 en::Application::onApplicationStoppedType::ConnectionGuard GameSingleton::mApplicationStoppedSlot; 
 sf::Sprite GameSingleton::mCursor;
@@ -150,7 +151,32 @@ void GameSingleton::HandleIncomingPackets()
 			const en::I32 playerIndex = GetPlayerIndexFromClientID(clientID);
 			if (playerIndex >= 0)
 			{
+				ItemID previousItemID = mPlayers[playerIndex].chicken.itemID;
+				en::F32 previousLife = mPlayers[playerIndex].chicken.life;
 				packet >> mPlayers[playerIndex].chicken;
+				if (previousItemID != mPlayers[playerIndex].chicken.itemID)
+				{
+					if (mPlayers[playerIndex].clientID == mClient.GetClientID())
+					{
+						// TODO : Sound
+					}
+					else
+					{
+						// TODO : Sound
+					}
+				}
+				if (previousLife > mPlayers[playerIndex].chicken.life)
+				{
+					// TODO : Sound
+
+					Blood blood;
+					blood.position = mPlayers[playerIndex].chicken.position;
+					blood.position.x += en::Random::get<en::F32>(-20.0f, 20.0f); // TODO : Move out
+					blood.position.y += en::Random::get<en::F32>(-20.0f, 20.0f); // TODO : Move out
+					blood.delay = en::Time::Zero;
+					blood.index = en::Random::get<en::U32>(0, 3); // TODO : Move out
+					mBloods.push_back(blood);
+				}
 				mPlayers[playerIndex].UpdateSprite();
 			}
 			else

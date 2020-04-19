@@ -54,7 +54,6 @@ enum class ServerPacketID : en::U8
 	RemoveSeed,
 	AddItem,
 	RemoveItem,
-	GiveItem,
 	ShootBullet,
 
 	// Last packet ID
@@ -86,7 +85,9 @@ enum class RejectReason : en::U8
 	Blacklisted,
 	Kicked,
 	Timeout,
-	Banned
+	Banned,
+
+	Count
 };
 
 enum class ItemID : en::U32

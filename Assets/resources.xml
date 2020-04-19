@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Resources resourceCount="13" typeCount="8">
+<Resources resourceCount="14" typeCount="8">
 	<Resource identifier="MainFont" filename="Fonts/EndlessBossBattle.ttf" type="0" />
 	<Resource identifier="chicken" filename="Textures/chicken.png" type="1" />
 	<Resource identifier="ground_sand" filename="Textures/ground_sand.png" type="1" />
@@ -8,6 +8,7 @@
 	<Resource identifier="chicken_laser" filename="Textures/chicken_laser.png" type="1" />
 	<Resource identifier="chicken_shuriken" filename="Textures/chicken_shuriken.png" type="1" />
 	<Resource identifier="cursor" filename="Textures/cursor.png" type="1" />
+	<Resource identifier="blood" filename="Textures/blood.png" type="1" />
 	<Resource identifier="loots" filename="Textures/loots.png" type="1" />
 	<Resource identifier="seeds" filename="Textures/seeds.png" type="1" />
 	<Resource identifier="bullets" filename="Textures/bullets.png" type="1" />
