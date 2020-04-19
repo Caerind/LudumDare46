@@ -168,6 +168,15 @@ void GameSingleton::HandleIncomingPackets()
 			packet >> seed;
 			LogInfo(en::LogChannel::All, 4, "New seed %f %f", seed.position.x, seed.position.y);
 			mSeeds.push_back(seed);
+
+			if (GameSingleton::IsClient(seed.clientID))
+			{
+				en::SoundPtr sound = en::AudioSystem::GetInstance().PlaySound("..."); // TODO
+				if (sound.IsValid())
+				{
+					sound.SetVolume(0.25f);
+				}
+			}
 		} break;
 		case ServerPacketID::RemoveSeed:
 		{
@@ -186,11 +195,11 @@ void GameSingleton::HandleIncomingPackets()
 					{
 						if (IsClient(eaterClientID))
 						{
-							// TODO : Play sound
-						}
-						else
-						{
-							// TODO : Play sound ?
+							en::SoundPtr sound = en::AudioSystem::GetInstance().PlaySound("..."); // TODO
+							if (sound.IsValid())
+							{
+								sound.SetVolume(0.25f);
+							}
 						}
 					}
 					mSeeds.erase(mSeeds.begin() + i);
