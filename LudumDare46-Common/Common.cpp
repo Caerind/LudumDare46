@@ -6,6 +6,7 @@ sf::Packet& operator <<(sf::Packet& packet, const Chicken& chicken)
 	packet << chicken.position.y;
 	packet << chicken.rotation;
 	packet << static_cast<en::U32>(chicken.itemID);
+	packet << chicken.lifeMax;
 	packet << chicken.life;
 	packet << chicken.speed;
 	packet << chicken.attack;
@@ -19,7 +20,7 @@ sf::Packet& operator >>(sf::Packet& packet, Chicken& chicken)
 	packet >> chicken.position.y;
 	packet >> chicken.rotation;
 	packet >> itemIDRaw;
-	packet >> chicken.life;
+	packet >> chicken.lifeMax;
 	packet >> chicken.speed;
 	packet >> chicken.attack;
 	chicken.itemID = static_cast<ItemID>(itemIDRaw);

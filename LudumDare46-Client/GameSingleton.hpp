@@ -23,8 +23,11 @@ public:
 	static en::View mView;
 	static std::vector<Player> mPlayers;
 	static std::vector<Seed> mSeeds;
+	static std::vector<Item> mItems;
+	static std::vector<Bullet> mBullets;
 	static std::vector<en::Vector2f> mCancelSeeds;
 	static en::Application::onApplicationStoppedType::ConnectionGuard mApplicationStoppedSlot;
+	static sf::Sprite mCursor;
 
 	static void ConnectWindowCloseSlot();
 	static void HandleIncomingPackets();

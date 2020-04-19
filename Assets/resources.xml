@@ -1,17 +1,16 @@
 <?xml version="1.0"?>
-<Resources resourceCount="14" typeCount="8">
+<Resources resourceCount="13" typeCount="8">
 	<Resource identifier="MainFont" filename="Fonts/EndlessBossBattle.ttf" type="0" />
 	<Resource identifier="chicken" filename="Textures/chicken.png" type="1" />
 	<Resource identifier="ground_sand" filename="Textures/ground_sand.png" type="1" />
-	<Resource identifier="shuriken_chicken" filename="Textures/shuriken_chicken.png" type="1" />
-	<Resource identifier="shuriken_bullet" filename="Textures/shuriken_bullet.png" type="1" />
-	<Resource identifier="shuriken_loot" filename="Textures/shuriken_loot.png" type="1" />
-	<Resource identifier="laser_chicken" filename="Textures/laser_chicken.png" type="1" />
-	<Resource identifier="laser_bullet" filename="Textures/laser_bullet.png" type="1" />
-	<Resource identifier="laser_loot" filename="Textures/shuriken_loot.png" type="1" />
+	<Resource identifier="chicken_body" filename="Textures/chicken_body.png" type="1" />
+	<Resource identifier="chicken_vanilla" filename="Textures/chicken_vanilla.png" type="1" />
+	<Resource identifier="chicken_laser" filename="Textures/chicken_laser.png" type="1" />
+	<Resource identifier="chicken_shuriken" filename="Textures/chicken_shuriken.png" type="1" />
+	<Resource identifier="cursor" filename="Textures/cursor.png" type="1" />
+	<Resource identifier="loots" filename="Textures/loots.png" type="1" />
 	<Resource identifier="seeds" filename="Textures/seeds.png" type="1" />
+	<Resource identifier="bullets" filename="Textures/bullets.png" type="1" />
 	<Resource identifier="ground_sand-tileset" filename="Maps/ground_sand.tsx" type="2" />
 	<Resource identifier="arena" filename="Maps/arena.tmx" type="3" />
-	<Resource identifier="skuriken_chicken-anim" filename="Animations/shuriken_chicken.json" type="4" />
-	<Resource identifier="laser_chicken-anim" filename="Animations/laser_chicken.json" type="4" />
 </Resources>

@@ -5,27 +5,35 @@
 #include <Enlivengine/Math/Vector2.hpp>
 #include <SFML/Network/Packet.hpp>
 
+// Network
 #define DefaultServerAddress "92.222.79.62"
 #define DefaultServerPort 3457
 
+// Server
 #define DefaultTimeout en::seconds(60.0f)
 #define DefaultStepInterval en::seconds(1.0f / 60.f)
 #define DefaultTickInterval en::seconds(1.0f / 20.f)
-#define DefaultSleepTime sf::seconds(1.0f / 10.f)
+#define DefaultSleepTime sf::seconds(1.0f / 5.f)
 #define DefaultMaxPlayers 16
 
+// Movement
 #define DefaultSeedInterval en::seconds(0.3f)
 #define DefaultSeedLifetime en::seconds(3.0f)
 #define DefaultSeedImpactDistance 400.0f
 #define DefaultSeedImpactDistanceSqr 400.0f * 400.0f
-#define DefaultSeedTooCloseDistance 30.0f
-#define DefaultSeedTooCloseDistanceSqr 30.0f * 30.0f
-
+#define DefaultTooCloseDistance 30.0f
+#define DefaultTooCloseDistanceSqr 30.0f * 30.0f
+#define DefaultChickenAvoidanceMinDistance 200.0f
 #define DefaultChickenAvoidanceMinDistanceSqr 200.0f * 200.0f
+#define DefaultOwnerPriority 0.5f
+#define DefaultNonOwnerPriority 1.0f
+#define DefaultWeaponOffset 20.0f, -22.0f
 
+// Stats
 #define DefaultChickenLife 100.0f
 #define DefaultChickenSpeed 100.0f
 #define DefaultChickenAttack 20.0f
+#define DefaultProjectileSpeed 300.0f
 
 // Server -> Client
 enum class ServerPacketID : en::U8
@@ -40,11 +48,14 @@ enum class ServerPacketID : en::U8
 
 	// Game specific packets
 	PlayerInfo,
-	UpdateChicken, 
+	UpdateChicken,
 	CancelSeed,
 	AddSeed,
 	RemoveSeed,
-
+	AddItem,
+	RemoveItem,
+	GiveItem,
+	ShootBullet,
 
 	// Last packet ID
 	Count
@@ -61,7 +72,6 @@ enum class ClientPacketID : en::U8
 
 	// Game specific packet
 	DropSeed,
-
 
 	// Last packet ID
 	Count
@@ -94,6 +104,7 @@ struct Chicken
 	en::F32 rotation;
 	ItemID itemID;
 
+	en::F32 lifeMax;
 	en::F32 life;
 	en::F32 speed;
 	en::F32 attack;

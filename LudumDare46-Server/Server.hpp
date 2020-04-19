@@ -30,6 +30,8 @@ private:
 	void HandleIncomingPackets();
 
 	void UpdatePlayerMovement(en::F32 dtSeconds, Player& player);
+	void UpdateBullets(en::Time dt);
+	void UpdateLoots(en::Time dt);
 
 	void UpdateLastPacketTime(const sf::IpAddress& remoteAddress, en::U16 remotePort);
 
@@ -47,7 +49,9 @@ private:
 	bool IsBlacklisted(const sf::IpAddress& remoteAddress) const { return false; } // TODO
 
 private:
-	void AddNewSeed(const en::Vector2f& position);
+	void AddNewSeed(const en::Vector2f& position, en::U32 clientID);
+	void AddNewItem(const en::Vector2f& position, ItemID itemID);
+	void AddNewBullet(const en::Vector2f& position, en::F32 rotation, ItemID itemID, en::F32 remainingDistance);
 
 private:
 	void SendToAllPlayers(sf::Packet& packet);
@@ -64,13 +68,17 @@ private:
 	void SendCancelSeedPacket(const sf::IpAddress& remoteAddress, en::U16 remotePort, const en::Vector2f& position);
 	void SendAddSeedPacket(const Seed& seed);
 	void SendRemoveSeedPacket(en::U32 seedID, bool eated);
+	void SendAddItemPacket(const Item& item);
+	void SendRemoveItemPacket(en::U32 itemID, bool pickedUp);
+	void SendGiveItemPacket(const sf::IpAddress& remoteAddress, en::U16 remotePort, ItemID itemID); 
+	void SendShootBulletPacket(const en::Vector2f& position, en::F32 rotation, ItemID itemID, en::F32 remainingDistance);
 
 private:
 	ServerSocket mSocket;
 	bool mRunning;
-	en::Time mStepTime;
-	en::Time mTickTime;
 
 	std::vector<Player> mPlayers;
 	std::vector<Seed> mSeeds;
+	std::vector<Item> mItems;
+	std::vector<Bullet> mBullets;
 };

@@ -21,6 +21,7 @@ struct Player
 	std::string nickname;
 	Chicken chicken;
 
+	en::Time cooldown;
 	PlayingState state;
 	en::Time lastSeedTime;
 	bool needUpdate;
@@ -30,5 +31,21 @@ struct Seed
 {
 	en::U32 seedID;
 	en::Vector2f position;
+	en::U32 clientID;
 	en::Time addTime;
+};
+
+struct Item
+{
+	en::U32 itemID;
+	ItemID item;
+	en::Vector2f position;
+};
+
+struct Bullet
+{
+	en::Vector2f position;
+	en::F32 rotation;
+	ItemID itemID;
+	en::F32 remainingDistance;
 };

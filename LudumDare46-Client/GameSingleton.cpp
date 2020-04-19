@@ -12,8 +12,11 @@ GameMap GameSingleton::mMap;
 en::View GameSingleton::mView;
 std::vector<Player> GameSingleton::mPlayers;
 std::vector<Seed> GameSingleton::mSeeds;
+std::vector<Item> GameSingleton::mItems;
+std::vector<Bullet> GameSingleton::mBullets;
 std::vector<en::Vector2f> GameSingleton::mCancelSeeds;
-en::Application::onApplicationStoppedType::ConnectionGuard GameSingleton::mApplicationStoppedSlot;
+en::Application::onApplicationStoppedType::ConnectionGuard GameSingleton::mApplicationStoppedSlot; 
+sf::Sprite GameSingleton::mCursor;
 
 void GameSingleton::ConnectWindowCloseSlot()
 {
@@ -186,7 +189,6 @@ void GameSingleton::HandleIncomingPackets()
 					{
 						// TODO : Play sound
 					}
-
 					mSeeds.erase(mSeeds.begin() + i);
 					size--;
 					removed = true;
@@ -196,6 +198,52 @@ void GameSingleton::HandleIncomingPackets()
 					++i;
 				}
 			}
+		} break;
+		case ServerPacketID::AddItem:
+		{
+			en::U32 itemRaw;
+			Item item;
+			packet >> item.itemID >> itemRaw >> item.position.x >> item.position.y;
+			item.item = static_cast<ItemID>(itemRaw);
+			LogInfo(en::LogChannel::All, 4, "New item %d %d %f %f", item.itemID, item.item, item.position.x, item.position.y);
+			mItems.push_back(item);
+		} break;
+		case ServerPacketID::RemoveItem:
+		{
+			en::U32 itemID;
+			bool pickedUp;
+			packet >> itemID >> pickedUp;
+			LogInfo(en::LogChannel::All, 4, "Remove item %d", itemID);
+			bool removed = false;
+			en::U32 size = static_cast<en::U32>(mItems.size());
+			for (en::U32 i = 0; i < size && !removed; )
+			{
+				if (mItems[i].itemID == itemID)
+				{
+					// TODO : What to do with pickedUp ?
+					const bool isInView = true; // TODO ; Is in view
+					if (pickedUp && isInView)
+					{
+						// TODO : Play sound
+					}
+					mItems.erase(mItems.begin() + i);
+					size--;
+					removed = true;
+				}
+				else
+				{
+					++i;
+				}
+			}
+		} break;
+		case ServerPacketID::ShootBullet:
+		{
+			en::U32 itemIDRaw;
+			Bullet bullet;
+			packet >> bullet.position.x >> bullet.position.y >> itemIDRaw >> bullet.remainingDistance;
+			LogInfo(en::LogChannel::All, 4, "Shoot bullet%s", "");
+			bullet.itemID = static_cast<ItemID>(itemIDRaw);
+			mBullets.push_back(bullet);
 		} break;
 
 		default:

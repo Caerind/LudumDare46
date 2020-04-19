@@ -86,6 +86,10 @@ public:
 	void render(sf::RenderTarget& target)
 	{
 		ENLIVE_PROFILE_FUNCTION();
+
+		GameSingleton::mCursor.setPosition(en::toSF(GameSingleton::mApplication->GetWindow().getCursorPosition()));
+		GameSingleton::mCursor.setTextureRect(sf::IntRect(0, 0, 32, 32));
+		target.draw(GameSingleton::mCursor);
 	}
 
 private:

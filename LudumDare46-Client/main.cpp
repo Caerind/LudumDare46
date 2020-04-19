@@ -19,6 +19,13 @@ int main()
 
 	GameSingleton::ConnectWindowCloseSlot();
 
+	{ // Cursor setup
+
+		en::Application::GetInstance().GetWindow().setCursor(en::Window::Cursor::None);
+		GameSingleton::mCursor.setTexture(en::ResourceManager::GetInstance().Get<en::Texture>("cursor").Get());
+		GameSingleton::mCursor.setTextureRect(sf::IntRect(0, 0, 32, 32));
+	}
+
 	app.Start<ConnectingState>();
 
 	return 0;
