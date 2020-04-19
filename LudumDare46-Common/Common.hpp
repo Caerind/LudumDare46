@@ -63,6 +63,7 @@ enum class ServerPacketID : en::U8
 
 	// Game specific packets
 	PlayerInfo,
+	ItemInfo,
 	UpdateChicken,
 	CancelSeed,
 	AddSeed,

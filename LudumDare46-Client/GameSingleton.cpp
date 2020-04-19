@@ -143,6 +143,15 @@ void GameSingleton::HandleIncomingPackets()
 				LogWarning(en::LogChannel::All, 6, "Player info already herer%s", "");
 			}
 		} break;
+		case ServerPacketID::ItemInfo:
+		{
+			en::U32 itemRaw;
+			Item item;
+			packet >> item.itemID >> itemRaw >> item.position.x >> item.position.y;
+			item.item = static_cast<ItemID>(itemRaw);
+			LogInfo(en::LogChannel::All, 4, "New item %d %d %f %f", item.itemID, item.item, item.position.x, item.position.y);
+			mItems.push_back(item);
+		} break;
 		case ServerPacketID::UpdateChicken:
 		{
 			en::U32 clientID;

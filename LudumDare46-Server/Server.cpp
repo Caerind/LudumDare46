@@ -218,6 +218,11 @@ void Server::HandleIncomingPackets()
 				{
 					SendPlayerInfo(remoteAddress, remotePort, mPlayers[i]);
 				}
+				const en::U32 itemSize = static_cast<en::U32>(mItems.size());
+				for (en::U32 i = 0; i < itemSize; ++i)
+				{
+					SendItemInfo(remoteAddress, remotePort, mItems[i]);
+				}
 
 				mPlayers.push_back(newPlayer);
 
@@ -422,9 +427,6 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 	}
 
 
-
-
-	
 
 
 
@@ -866,6 +868,20 @@ void Server::SendPlayerInfo(const sf::IpAddress& remoteAddress, en::U16 remotePo
 		packet << player.clientID;
 		packet << player.nickname;
 		packet << player.chicken;
+		mSocket.SendPacket(packet, remoteAddress, remotePort);
+	}
+}
+
+void Server::SendItemInfo(const sf::IpAddress& remoteAddress, en::U16 remotePort, const Item& item)
+{
+	if (mSocket.IsRunning())
+	{
+		sf::Packet packet;
+		packet << static_cast<en::U8>(ServerPacketID::AddItem);
+		packet << item.itemID;
+		packet << static_cast<en::U32>(item.item);
+		packet << item.position.x;
+		packet << item.position.y;
 		mSocket.SendPacket(packet, remoteAddress, remotePort);
 	}
 }
