@@ -323,7 +323,7 @@ void Server::UpdatePlayer(en::F32 dtSeconds, Player& player)
 		}
 		else
 		{
-			distanceSqr *= DefaultNonOwnerPriority;
+			distanceSqr *= 9999.0f * DefaultNonOwnerPriority;
 		}
 		if (distanceSqr < bestSeedDistanceSqr)
 		{
@@ -395,13 +395,6 @@ void Server::UpdatePlayer(en::F32 dtSeconds, Player& player)
 		return;
 	if (!focusSeed && bestTargetIndex == -1)
 		return;
-
-	if (bestTargetIndex >= 0 && bestTargetDistanceSqr > 1.0f && bestTargetDistanceSqr < DefaultTooCloseTargetDistanceSqr)
-	{
-		en::F32 distance = en::Math::Sqrt(bestTargetDistanceSqr);
-		player.chicken.position -= 2.0f * dtSeconds * (bestDeltaTarget / distance);
-		player.needUpdate = true;
-	}
 
 	if (focusSeed)
 	{

@@ -178,8 +178,11 @@ void GameState::render(sf::RenderTarget& target)
 	const en::U32 seedSize = static_cast<en::U32>(GameSingleton::mSeeds.size());
 	for (en::U32 i = 0; i < seedSize; ++i)
 	{
-		seedSprite.setPosition(en::toSF(GameSingleton::mSeeds[i].position));
-		target.draw(seedSprite);
+		if (GameSingleton::IsClient(GameSingleton::mSeeds[i].clientID))
+		{
+			seedSprite.setPosition(en::toSF(GameSingleton::mSeeds[i].position));
+			target.draw(seedSprite);
+		}
 	}
 
 	// Bullets
