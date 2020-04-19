@@ -57,7 +57,7 @@
 // Visuals
 #define DefaultBloodCount 3
 #define DefaultShurikenRotDegSpeed 720.0f
-#define DefaultServerMapPath "/home/cmailly/LudumDare46/Assets/Map/map.tmx"
+#define DefaultServerMapPath "Assets/Map/map.tmx"
 
 
 // Server -> Client
