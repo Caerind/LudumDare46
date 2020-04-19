@@ -4,6 +4,7 @@
 #include <Enlivengine/System/Hash.hpp>
 #include <Enlivengine/System/Time.hpp>
 #include <Enlivengine/Math/Random.hpp>
+#include <Enlivengine/Map/Map.hpp>
 
 #include <SFML/Network.hpp>
 #include <vector>
@@ -55,7 +56,7 @@ private:
 private:
 	void AddNewSeed(const en::Vector2f& position, en::U32 clientID);
 	void AddNewItem(const en::Vector2f& position, ItemID itemID);
-	void AddNewBullet(const en::Vector2f& position, en::F32 rotation, ItemID itemID, en::F32 remainingDistance);
+	void AddNewBullet(const en::Vector2f& position, en::F32 rotation, en::U32 clientID, ItemID itemID, en::F32 remainingDistance);
 
 private:
 	void SendToAllPlayers(sf::Packet& packet);
@@ -67,21 +68,25 @@ private:
 	void SendClientJoinedPacket(en::U32 clientID, const std::string& nickname, const Chicken& chicken);
 	void SendClientLeftPacket(en::U32 clientID);
 	void SendServerStopPacket();
+	void SendServerInfo(const sf::IpAddress& remoteAddress, en::U16 remotePort);
 	void SendPlayerInfo(const sf::IpAddress& remoteAddress, en::U16 remotePort, const Player& player);
 	void SendItemInfo(const sf::IpAddress& remoteAddress, en::U16 remotePort, const Item& item);
 	void SendUpdateChickenPacket(en::U32 clientID, const Chicken& chicken);
 	void SendAddSeedPacket(const Seed& seed);
-	void SendRemoveSeedPacket(en::U32 seedID, bool eated);
+	void SendRemoveSeedPacket(en::U32 seedUID, bool eated, en::U32 eaterClientID);
 	void SendAddItemPacket(const Item& item);
-	void SendRemoveItemPacket(en::U32 itemID, bool pickedUp);
-	void SendShootBulletPacket(const en::Vector2f& position, en::F32 rotation, ItemID itemID, en::F32 remainingDistance);
+	void SendRemoveItemPacket(en::U32 itemID, bool pickedUp, en::U32 pickerClientID);
+	void SendShootBulletPacket(const Bullet& bullet);
 	void SendHitChickenPacket(en::U32 clientID, en::U32 killerClientID);
 	void SendKillChickenPacket(en::U32 clientID, en::U32 killerClientID);
+	void SendRespawnChickenPacket(en::U32 clientID, const en::Vector2f& position);
 
-private:
+private:  
 	ServerSocket mSocket;
 	bool mRunning;
 
+	en::tmx::Map mMap;
+	en::Vector2f mMapSize;
 	std::vector<Player> mPlayers;
 	std::vector<Seed> mSeeds;
 	std::vector<Item> mItems;

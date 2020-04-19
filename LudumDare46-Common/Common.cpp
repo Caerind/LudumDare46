@@ -2,6 +2,21 @@
 
 #include <Enlivengine/Math/Random.hpp>
 
+const char* GetRejectReasonString(RejectReason rejectReason)
+{
+	switch (rejectReason)
+	{
+	case RejectReason::UnknownError: break;
+	case RejectReason::TooManyPlayers: return "TooManyPlayers"; break;
+	case RejectReason::Blacklisted: return "Blacklisted"; break;
+	case RejectReason::Kicked: return "Kicked"; break;
+	case RejectReason::Timeout: return "Timeout"; break;
+	case RejectReason::Banned: return "Banned"; break;
+	default: break;
+	}
+	return "<Unknown>";
+}
+
 bool IsValidItemForAttack(ItemID itemID)
 {
 	return itemID > ItemID::None && itemID < ItemID::Count;
@@ -54,7 +69,22 @@ en::F32 GetItemWeight(ItemID itemID)
 
 ItemID GetRandomAttackItem()
 {
-	return static_cast<ItemID>(en::Random::get<en::U32>(static_cast<en::U32>(ItemID::None) + 1, static_cast<en::U32>(ItemID::Count)));
+	return static_cast<ItemID>(en::Random::get<en::U32>(static_cast<en::U32>(ItemID::None) + 1, static_cast<en::U32>(ItemID::Crossbow)));
+}
+
+const char* GetItemTextureName(ItemID itemID)
+{
+	switch (itemID)
+	{
+	case ItemID::None: return "chicken_vanilla";
+	case ItemID::Shuriken: return "chicken_shuriken";
+	case ItemID::Laser: return "chicken_laser";
+	case ItemID::Crossbow: return "chicken_crossbow";
+	case ItemID::Uzi: return "chicken_uzi";
+	case ItemID::M16: return "chicken_m16";
+	default: break;
+	}
+	return "chicken_vanilla";
 }
 
 const char* GetItemMusicName(ItemID itemID)
@@ -117,7 +147,37 @@ const char* GetItemSoundHitName(ItemID itemID)
 	return "";
 }
 
-sf::Packet& operator <<(sf::Packet& packet, const Chicken& chicken)
+sf::IntRect GetItemLootTextureRect(ItemID itemID)
+{
+	switch (itemID)
+	{
+	case ItemID::None: break;
+	case ItemID::Shuriken: return sf::IntRect(0, 0, 32, 32);
+	case ItemID::Laser: return sf::IntRect(32, 0, 32, 32);
+	case ItemID::Crossbow: return sf::IntRect(64, 0, 32, 32);
+	case ItemID::Uzi: return sf::IntRect(96, 0, 32, 32);
+	case ItemID::M16: return sf::IntRect(128, 0, 32, 32);
+	default: break;
+	}
+	return sf::IntRect(0, 0, 0, 0);
+}
+
+sf::IntRect GetItemBulletTextureRect(ItemID itemID)
+{
+	switch (itemID)
+	{
+	case ItemID::None: break;
+	case ItemID::Shuriken: return sf::IntRect(0, 0, 16, 16);
+	case ItemID::Laser: return sf::IntRect(16, 0, 16, 16);
+	case ItemID::Crossbow: return sf::IntRect(32, 0, 16, 16);
+	case ItemID::Uzi: return sf::IntRect(48, 0, 16, 16);
+	case ItemID::M16: return sf::IntRect(64, 0, 16, 16);
+	default: break;
+	}
+	return sf::IntRect(0, 0, 0, 0);
+}
+
+sf::Packet& operator<<(sf::Packet& packet, const Chicken& chicken)
 {
 	packet << chicken.position.x;
 	packet << chicken.position.y;
@@ -130,7 +190,7 @@ sf::Packet& operator <<(sf::Packet& packet, const Chicken& chicken)
 	return packet;
 }
 
-sf::Packet& operator >>(sf::Packet& packet, Chicken& chicken)
+sf::Packet& operator>>(sf::Packet& packet, Chicken& chicken)
 {
 	en::U32 itemIDRaw;
 	packet >> chicken.position.x;
@@ -142,4 +202,107 @@ sf::Packet& operator >>(sf::Packet& packet, Chicken& chicken)
 	packet >> chicken.attack;
 	chicken.itemID = static_cast<ItemID>(itemIDRaw);
 	return packet;
+}
+
+sf::Packet& operator<<(sf::Packet& packet, const Seed& seed)
+{
+	packet << seed.seedUID;
+	packet << seed.position.x;
+	packet << seed.position.y;
+	packet << seed.clientID;
+	packet << static_cast<en::F32>(seed.remainingTime.asSeconds());
+	return packet;
+}
+
+sf::Packet& operator>>(sf::Packet& packet, Seed& seed)
+{
+	en::F32 seconds;
+	packet >> seed.seedUID;
+	packet >> seed.position.x;
+	packet >> seed.position.y;
+	packet >> seed.clientID;
+	packet >> seconds;
+	seed.remainingTime = en::seconds(seconds);
+	return packet;
+}
+
+sf::Packet& operator<<(sf::Packet& packet, const Item& item)
+{
+	packet << item.itemUID;
+	packet << static_cast<en::U32>(item.itemID);
+	packet << item.position.x;
+	packet << item.position.y;
+	return packet;
+}
+
+sf::Packet& operator>>(sf::Packet& packet, Item& item)
+{
+	en::U32 itemIDRaw;
+	packet >> item.itemUID;
+	packet >> itemIDRaw;
+	packet >> item.position.x;
+	packet >> item.position.y;
+	item.itemID = static_cast<ItemID>(itemIDRaw);
+	return packet;
+}
+
+sf::Packet& operator<<(sf::Packet& packet, const Bullet& bullet)
+{
+	packet << bullet.bulletUID;
+	packet << bullet.position.x;
+	packet << bullet.position.y;
+	packet << bullet.rotation;
+	packet << bullet.clientID;
+	packet << static_cast<en::U32>(bullet.itemID);
+	packet << bullet.remainingDistance;
+	return packet;
+}
+
+sf::Packet& operator>>(sf::Packet& packet, Bullet& bullet)
+{
+	en::U32 itemIDRaw;
+	packet >> bullet.bulletUID;
+	packet >> bullet.position.x;
+	packet >> bullet.position.y;
+	packet >> bullet.rotation;
+	packet >> bullet.clientID;
+	packet >> itemIDRaw;
+	packet >> bullet.remainingDistance;
+	bullet.itemID = static_cast<ItemID>(itemIDRaw);
+	return packet;
+}
+
+sf::Packet& operator<<(sf::Packet& packet, const Blood& blood)
+{
+	packet << blood.bloodUID;
+	packet << blood.position.x;
+	packet << blood.position.y;
+	packet << static_cast<en::F32>(blood.remainingTime.asSeconds());
+	return packet;
+}
+
+sf::Packet& operator>>(sf::Packet& packet, Blood& blood)
+{
+	en::F32 seconds;
+	packet >> blood.bloodUID;
+	packet >> blood.position.x;
+	packet >> blood.position.y;
+	packet >> seconds;
+	blood.remainingTime = en::seconds(seconds);
+	return packet;
+}
+
+bool Bullet::Update(en::F32 dtSeconds)
+{
+	const en::F32 distance = dtSeconds * DefaultProjectileSpeed;
+	position += en::Vector2f::polar(rotation, distance);
+	remainingDistance -= distance;
+	if (remainingDistance <= 0.0f)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }

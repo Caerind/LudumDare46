@@ -69,14 +69,8 @@ public:
 			{
 				ENLIVE_PROFILE_FUNCTION();
 				GameSingleton::HandleIncomingPackets();
-			}
-			if (GameSingleton::mClient.IsConnected())
-			{
-				GameSingleton::mLastPacketTime += dt;
-				if (GameSingleton::mLastPacketTime > DefaultClientTimeout)
+				if (GameSingleton::HasTimeout(dt))
 				{
-					GameSingleton::mClient.SetClientID(en::U32_Max);
-					GameSingleton::mClient.Stop();
 					clearStates();
 				}
 			}

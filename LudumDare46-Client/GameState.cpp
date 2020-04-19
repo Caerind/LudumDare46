@@ -9,17 +9,24 @@ GameState::GameState(en::StateManager& manager)
 	GameSingleton::mView.setSize(1024.0f, 768.0f);
 	GameSingleton::mView.setCenter(1024.0f * 0.5f, 768.0f * 0.5f);
 	GameSingleton::mView.setZoom(0.6f);
-
 	GameSingleton::mMap.load();
+	GameSingleton::mPlayingState = GameSingleton::PlayingState::Playing;
 }
 
 bool GameState::handleEvent(const sf::Event& event)
 {
 	ENLIVE_PROFILE_FUNCTION();
 
-	if (event.type == sf::Event::MouseButtonPressed)
+	if (GameSingleton::IsPlaying())
 	{
-		GameSingleton::SendDropSeedPacket(GameSingleton::mApplication->GetWindow().getCursorPositionView(GameSingleton::mView));
+		if (event.type == sf::Event::MouseButtonPressed)
+		{
+			GameSingleton::SendDropSeedPacket(GameSingleton::mApplication->GetWindow().getCursorPositionView(GameSingleton::mView));
+		}
+	}
+	else
+	{
+		// TODO : Buttons : Respawn & Leave
 	}
 
 	return false;
@@ -28,35 +35,36 @@ bool GameState::handleEvent(const sf::Event& event)
 bool GameState::update(en::Time dt)
 {
 	ENLIVE_PROFILE_FUNCTION();
+	const en::F32 dtSeconds = dt.asSeconds();
 
 	// Network
 	GameSingleton::HandleIncomingPackets();
-	if (GameSingleton::mClient.IsConnected())
+	if (GameSingleton::HasTimeout(dt) || GameSingleton::IsConnecting())
 	{
-		GameSingleton::mLastPacketTime += dt;
-		if (GameSingleton::mLastPacketTime > DefaultClientTimeout)
-		{
-			GameSingleton::mClient.SetClientID(en::U32_Max);
-			GameSingleton::mClient.Stop();
-			clearStates();
-		}
+		clearStates();
 	}
 
 	// Bullets
+	mShurikenRotation += dtSeconds * DefaultShurikenRotDegSpeed;
 	en::U32 bulletSize = static_cast<en::U32>(GameSingleton::mBullets.size());
 	for (en::U32 i = 0; i < bulletSize; )
 	{
-		const en::F32 distance = dt.asSeconds() * DefaultProjectileSpeed;
-		GameSingleton::mBullets[i].position += en::Vector2f::polar(GameSingleton::mBullets[i].rotation, distance);
-		GameSingleton::mBullets[i].remainingDistance -= distance;
-		if (GameSingleton::mBullets[i].remainingDistance <= 0.0f)
+		if (GameSingleton::mBullets[i].Update(dtSeconds))
 		{
 			GameSingleton::mBullets.erase(GameSingleton::mBullets.begin() + i);
 			bulletSize--;
 		}
 		else
 		{
-			i++;
+			if (false) // Bullet collision detection
+			{
+				GameSingleton::mBullets.erase(GameSingleton::mBullets.begin() + i);
+				bulletSize--;
+			}
+			else
+			{
+				i++;
+			}
 		}
 	}
 
@@ -65,15 +73,15 @@ bool GameState::update(en::Time dt)
 		static en::Vector2f lastPositionSoundStart;
 		static const en::Time moveSoundDuration = en::seconds(0.2f);
 		static en::Time lastTimeSinceSoundStart = en::Time::Zero;
-		static ItemID lastItemID = ItemID::None;
 
 		lastTimeSinceSoundStart += dt;
 
 		const en::U32 playerSize = static_cast<en::U32>(GameSingleton::mPlayers.size());
 		for (en::U32 i = 0; i < playerSize; ++i)
 		{
-			if (GameSingleton::mPlayers[i].clientID == GameSingleton::mClient.GetClientID())
+			if (GameSingleton::IsClient(GameSingleton::mPlayers[i].clientID))
 			{
+				// Cam stylé effect
 				const en::Vector2f mPos = getApplication().GetWindow().getCursorPositionView(GameSingleton::mView);
 				const en::Vector2f pPos = GameSingleton::mPlayers[i].chicken.position;
 				en::Vector2f delta = mPos - pPos;
@@ -90,28 +98,6 @@ bool GameState::update(en::Time dt)
 					en::AudioSystem::GetInstance().PlaySound("chicken_move").SetVolume(0.05f);
 					lastPositionSoundStart = pPos;
 				}
-
-				if (lastItemID != GameSingleton::mPlayers[i].chicken.itemID)
-				{
-					lastItemID = GameSingleton::mPlayers[i].chicken.itemID;
-					if (mMusic.IsValid())
-					{
-						mMusic.Stop();
-					}
-					mMusic = en::MusicPtr();
-					const char* name = GetItemMusicName(GameSingleton::mPlayers[i].chicken.itemID);
-					if (name != nullptr && strlen(name) > 0)
-					{
-						mMusic = en::AudioSystem::GetInstance().PlayMusic(name);
-						if (mMusic.IsValid())
-						{
-							mMusic.SetLoop(true);
-							mMusic.SetVolume(0.2f);
-						}
-					}
-				}
-
-				break;
 			}
 		}
 	}
@@ -143,7 +129,8 @@ void GameState::render(sf::RenderTarget& target)
 	const en::U32 bloodSize = static_cast<en::U32>(GameSingleton::mBloods.size());
 	for (en::U32 i = 0; i < bloodSize; ++i)
 	{
-		bloodSprite.setTextureRect(sf::IntRect(GameSingleton::mBloods[i].index * 16, 0, 16, 16));
+		const en::U32 bloodIndex = (GameSingleton::mBloods[i].bloodUID % DefaultBloodCount);
+		bloodSprite.setTextureRect(sf::IntRect(bloodIndex * 16, 0, 16, 16));
 		bloodSprite.setPosition(en::toSF(GameSingleton::mBloods[i].position));
 		target.draw(bloodSprite);
 	}
@@ -154,7 +141,6 @@ void GameState::render(sf::RenderTarget& target)
 	if (!itemInitialized)
 	{
 		itemSprite.setTexture(en::ResourceManager::GetInstance().Get<en::Texture>("loots").Get());
-		itemSprite.setTextureRect(sf::IntRect(0, 0, 32, 32));
 		itemSprite.setOrigin(16.0f, 16.0f);
 		itemSprite.setScale(1.5f, 1.5f);
 		itemInitialized = true;
@@ -162,15 +148,9 @@ void GameState::render(sf::RenderTarget& target)
 	const en::U32 itemSize = static_cast<en::U32>(GameSingleton::mItems.size());
 	for (en::U32 i = 0; i < itemSize; ++i)
 	{
-		bool valid = true;
-		switch (GameSingleton::mItems[i].item)
+		if (IsValidItemForAttack(GameSingleton::mItems[i].itemID))
 		{
-		case ItemID::Shuriken: itemSprite.setTextureRect(sf::IntRect(0, 0, 32, 32)); break;
-		case ItemID::Laser: itemSprite.setTextureRect(sf::IntRect(32, 0, 32, 32)); break;
-		default: valid = false; break;
-		}
-		if (valid)
-		{
+			itemSprite.setTextureRect(GetItemLootTextureRect(GameSingleton::mItems[i].itemID));
 			itemSprite.setPosition(en::toSF(GameSingleton::mItems[i].position));
 			target.draw(itemSprite);
 		}
@@ -199,26 +179,24 @@ void GameState::render(sf::RenderTarget& target)
 	if (!bulletInitialized)
 	{
 		bulletSprite.setTexture(en::ResourceManager::GetInstance().Get<en::Texture>("bullets").Get());
-		bulletSprite.setTextureRect(sf::IntRect(0, 0, 16, 16));
 		bulletSprite.setOrigin(8.0f, 8.0f);
 		bulletInitialized = true;
 	}
 	const en::U32 bulletSize = static_cast<en::U32>(GameSingleton::mBullets.size());
 	for (en::U32 i = 0; i < bulletSize; ++i)
 	{
-		bool valid = true;
-		switch (GameSingleton::mBullets[i].itemID)
+		if (GameSingleton::mItems[i].itemID == ItemID::Shuriken)
 		{
-		case ItemID::Shuriken: bulletSprite.setTextureRect(sf::IntRect(0, 0, 16, 16)); break;
-		case ItemID::Laser: bulletSprite.setTextureRect(sf::IntRect(16, 0, 16, 16)); break;
-		default: valid = false; break;
+			bulletSprite.setRotation(mShurikenRotation);
 		}
-		if (valid)
+		else
 		{
-			bulletSprite.setPosition(en::toSF(GameSingleton::mBullets[i].position));
-			bulletSprite.setRotation(GameSingleton::mBullets[i].rotation + 90.0f);
-			target.draw(bulletSprite);
+			bulletSprite.setRotation(0.0f);
 		}
+		bulletSprite.setTextureRect(GetItemBulletTextureRect(GameSingleton::mItems[i].itemID)); 
+		bulletSprite.setPosition(en::toSF(GameSingleton::mBullets[i].position));
+		bulletSprite.setRotation(GameSingleton::mBullets[i].rotation + 90.0f);
+		target.draw(bulletSprite);
 	}
 
 	// Players
@@ -242,6 +220,7 @@ void GameState::render(sf::RenderTarget& target)
 		chickenBodySprite.setColor(en::toSF(color));
 		chickenBodySprite.setPosition(en::toSF(GameSingleton::mPlayers[i].chicken.position));
 		target.draw(chickenBodySprite);
+		GameSingleton::mPlayers[i].UpdateSprite();
 		target.draw(GameSingleton::mPlayers[i].sprite);
 	}
 

@@ -17,7 +17,8 @@ std::vector<Bullet> GameSingleton::mBullets;
 std::vector<Blood> GameSingleton::mBloods;
 en::Application::onApplicationStoppedType::ConnectionGuard GameSingleton::mApplicationStoppedSlot; 
 sf::Sprite GameSingleton::mCursor;
-en::SoundID GameSingleton::mPlayerMovementSoundID;
+GameSingleton::PlayingState GameSingleton::mPlayingState;
+en::MusicPtr GameSingleton::mMusic;
 
 void GameSingleton::ConnectWindowCloseSlot()
 {
@@ -55,23 +56,16 @@ void GameSingleton::HandleIncomingPackets()
 		} break;
 		case ServerPacketID::ConnectionAccepted:
 		{
-			if (!mClient.IsConnected())
-			{
-				en::U32 clientID;
-				packet >> clientID;
-				LogInfo(en::LogChannel::All, 5, "ConnectionAccepted, ClientID %d", clientID);
-				mClient.SetClientID(clientID);
-			}
-			else
-			{
-				LogError(en::LogChannel::All, 9, "Already connected %d", mClient.GetClientID());
-			}
+			en::U32 clientID;
+			packet >> clientID;
+			LogInfo(en::LogChannel::All, 5, "ConnectionAccepted, ClientID %d", clientID);
+			mClient.SetClientID(clientID);
 		} break;
 		case ServerPacketID::ConnectionRejected:
 		{
 			en::U32 rejectReason;
 			packet >> rejectReason;
-			LogInfo(en::LogChannel::All, 5, "ConnectionRejected %d", rejectReason);
+			LogInfo(en::LogChannel::All, 5, "ConnectionRejected %s", GetRejectReasonString(static_cast<RejectReason>(rejectReason)));
 			mClient.SetClientID(en::U32_Max);
 			mClient.Stop();
 		} break;
@@ -81,7 +75,7 @@ void GameSingleton::HandleIncomingPackets()
 			std::string nickname;
 			Chicken chicken;
 			packet >> clientID >> nickname >> chicken;
-			LogInfo(en::LogChannel::All, 5, "ClientJoined, ClientID %d, Nickname %s", clientID, nickname.c_str());
+			LogInfo(en::LogChannel::All, 5, "%s joined (ID: %d)", nickname.c_str(), clientID);
 			const en::I32 playerIndex = GetPlayerIndexFromClientID(clientID);
 			if (playerIndex == -1)
 			{
@@ -90,12 +84,16 @@ void GameSingleton::HandleIncomingPackets()
 				newPlayer.nickname = nickname;
 				newPlayer.chicken = chicken;
 				newPlayer.sprite.setOrigin({32.0f, 32.0f});
-				newPlayer.UpdateSprite();
 				mPlayers.push_back(newPlayer);
 			}
 			else
 			{
-				LogWarning(en::LogChannel::All, 6, "Client already joined%s", "");
+				// Update player
+				Player& newPlayer = mPlayers[playerIndex];
+				newPlayer.clientID = clientID;
+				newPlayer.nickname = nickname;
+				newPlayer.chicken = chicken;
+				newPlayer.sprite.setOrigin({ 32.0f, 32.0f });
 			}
 		} break;
 		case ServerPacketID::ClientLeft:
@@ -108,16 +106,13 @@ void GameSingleton::HandleIncomingPackets()
 			{
 				mPlayers.erase(mPlayers.begin() + static_cast<en::U32>(playerIndex));
 			}
-			else
-			{
-				LogWarning(en::LogChannel::All, 6, "Client already left or not logged%s", "");
-			}
 		} break;
 		case ServerPacketID::Stopping:
 		{
 			LogInfo(en::LogChannel::All, 5, "ServerStopping%s", "");
 			mClient.SetClientID(en::U32_Max);
 			mClient.Stop();
+			mPlayingState = PlayingState::Connecting; // Try to kick when in game state
 		} break;
 		case ServerPacketID::PlayerInfo:
 		{
@@ -125,7 +120,7 @@ void GameSingleton::HandleIncomingPackets()
 			std::string nickname;
 			Chicken chicken;
 			packet >> clientID >> nickname >> chicken;
-			LogInfo(en::LogChannel::All, 5, "PlayerInfo, ClientID %d, Nickname %s", clientID, nickname.c_str());
+			LogInfo(en::LogChannel::All, 5, "PlayerInfo for %s (ID: %d)", nickname.c_str(), clientID);
 			const en::I32 playerIndex = GetPlayerIndexFromClientID(clientID);
 			if (playerIndex == -1)
 			{
@@ -134,21 +129,23 @@ void GameSingleton::HandleIncomingPackets()
 				newPlayer.nickname = nickname;
 				newPlayer.chicken = chicken;
 				newPlayer.sprite.setOrigin({ 32.0f, 32.0f });
-				newPlayer.UpdateSprite();
 				mPlayers.push_back(newPlayer);
 			}
 			else
 			{
-				LogWarning(en::LogChannel::All, 6, "Player info already herer%s", "");
+				// Update player
+				Player& newPlayer = mPlayers[playerIndex];
+				newPlayer.clientID = clientID;
+				newPlayer.nickname = nickname;
+				newPlayer.chicken = chicken;
+				newPlayer.sprite.setOrigin({ 32.0f, 32.0f });
 			}
 		} break;
 		case ServerPacketID::ItemInfo:
 		{
-			en::U32 itemRaw;
 			Item item;
-			packet >> item.itemID >> itemRaw >> item.position.x >> item.position.y;
-			item.item = static_cast<ItemID>(itemRaw);
-			LogInfo(en::LogChannel::All, 4, "New item %d %d %f %f", item.itemID, item.item, item.position.x, item.position.y);
+			packet >> item;
+			LogInfo(en::LogChannel::All, 4, "New item %d %f %f", item.itemID, item.position.x, item.position.y);
 			mItems.push_back(item);
 		} break;
 		case ServerPacketID::UpdateChicken:
@@ -159,34 +156,7 @@ void GameSingleton::HandleIncomingPackets()
 			const en::I32 playerIndex = GetPlayerIndexFromClientID(clientID);
 			if (playerIndex >= 0)
 			{
-				ItemID previousItemID = mPlayers[playerIndex].chicken.itemID;
-				en::F32 previousLife = mPlayers[playerIndex].chicken.life;
 				packet >> mPlayers[playerIndex].chicken;
-				if (previousItemID != mPlayers[playerIndex].chicken.itemID)
-				{
-					if (mPlayers[playerIndex].clientID == mClient.GetClientID())
-					{
-						switch (mPlayers[playerIndex].chicken.itemID)
-						{
-						case ItemID::Shuriken: en::AudioSystem::GetInstance().PlaySound("shuriken_loot"); break; // TODO : Move out
-						case ItemID::Laser: en::AudioSystem::GetInstance().PlaySound("shuriken_loot"); break; // TODO : Move out
-						default: break;
-						}
-					}
-				}
-				if (previousLife > mPlayers[playerIndex].chicken.life)
-				{
-					en::AudioSystem::GetInstance().PlaySound("chicken_damage");
-
-					Blood blood;
-					blood.position = mPlayers[playerIndex].chicken.position;
-					blood.position.x += en::Random::get<en::F32>(-20.0f, 20.0f); // TODO : Move out
-					blood.position.y += en::Random::get<en::F32>(-20.0f, 20.0f); // TODO : Move out
-					blood.delay = en::Time::Zero;
-					blood.index = en::Random::get<en::U32>(0, 3); // TODO : Move out
-					mBloods.push_back(blood);
-				}
-				mPlayers[playerIndex].UpdateSprite();
 			}
 			else
 			{
@@ -196,26 +166,33 @@ void GameSingleton::HandleIncomingPackets()
 		case ServerPacketID::AddSeed:
 		{
 			Seed seed;
-			packet >> seed.seedID >> seed.position.x >> seed.position.y;
-			LogInfo(en::LogChannel::All, 4, "New seed %d %f %f", seed.seedID, seed.position.x, seed.position.y);
+			packet >> seed;
+			LogInfo(en::LogChannel::All, 4, "New seed %f %f", seed.position.x, seed.position.y);
 			mSeeds.push_back(seed);
 		} break;
 		case ServerPacketID::RemoveSeed:
 		{
-			en::U32 seedID;
+			en::U32 seedUID;
 			bool eated;
-			packet >> seedID >> eated;
-			LogInfo(en::LogChannel::All, 4, "Remove seed %d", seedID);
+			en::U32 eaterClientID;
+			packet >> seedUID >> eated >> eaterClientID;
+			LogInfo(en::LogChannel::All, 4, "Remove seed%s", "");
 			bool removed = false;
 			en::U32 size = static_cast<en::U32>(mSeeds.size());
 			for (en::U32 i = 0; i < size && !removed; )
 			{
-				if (mSeeds[i].seedID == seedID)
+				if (mSeeds[i].seedUID == seedUID)
 				{
-					const bool isInView = true; // TODO ; Is in view
-					if (eated && isInView)
+					if (eated && IsInView(mSeeds[i].position))
 					{
-						// TODO : Play sound
+						if (IsClient(eaterClientID))
+						{
+							// TODO : Play sound
+						}
+						else
+						{
+							// TODO : Play sound ?
+						}
 					}
 					mSeeds.erase(mSeeds.begin() + i);
 					size--;
@@ -229,37 +206,50 @@ void GameSingleton::HandleIncomingPackets()
 		} break;
 		case ServerPacketID::AddItem:
 		{
-			en::U32 itemRaw;
 			Item item;
-			packet >> item.itemID >> itemRaw >> item.position.x >> item.position.y;
-			item.item = static_cast<ItemID>(itemRaw);
-			LogInfo(en::LogChannel::All, 4, "New item %d %d %f %f", item.itemID, item.item, item.position.x, item.position.y);
+			packet >> item;
+			LogInfo(en::LogChannel::All, 4, "New item %d %f %f", item.itemID, item.position.x, item.position.y);
 			mItems.push_back(item);
 		} break;
 		case ServerPacketID::RemoveItem:
 		{
-			en::U32 itemID;
+			en::U32 itemUID;
 			bool pickedUp;
-			packet >> itemID >> pickedUp;
-			LogInfo(en::LogChannel::All, 4, "Remove item %d", itemID);
+			en::U32 pickerClientID;
+			packet >> itemUID >> pickedUp >> pickerClientID;
+			LogInfo(en::LogChannel::All, 4, "Remove item%s", "");
 			bool removed = false;
 			en::U32 size = static_cast<en::U32>(mItems.size());
 			for (en::U32 i = 0; i < size && !removed; )
 			{
-				if (mItems[i].itemID == itemID)
+				if (mItems[i].itemUID == itemUID)
 				{
 					if (pickedUp && IsInView(mItems[i].position))
 					{
-						en::SoundPtr sound;
-						switch (mItems[i].item)
-						{
-						case ItemID::Shuriken: sound = en::AudioSystem::GetInstance().PlaySound("shuriken_loot"); break; // TODO : Move out
-						case ItemID::Laser: sound = en::AudioSystem::GetInstance().PlaySound("shuriken_loot"); break; // TODO : Move out
-						default: break;
-						}
+						en::SoundPtr sound = en::AudioSystem::GetInstance().PlaySound(GetItemSoundLootName(mItems[i].itemID));
 						if (sound.IsValid())
 						{
 							sound.SetVolume(0.25f);
+						}
+
+						// Play music
+						if (IsClient(pickerClientID))
+						{
+							if (mMusic.IsValid())
+							{
+								mMusic.Stop();
+							}
+							mMusic = en::MusicPtr();
+							const char* name = GetItemMusicName(GameSingleton::mPlayers[i].chicken.itemID);
+							if (name != nullptr && strlen(name) > 0)
+							{
+								mMusic = en::AudioSystem::GetInstance().PlayMusic(name);
+								if (mMusic.IsValid())
+								{
+									mMusic.SetLoop(true);
+									mMusic.SetVolume(0.2f);
+								}
+							}
 						}
 					}
 					mItems.erase(mItems.begin() + i);
@@ -274,12 +264,79 @@ void GameSingleton::HandleIncomingPackets()
 		} break;
 		case ServerPacketID::ShootBullet:
 		{
-			en::U32 itemIDRaw;
 			Bullet bullet;
-			packet >> bullet.position.x >> bullet.position.y >> itemIDRaw >> bullet.remainingDistance;
-			LogInfo(en::LogChannel::All, 4, "Shoot bullet%s", "");
-			bullet.itemID = static_cast<ItemID>(itemIDRaw);
+			packet >> bullet;
+			LogInfo(en::LogChannel::All, 4, "Bullet%s", "");
 			mBullets.push_back(bullet);
+			
+			// Play fire sound
+			if (IsInView(bullet.position))
+			{
+				en::SoundPtr sound = en::AudioSystem::GetInstance().PlaySound(GetItemSoundFireName(bullet.itemID));
+				if (sound.IsValid())
+				{
+					sound.SetVolume(0.25f);
+				}
+			}
+		} break;
+		case ServerPacketID::HitChicken:
+		{
+			en::U32 clientID;
+			en::U32 killerClientID;
+			packet >> clientID >> killerClientID;
+			LogInfo(en::LogChannel::All, 2, "Hit %d", clientID);
+
+			const en::I32 receiverIndex = GetPlayerIndexFromClientID(clientID);
+			if (receiverIndex >= 0 && IsInView(mPlayers[receiverIndex].chicken.position))
+			{
+				en::SoundPtr soundDamage = en::AudioSystem::GetInstance().PlaySound("chicken_damage");
+				if (soundDamage.IsValid())
+				{
+					soundDamage.SetVolume(0.25f);
+				}
+
+				const en::I32 killerIndex = GetPlayerIndexFromClientID(killerClientID);
+				if (killerIndex >= 0)
+				{
+					en::SoundPtr soundHit = en::AudioSystem::GetInstance().PlaySound(GetItemSoundHitName(mPlayers[killerIndex].chicken.itemID));
+					if (soundHit.IsValid())
+					{
+						soundHit.SetVolume(0.25f);
+					}
+				}
+			}
+		} break;
+		case ServerPacketID::KillChicken:
+		{
+			en::U32 clientID;
+			en::U32 killerClientID;
+			packet >> clientID >> killerClientID;
+			LogInfo(en::LogChannel::All, 2, "Kill %d", clientID);
+
+			const en::I32 receiverIndex = GetPlayerIndexFromClientID(clientID);
+			if (receiverIndex >= 0 && IsInView(mPlayers[receiverIndex].chicken.position))
+			{
+				en::SoundPtr soundDamage = en::AudioSystem::GetInstance().PlaySound("chicken_kill");
+				if (soundDamage.IsValid())
+				{
+					soundDamage.SetVolume(0.25f);
+				}
+			}
+
+			if (IsClient(killerClientID))
+			{
+				// TODO : Reward sound
+			}
+
+			if (IsClient(clientID))
+			{
+				// TODO : Die
+			}
+
+		} break;
+		case ServerPacketID::RespawnChicken:
+		{
+			// TODO
 		} break;
 
 		default:
@@ -288,6 +345,21 @@ void GameSingleton::HandleIncomingPackets()
 		} break;
 		}
 	}
+}
+
+bool GameSingleton::HasTimeout(en::Time dt)
+{
+	if (GameSingleton::mClient.IsConnected())
+	{
+		GameSingleton::mLastPacketTime += dt;
+		if (GameSingleton::mLastPacketTime > DefaultClientTimeout)
+		{
+			GameSingleton::mClient.SetClientID(en::U32_Max);
+			GameSingleton::mClient.Stop();
+			return true;
+		}
+	}
+	return false;
 }
 
 en::I32 GameSingleton::GetPlayerIndexFromClientID(en::U32 clientID)

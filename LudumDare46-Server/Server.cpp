@@ -15,6 +15,8 @@
 Server::Server()
 	: mSocket()
 	, mRunning(false)
+	, mMap()
+	, mMapSize(2000.0f, 2000.0f)
 	, mPlayers()
 	, mSeeds()
 	, mItems()
@@ -29,6 +31,14 @@ bool Server::Start(int argc, char** argv)
 	{
 		return false;
 	}
+
+	if (!mMap.LoadFromFile(DefaultServerMapPath))
+	{
+		LogError(en::LogChannel::Map, 4, "Can't load map %s", DefaultServerMapPath);
+		return false;
+	}
+	mMapSize.x = 1.0f * mMap.GetSize().x * mMap.GetTileSize().x;
+	mMapSize.y = 1.0f * mMap.GetSize().y * mMap.GetTileSize().y;
 
 	mRunning = true;
 
@@ -108,22 +118,7 @@ void Server::UpdateLogic(en::Time dt)
 	}
 	else
 	{
-		// Update seeds
-		en::U32 seedSize = static_cast<en::U32>(mSeeds.size());
-		for (en::U32 i = 0; i < seedSize;)
-		{
-			mSeeds[i].addTime += dt;
-			if (mSeeds[i].addTime >= DefaultSeedLifetime)
-			{
-				SendRemoveSeedPacket(mSeeds[i].seedID, false);
-				mSeeds.erase(mSeeds.begin() + i);
-				seedSize--;
-			}
-			else
-			{
-				i++;
-			}
-		}
+		// 
 	}
 }
 
@@ -410,7 +405,7 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 		const en::F32 distanceSqr = deltaSeed2.getSquaredLength();
 		if (distanceSqr < DefaultTooCloseDistanceSqr)
 		{
-			SendRemoveSeedPacket(mSeeds[bestSeedIndex].seedID, true);
+			SendRemoveSeedPacket(mSeeds[bestSeedIndex].seedUID, true, player.clientID);
 			mSeeds.erase(mSeeds.begin() + bestSeedIndex);
 		}
 	}
@@ -584,7 +579,7 @@ void Server::UpdateBullets(en::Time dt)
 				{
 					const en::Vector2f rotatedWeaponOffset = en::Vector2f(DefaultWeaponOffset).rotated(mPlayers[i].chicken.rotation);
 					mPlayers[i].cooldown = en::Time::Zero;
-					AddNewBullet(mPlayers[i].chicken.position + rotatedWeaponOffset, shootRotation, mPlayers[i].chicken.itemID, range);
+					AddNewBullet(mPlayers[i].chicken.position + rotatedWeaponOffset, shootRotation, mPlayers[i].clientID, mPlayers[i].chicken.itemID, range);
 				}
 			}
 		}
@@ -625,7 +620,7 @@ void Server::UpdateLoots(en::Time dt)
 	{
 		if (mItems.size() >= DefaultMaxItemAmount)
 		{
-			SendRemoveItemPacket(mItems[0].itemID, false);
+			SendRemoveItemPacket(mItems[0].itemUID, false, en::U32_Max);
 			mItems.erase(mItems.begin());
 		}
 		else
@@ -647,10 +642,10 @@ void Server::UpdateLoots(en::Time dt)
 				const en::Vector2f delta = pPos - mItems[j].position;
 				if (delta.getSquaredLength() < DefaultItemPickUpDistanceSqr)
 				{
-					mPlayers[i].chicken.itemID = mItems[j].item;
+					mPlayers[i].chicken.itemID = mItems[j].itemID;
 					mPlayers[i].needUpdate = true;
 
-					SendRemoveItemPacket(mItems[j].itemID, true);
+					SendRemoveItemPacket(mItems[j].itemUID, true, mPlayers[i].clientID);
 					mItems.erase(mItems.begin() + j);
 					itemSize--;
 				}
@@ -723,15 +718,13 @@ en::I32 Server::GetPlayerIndexFromClientID(en::U32 clientID) const
 en::Vector2f Server::GetRandomPositionSpawn()
 {
 	// TODO : Improve
-	static const en::F32 mapSize = 64.0f * 10.0f;
-	return { en::Random::get<en::F32>(0.0f, mapSize), en::Random::get<en::F32>(0.0f, mapSize) };
+	return { en::Random::get<en::F32>(64.0f, mMapSize.x - 64.0f), en::Random::get<en::F32>(64.0f, mMapSize.y - 64.0f) };
 }
 
 en::Vector2f Server::GetRandomPositionItem()
 {
 	// TODO : Improve
-	static const en::F32 mapSize = 64.0f * 10.0f;
-	return { en::Random::get<en::F32>(0.0f, mapSize), en::Random::get<en::F32>(0.0f, mapSize) };
+	return { en::Random::get<en::F32>(64.0f, mMapSize.x - 64.0f), en::Random::get<en::F32>(64.0f, mMapSize.y - 64.0f) };
 }
 
 void Server::AddNewSeed(const en::Vector2f& position, en::U32 clientID)
@@ -741,42 +734,45 @@ void Server::AddNewSeed(const en::Vector2f& position, en::U32 clientID)
 	{
 		if (mSeeds[i].clientID == clientID)
 		{
-			SendRemoveSeedPacket(mSeeds[i].seedID, false);
+			SendRemoveSeedPacket(mSeeds[i].seedUID, false, en::U32_Max);
 			mSeeds.erase(mSeeds.begin() + i);
 			break;
 		}
 	}
 
-	static en::U32 seedIDGenerator = 1;
+	static en::U32 seedUIDGenerator = 1;
 	Seed seed;
-	seed.seedID = seedIDGenerator++;
+	seed.seedUID = seedUIDGenerator++;
 	seed.position = position;
 	seed.clientID = clientID;
-	seed.addTime = en::Time::Zero;
+	seed.remainingTime = DefaultSeedLifetime;
 	mSeeds.push_back(seed);
 	SendAddSeedPacket(seed);
 }
 
 void Server::AddNewItem(const en::Vector2f& position, ItemID itemID) 
 {
-	static en::U32 itemIDGenerator = 1;
+	static en::U32 itemUIDGenerator = 1;
 	Item item;
-	item.itemID = itemIDGenerator++;
-	item.item = itemID;
+	item.itemUID = itemUIDGenerator++;
+	item.itemID = itemID;
 	item.position = position;
 	mItems.push_back(item);
 	SendAddItemPacket(item);
 }
 
-void Server::AddNewBullet(const en::Vector2f& position, en::F32 rotation, ItemID itemID, en::F32 remainingDistance)
+void Server::AddNewBullet(const en::Vector2f& position, en::F32 rotation, en::U32 clientID, ItemID itemID, en::F32 remainingDistance)
 {
+	static en::U32 bulletUIDGenerator = 1;
 	Bullet bullet;
+	bullet.bulletUID = bulletUIDGenerator++;
 	bullet.position = position;
 	bullet.rotation = rotation;
+	bullet.clientID = clientID;
 	bullet.itemID = itemID;
 	bullet.remainingDistance = remainingDistance;
 	mBullets.push_back(bullet);
-	SendShootBulletPacket(position, rotation, itemID, remainingDistance);
+	SendShootBulletPacket(bullet);
 }
 
 void Server::SendToAllPlayers(sf::Packet& packet)
@@ -866,6 +862,18 @@ void Server::SendServerStopPacket()
 	}
 }
 
+void Server::SendServerInfo(const sf::IpAddress& remoteAddress, en::U16 remotePort)
+{
+	if (mSocket.IsRunning())
+	{
+		sf::Packet packet;
+		packet << static_cast<en::U8>(ServerPacketID::ServerInfo);
+		packet << mMapSize.x;
+		packet << mMapSize.y;
+		mSocket.SendPacket(packet, remoteAddress, remotePort);
+	}
+}
+
 void Server::SendPlayerInfo(const sf::IpAddress& remoteAddress, en::U16 remotePort, const Player& player)
 {
 	if (mSocket.IsRunning())
@@ -885,10 +893,7 @@ void Server::SendItemInfo(const sf::IpAddress& remoteAddress, en::U16 remotePort
 	{
 		sf::Packet packet;
 		packet << static_cast<en::U8>(ServerPacketID::AddItem);
-		packet << item.itemID;
-		packet << static_cast<en::U32>(item.item);
-		packet << item.position.x;
-		packet << item.position.y;
+		packet << item;
 		mSocket.SendPacket(packet, remoteAddress, remotePort);
 	}
 }
@@ -911,22 +916,20 @@ void Server::SendAddSeedPacket(const Seed& seed)
 	{
 		sf::Packet packet;
 		packet << static_cast<en::U8>(ServerPacketID::AddSeed);
-		packet << seed.seedID;
-		packet << seed.position.x;
-		packet << seed.position.y;
-		packet << seed.clientID;
+		packet << seed;
 		SendToAllPlayers(packet);
 	}
 }
 
-void Server::SendRemoveSeedPacket(en::U32 seedID, bool eated)
+void Server::SendRemoveSeedPacket(en::U32 seedUID, bool eated, en::U32 eaterClientID)
 {
 	if (mSocket.IsRunning())
 	{
 		sf::Packet packet;
 		packet << static_cast<en::U8>(ServerPacketID::RemoveSeed);
-		packet << seedID;
+		packet << seedUID;
 		packet << eated;
+		packet << eaterClientID;
 		SendToAllPlayers(packet);
 	}
 }
@@ -937,37 +940,31 @@ void Server::SendAddItemPacket(const Item& item)
 	{
 		sf::Packet packet;
 		packet << static_cast<en::U8>(ServerPacketID::AddItem);
-		packet << item.itemID;
-		packet << static_cast<en::U32>(item.item);
-		packet << item.position.x;
-		packet << item.position.y;
+		packet << item;
 		SendToAllPlayers(packet);
 	}
 }
 
-void Server::SendRemoveItemPacket(en::U32 itemID, bool pickedUp)
+void Server::SendRemoveItemPacket(en::U32 itemUID, bool pickedUp, en::U32 pickerClientID)
 {
 	if (mSocket.IsRunning())
 	{
 		sf::Packet packet;
 		packet << static_cast<en::U8>(ServerPacketID::RemoveItem);
-		packet << itemID;
+		packet << itemUID;
 		packet << pickedUp;
+		packet << pickerClientID;
 		SendToAllPlayers(packet);
 	}
 }
 
-void Server::SendShootBulletPacket(const en::Vector2f& position, en::F32 rotation, ItemID itemID, en::F32 remainingDistance)
+void Server::SendShootBulletPacket(const Bullet& bullet)
 {
 	if (mSocket.IsRunning())
 	{
 		sf::Packet packet;
 		packet << static_cast<en::U8>(ServerPacketID::ShootBullet);
-		packet << position.x;
-		packet << position.y;
-		packet << rotation;
-		packet << static_cast<en::U32>(itemID);
-		packet << remainingDistance;
+		packet << bullet;
 		SendToAllPlayers(packet);
 	}
 }
@@ -992,6 +989,19 @@ void Server::SendKillChickenPacket(en::U32 clientID, en::U32 killerClientID)
 		packet << static_cast<en::U8>(ServerPacketID::KillChicken);
 		packet << clientID;
 		packet << killerClientID;
+		SendToAllPlayers(packet);
+	}
+}
+
+void Server::SendRespawnChickenPacket(en::U32 clientID, const en::Vector2f& position)
+{
+	if (mSocket.IsRunning())
+	{
+		sf::Packet packet;
+		packet << static_cast<en::U8>(ServerPacketID::RespawnChicken);
+		packet << clientID;
+		packet << position.x;
+		packet << position.y;
 		SendToAllPlayers(packet);
 	}
 }

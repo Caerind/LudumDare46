@@ -4,6 +4,7 @@
 #include <Enlivengine/System/Time.hpp>
 #include <Enlivengine/Math/Vector2.hpp>
 #include <SFML/Network/Packet.hpp>
+#include <SFML/Graphics/Rect.hpp>
 
 // Network
 #define DefaultServerAddress "92.222.79.62"
@@ -12,9 +13,9 @@
 // Server
 #define DefaultClientTimeout en::seconds(10.0f)
 #define DefaultServerTimeout en::seconds(60.0f)
-#define DefaultStepInterval en::seconds(1.0f / 60.f)
-#define DefaultTickInterval en::seconds(1.0f / 20.f)
-#define DefaultSleepTime sf::seconds(1.0f / 5.f)
+#define DefaultStepInterval en::seconds(1.0f / 60.0f)
+#define DefaultTickInterval en::seconds(1.0f / 20.0f)
+#define DefaultSleepTime sf::seconds(1.0f / 5.0f)
 #define DefaultMaxPlayers 16
 
 // Movement
@@ -51,6 +52,11 @@
 #define DefaultMaxItemAmount 60 /* Debug */
 #define DefaultSpawnItemInterval en::seconds(3.0f)
 
+// Visuals
+#define DefaultBloodCount 3
+#define DefaultShurikenRotDegSpeed 720.0f
+#define DefaultServerMapPath "../../Assets/Map/arena.tmx"
+
 
 // Server -> Client
 enum class ServerPacketID : en::U8
@@ -64,6 +70,7 @@ enum class ServerPacketID : en::U8
 	Stopping,
 
 	// Game specific packets
+	ServerInfo,
 	PlayerInfo,
 	ItemInfo,
 	UpdateChicken,
@@ -74,6 +81,7 @@ enum class ServerPacketID : en::U8
 	ShootBullet,
 	HitChicken,
 	KillChicken,
+	RespawnChicken,
 
 	// Last packet ID
 	Count
@@ -90,6 +98,7 @@ enum class ClientPacketID : en::U8
 
 	// Game specific packet
 	DropSeed,
+	Respawn,
 
 	// Last packet ID
 	Count
@@ -108,6 +117,7 @@ enum class RejectReason : en::U8
 
 	Count
 };
+const char* GetRejectReasonString(RejectReason rejectReason);
 
 enum class ItemID : en::U32
 {
@@ -125,10 +135,13 @@ en::Time GetItemCooldown(ItemID itemID);
 en::F32 GetItemRange(ItemID itemID);
 en::F32 GetItemWeight(ItemID itemID);
 ItemID GetRandomAttackItem();
+const char* GetItemTextureName(ItemID itemID);
 const char* GetItemMusicName(ItemID itemID);
 const char* GetItemSoundLootName(ItemID itemID);
 const char* GetItemSoundFireName(ItemID itemID);
 const char* GetItemSoundHitName(ItemID itemID);
+sf::IntRect GetItemLootTextureRect(ItemID itemID);
+sf::IntRect GetItemBulletTextureRect(ItemID itemID);
 
 struct Chicken
 {
@@ -141,5 +154,47 @@ struct Chicken
 	en::F32 speed;
 	en::F32 attack;
 };
-sf::Packet& operator <<(sf::Packet& packet, const Chicken& chicken);
-sf::Packet& operator >>(sf::Packet& packet, Chicken& chicken);
+sf::Packet& operator<<(sf::Packet& packet, const Chicken& chicken);
+sf::Packet& operator>>(sf::Packet& packet, Chicken& chicken);
+
+struct Seed
+{
+	en::U32 seedUID;
+	en::Vector2f position;
+	en::U32 clientID;
+	en::Time remainingTime;
+};
+sf::Packet& operator<<(sf::Packet& packet, const Seed& seed);
+sf::Packet& operator>>(sf::Packet& packet, Seed& seed);
+
+struct Item
+{
+	en::U32 itemUID;
+	ItemID itemID;
+	en::Vector2f position;
+};
+sf::Packet& operator<<(sf::Packet& packet, const Item& item);
+sf::Packet& operator>>(sf::Packet& packet, Item& item);
+
+struct Bullet
+{
+	en::U32 bulletUID;
+	en::Vector2f position;
+	en::F32 rotation;
+	en::U32 clientID;
+	ItemID itemID;
+	en::F32 remainingDistance;
+
+	bool Update(en::F32 dtSeconds);
+};
+sf::Packet& operator<<(sf::Packet& packet, const Bullet& bullet);
+sf::Packet& operator>>(sf::Packet& packet, Bullet& bullet);
+
+struct Blood
+{
+	en::U32 bloodUID;
+	en::Vector2f position;
+	en::Time remainingTime;
+};
+sf::Packet& operator<<(sf::Packet& packet, const Blood& blood);
+sf::Packet& operator>>(sf::Packet& packet, Blood& blood);

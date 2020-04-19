@@ -22,4 +22,5 @@ public:
 
 private:
 	en::MusicPtr mMusic;
+	en::F32 mShurikenRotation;
 };
