@@ -19,9 +19,6 @@ void PathManager::SetExecutablePath(const char* executablePath)
 		mExecutablePath = executablePath;
 		std::filesystem::path cleanExePath = mExecutablePath;
 		mExecutablePath = cleanExePath.parent_path().generic_string();
-
-		static int a = 0;
-		a++;
 	}
 }
 
@@ -35,6 +32,8 @@ const std::string& PathManager::GetAssetsPath() const
 	{
 		std::filesystem::path closeAssetsPath = std::filesystem::path(mExecutablePath + "/Assets");
 		std::filesystem::path farAssetsPath = std::filesystem::path(mExecutablePath + "/../../../Assets");
+		printf("%s\n", closeAssetsPath.generic_string().c_str());
+		printf("%s\n", farAssetsPath.generic_string().c_str());
 		if (std::filesystem::exists(closeAssetsPath))
 		{
 			assetsPath = "Assets/";
@@ -47,7 +46,7 @@ const std::string& PathManager::GetAssetsPath() const
 #endif // ENLIVE_COMPILER_MSVC
 		else
 		{
-			assert(false);
+			//assert(false);
 		}
 
 		assetsPathDefined = true;
