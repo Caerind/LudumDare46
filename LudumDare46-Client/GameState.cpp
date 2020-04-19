@@ -5,8 +5,10 @@
 GameState::GameState(en::StateManager& manager)
 	: en::State(manager)
 {
+	// TODO : Move out
 	GameSingleton::mView.setSize(1024.0f, 768.0f);
 	GameSingleton::mView.setCenter(1024.0f * 0.5f, 768.0f * 0.5f);
+	GameSingleton::mView.setZoom(0.6f);
 
 	GameSingleton::mMap.load();
 }
@@ -58,14 +60,27 @@ bool GameState::update(en::Time dt)
 		}
 	}
 
-	// Center view on current player
+	// Current Player
 	{
 		const en::U32 playerSize = static_cast<en::U32>(GameSingleton::mPlayers.size());
 		for (en::U32 i = 0; i < playerSize; ++i)
 		{
 			if (GameSingleton::mPlayers[i].clientID == GameSingleton::mClient.GetClientID())
 			{
-				GameSingleton::mView.setCenter(GameSingleton::mPlayers[i].chicken.position);
+				const en::Vector2f mPos = getApplication().GetWindow().getCursorPositionView(GameSingleton::mView);
+				const en::Vector2f pPos = GameSingleton::mPlayers[i].chicken.position;
+				en::Vector2f delta = mPos - pPos;
+				if (delta.getSquaredLength() > 20 * 20)
+				{
+					delta.setLength(20);
+				}
+				else if (delta.getSquaredLength() < 0.01f)
+				{
+					delta = en::Vector2f(1, 1);
+				}
+				const en::Vector2f cPos = pPos + delta;
+				const en::Vector2f lPos = en::Vector2f::lerp(cPos, pPos, 0.6f);
+				GameSingleton::mView.setCenter(lPos);
 			}
 		}
 	}

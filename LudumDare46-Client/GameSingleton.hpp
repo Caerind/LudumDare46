@@ -29,14 +29,18 @@ public:
 	static std::vector<en::Vector2f> mCancelSeeds;
 	static en::Application::onApplicationStoppedType::ConnectionGuard mApplicationStoppedSlot;
 	static sf::Sprite mCursor;
+	static en::SoundID mPlayerMovementSoundID;
 
 	static void ConnectWindowCloseSlot();
 	static void HandleIncomingPackets();
 	static en::I32 GetPlayerIndexFromClientID(en::U32 clientID);
+
+	static bool IsInView(const en::Vector2f& position);
 
 	static void SendPingPacket();
 	static void SendPongPacket();
 	static void SendJoinPacket();
 	static void SendLeavePacket();
 	static void SendDropSeedPacket(const en::Vector2f& position);
+
 };

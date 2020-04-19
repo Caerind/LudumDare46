@@ -21,19 +21,28 @@
 #define DefaultSeedLifetime en::seconds(3.0f)
 #define DefaultSeedImpactDistance 400.0f
 #define DefaultSeedImpactDistanceSqr 400.0f * 400.0f
-#define DefaultTooCloseDistance 30.0f
-#define DefaultTooCloseDistanceSqr 30.0f * 30.0f
+#define DefaultTooCloseDistance 25.0f
+#define DefaultTooCloseDistanceSqr 25.0f * 25.0f
 #define DefaultChickenAvoidanceMinDistance 200.0f
 #define DefaultChickenAvoidanceMinDistanceSqr 200.0f * 200.0f
 #define DefaultOwnerPriority 0.5f
 #define DefaultNonOwnerPriority 1.0f
 #define DefaultWeaponOffset 20.0f, -22.0f
+#define DefaultRotDegPerSecond 180.0f
+#define DefaultTargetDetectionMaxDistance 400.0f
+#define DefaultTargetDetectionMaxDistanceSqr 400.0f * 400.0f
 
 // Stats
 #define DefaultChickenLife 100.0f
 #define DefaultChickenSpeed 100.0f
 #define DefaultChickenAttack 20.0f
 #define DefaultProjectileSpeed 300.0f
+#define DefaultItemRange 400.0f
+
+// MapData
+#define DefaultMaxItemAmount 20
+#define DefaultSpawnItemInterval en::seconds(3.0f)
+
 
 // Server -> Client
 enum class ServerPacketID : en::U8
@@ -95,9 +104,17 @@ enum class ItemID : en::U32
 	None,
 	Shuriken,
 	Laser,
+	Crossbow,
+	Uzi,
+	M16,
 
 	Count
 };
+bool IsValidItemForAttack(ItemID itemID);
+en::Time GetItemCooldown(ItemID itemID);
+en::F32 GetItemRange(ItemID itemID);
+en::F32 GetItemWeight(ItemID itemID);
+ItemID GetRandomAttackItem();
 
 struct Chicken
 {
@@ -110,6 +127,5 @@ struct Chicken
 	en::F32 speed;
 	en::F32 attack;
 };
-
 sf::Packet& operator <<(sf::Packet& packet, const Chicken& chicken);
 sf::Packet& operator >>(sf::Packet& packet, Chicken& chicken);

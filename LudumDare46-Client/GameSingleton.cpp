@@ -18,6 +18,7 @@ std::vector<Blood> GameSingleton::mBloods;
 std::vector<en::Vector2f> GameSingleton::mCancelSeeds;
 en::Application::onApplicationStoppedType::ConnectionGuard GameSingleton::mApplicationStoppedSlot; 
 sf::Sprite GameSingleton::mCursor;
+en::SoundID GameSingleton::mPlayerMovementSoundID;
 
 void GameSingleton::ConnectWindowCloseSlot()
 {
@@ -40,7 +41,6 @@ void GameSingleton::HandleIncomingPackets()
 
 		en::U8 packetIDRaw;
 		packet >> packetIDRaw;
-		assert(packetIDRaw < static_cast<en::U8>(ServerPacketID::Count));
 
 		const ServerPacketID packetID = static_cast<ServerPacketID>(packetIDRaw);
 		switch (packetID)
@@ -158,16 +158,17 @@ void GameSingleton::HandleIncomingPackets()
 				{
 					if (mPlayers[playerIndex].clientID == mClient.GetClientID())
 					{
-						// TODO : Sound
-					}
-					else
-					{
-						// TODO : Sound
+						switch (mPlayers[playerIndex].chicken.itemID)
+						{
+						case ItemID::Shuriken: en::AudioSystem::GetInstance().PlaySound("shuriken_loot"); break; // TODO : Move out
+						case ItemID::Laser: en::AudioSystem::GetInstance().PlaySound("shuriken_loot"); break; // TODO : Move out
+						default: break;
+						}
 					}
 				}
 				if (previousLife > mPlayers[playerIndex].chicken.life)
 				{
-					// TODO : Sound
+					en::AudioSystem::GetInstance().PlaySound("chicken_damage");
 
 					Blood blood;
 					blood.position = mPlayers[playerIndex].chicken.position;
@@ -246,11 +247,19 @@ void GameSingleton::HandleIncomingPackets()
 			{
 				if (mItems[i].itemID == itemID)
 				{
-					// TODO : What to do with pickedUp ?
-					const bool isInView = true; // TODO ; Is in view
-					if (pickedUp && isInView)
+					if (pickedUp && IsInView(mItems[i].position))
 					{
-						// TODO : Play sound
+						en::SoundPtr sound;
+						switch (mItems[i].item)
+						{
+						case ItemID::Shuriken: sound = en::AudioSystem::GetInstance().PlaySound("shuriken_loot"); break; // TODO : Move out
+						case ItemID::Laser: sound = en::AudioSystem::GetInstance().PlaySound("shuriken_loot"); break; // TODO : Move out
+						default: break;
+						}
+						if (sound.IsValid())
+						{
+							sound.SetVolume(0.25f);
+						}
 					}
 					mItems.erase(mItems.begin() + i);
 					size--;
@@ -291,6 +300,11 @@ en::I32 GameSingleton::GetPlayerIndexFromClientID(en::U32 clientID)
 		}
 	}
 	return -1;
+}
+
+bool GameSingleton::IsInView(const en::Vector2f& position)
+{
+	return GameSingleton::mView.getBounds().contains(position);
 }
 
 void GameSingleton::SendPingPacket()

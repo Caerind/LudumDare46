@@ -39,6 +39,9 @@ public:
 	static inline F32 Sin(F32 value) { return std::sin(DegToRad(value)); }
 	static inline F32 Tan(F32 value) { return std::tan(DegToRad(value)); }
 
+	static inline F32 AngleMagnitude(F32 value) { while (value >= 360.0f) { value -= 360.0f; }; while (value < 0.0f) { value += 360.0f; }; return value; }
+	static inline F32 AngleOpposite(F32 value) { return AngleMagnitude(value - 180.0f); }
+
 	static inline F32 Sqr(F32 value) { return value * value; }
 	static inline F32 Sqrt(F32 value) { return std::sqrt(value); }
 	static inline F32 InvSqrt(F32 value) { return 1 / Sqrt(value); }

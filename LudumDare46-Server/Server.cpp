@@ -49,13 +49,12 @@ void Server::Stop()
 
 bool Server::Run()
 {
+	en::Clock clock;
 	en::Time stepTime = en::Time::Zero;
 	en::Time tickTime = en::Time::Zero;
 
 	const en::Time stepInterval = DefaultStepInterval;
 	const en::Time tickInterval = DefaultTickInterval;
-	const sf::Time sleepTime = DefaultSleepTime;
-	en::Clock clock;
 	while (IsRunning())
 	{
 		const en::Time dt = clock.restart();
@@ -69,13 +68,12 @@ bool Server::Run()
 			UpdateLogic(stepInterval);
 			stepTime -= stepInterval;
 		}
+
 		while (tickTime >= tickInterval)
 		{
 			Tick(tickInterval);
 			tickTime -= tickInterval;
 		}
-
-		sf::sleep(sleepTime);
 	}
 	return true;
 }
@@ -98,30 +96,34 @@ void Server::UpdateLogic(en::Time dt)
 		UpdatePlayerMovement(dtSeconds, mPlayers[i]);
 	}
 
-	static en::U32 oddOptim = 0;
-	oddOptim++;
-	if (oddOptim % 2 == 0)
+	static en::U32 optim = 0;
+	optim++;
+	en::U32 c = optim % 3;
+	if (c == 0)
 	{
 		UpdateBullets(dt);
 	}
-	else
+	else if (c == 1)
 	{
 		UpdateLoots(dt);
 	}
-
-	en::U32 seedSize = static_cast<en::U32>(mSeeds.size());
-	for (en::U32 i = 0; i < seedSize;)
+	else
 	{
-		mSeeds[i].addTime += dt;
-		if (mSeeds[i].addTime >= DefaultSeedLifetime)
+		// Update seeds
+		en::U32 seedSize = static_cast<en::U32>(mSeeds.size());
+		for (en::U32 i = 0; i < seedSize;)
 		{
-			SendRemoveSeedPacket(mSeeds[i].seedID, false);
-			mSeeds.erase(mSeeds.begin() + i);
-			seedSize--;
-		}
-		else
-		{
-			i++;
+			mSeeds[i].addTime += dt;
+			if (mSeeds[i].addTime >= DefaultSeedLifetime)
+			{
+				SendRemoveSeedPacket(mSeeds[i].seedID, false);
+				mSeeds.erase(mSeeds.begin() + i);
+				seedSize--;
+			}
+			else
+			{
+				i++;
+			}
 		}
 	}
 }
@@ -198,7 +200,7 @@ void Server::HandleIncomingPackets()
 				newPlayer.clientID = clientID;
 				newPlayer.lastPacketTime = en::Time::Zero;
 				newPlayer.nickname = "Player" + std::to_string(clientID); // TODO : nickname
-				newPlayer.chicken.position = { en::Random::get<en::F32>(0.0f, 1024.f - 100.0f), en::Random::get<en::F32>(0.0f, 768.0f - 100.0f) };
+				newPlayer.chicken.position = GetRandomPosition();
 				newPlayer.chicken.rotation = 0.0f;
 				newPlayer.chicken.itemID = ItemID::None; // TODO : Default
 				newPlayer.chicken.lifeMax = DefaultChickenLife;
@@ -312,7 +314,7 @@ void Server::HandleIncomingPackets()
 
 void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 {
-	// Select base seed
+	// Select best seed
 	en::I32 bestSeedIndex = -1;
 	en::F32 bestSeedDistanceSqr = 999999.0f;
 	const en::U32 seedSize = static_cast<en::U32>(mSeeds.size());
@@ -355,6 +357,8 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 	}
 
 	// Avoidance
+	en::I32 bestTargetIndex = -1;
+	en::F32 bestTargetDistanceSqr = 999999.0f;
 	const en::U32 playerSize = static_cast<en::U32>(mPlayers.size());
 	for (en::U32 i = 0; i < playerSize; ++i)
 	{
@@ -363,6 +367,7 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 		{
 			const en::Vector2f delta = player.chicken.position - otherPlayer.chicken.position;
 			const en::F32 distanceSqr = delta.getSquaredLength();
+
 			if (0.01f < distanceSqr && distanceSqr < DefaultChickenAvoidanceMinDistanceSqr)
 			{
 				const en::F32 factor = (DefaultChickenAvoidanceMinDistanceSqr - distanceSqr) / DefaultChickenAvoidanceMinDistanceSqr;
@@ -372,18 +377,28 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 			{
 				player.chicken.position += { 10.0f, 10.0f };
 			}
+
+			if (distanceSqr < bestTargetDistanceSqr && distanceSqr < DefaultTargetDetectionMaxDistanceSqr)
+			{
+				bestTargetDistanceSqr = distanceSqr;
+				bestTargetIndex = static_cast<en::I32>(i);
+			}
 		}
 	}
+
+	bool moved = false;
+	en::F32 targetAngle;
+	const en::F32 currentAngle = en::Math::AngleMagnitude(player.chicken.rotation);
 
 	// Update the movement
 	if (movement.getSquaredLength() > 0.0f)
 	{
 		movement.normalize();
-		movement *= dtSeconds * player.chicken.speed;
+		movement *= dtSeconds * player.chicken.speed * GetItemWeight(player.chicken.itemID);
 		player.chicken.position += movement;
-		if (en::Math::Equals(movement.x, 0.0f))
+		player.needUpdate = true;
+		if (en::Math::Equals(movement.x, 0.0f)) // Cheating a bit to avoid 0div
 		{ 
-			// Cheating a bit
 			if (movement.x > 0.0f)
 			{
 				movement.x += 0.01f;
@@ -393,8 +408,44 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 				movement.x -= 0.01f;
 			}
 		}
-		player.chicken.rotation = movement.getPolarAngle();
-		player.needUpdate = true;
+		targetAngle = en::Math::AngleMagnitude(movement.getPolarAngle());
+		moved = true;
+	}
+	else
+	{
+		if (bestTargetIndex >= 0)
+		{
+			en::Vector2f delta = mPlayers[bestTargetIndex].chicken.position - player.chicken.position;
+			if (en::Math::Equals(delta.x, 0.0f)) // Cheating a bit to avoid 0div
+			{
+				if (delta.x > 0.0f)
+				{
+					delta.x += 0.01f;
+				}
+				else
+				{
+					delta.x -= 0.01f;
+				}
+			}
+			targetAngle = en::Math::AngleMagnitude(delta.getPolarAngle());
+		}
+		else
+		{
+			targetAngle = currentAngle;
+		}
+	}
+
+	{ // Update angle
+		if (moved || en::Math::Abs(targetAngle - currentAngle) > 5.0f)
+		{
+			const en::F32 tc = targetAngle - currentAngle;
+			const en::F32 ct = currentAngle - targetAngle;
+			const en::F32 correctedTC = (tc >= 0.0f) ? tc : tc + 360.0f;
+			const en::F32 correctedCT = (ct >= 0.0f) ? ct : ct + 360.0f;
+			const en::F32 sign = (tc >= ct) ? 1.0f : -1.0f;
+			player.chicken.rotation += sign * DefaultRotDegPerSecond * dtSeconds;
+			player.needUpdate = true;
+		}
 	}
 }
 
@@ -406,17 +457,11 @@ void Server::UpdateBullets(en::Time dt)
 		for (en::U32 i = 0; i < playerSize; ++i)
 		{
 			mPlayers[i].cooldown += dt;
-			bool valid = true;
-			en::Time cooldown;
-			en::F32 range;
-			switch (mPlayers[i].chicken.itemID)
+			const ItemID itemID = mPlayers[i].chicken.itemID;
+			en::Time cooldown = GetItemCooldown(itemID);
+			if (IsValidItemForAttack(itemID) && mPlayers[i].cooldown >= cooldown)
 			{
-			case ItemID::Shuriken: cooldown = en::seconds(0.4f); range = 500.0f; break; // TODO : Move out
-			case ItemID::Laser: cooldown = en::seconds(0.4f); range = 500.0f; break; // TODO : Move out
-			default: valid = false; break;
-			}
-			if (valid && mPlayers[i].cooldown >= cooldown)
-			{
+				en::F32 range = GetItemRange(itemID);
 				const en::Vector2f forward = en::Vector2f::polar(mPlayers[i].chicken.rotation);
 				const en::F32 rangeSqr = (range + 15.0f) * (range + 15.0f); // Hack because we don't care exactly the offset in fact
 				en::I32 bestTargetIndex = -1;
@@ -473,6 +518,11 @@ void Server::UpdateBullets(en::Time dt)
 			}
 			else
 			{
+
+
+
+
+
 				i++;
 			}
 		}
@@ -481,53 +531,45 @@ void Server::UpdateBullets(en::Time dt)
 
 void Server::UpdateLoots(en::Time dt)
 {
-	static const en::F32 mapSize = 64.0f * 50.0f; // TODO : Move out
-	static const en::U32 maxAmountWeapon = 10; // TODO : Move out
-	static const en::Time spawnTimeInterval = en::seconds(3.0f); // TODO : Move out
-
 	static en::Time spawnTimeCounter = en::Time::Zero;
 	spawnTimeCounter += dt;
-	if (spawnTimeCounter >= spawnTimeInterval)
+	if (spawnTimeCounter >= DefaultSpawnItemInterval)
 	{
-		if (mItems.size() >= maxAmountWeapon)
+		if (mItems.size() >= DefaultMaxItemAmount)
 		{
-			assert(maxAmountWeapon > 0);
-			assert(mItems.size() > 0);
 			SendRemoveItemPacket(mItems[0].itemID, false);
 			mItems.erase(mItems.begin());
 		}
 		else
 		{
 			spawnTimeCounter = en::Time::Zero;
-
-			en::Vector2f position;
-			position.x = en::Random::get<en::F32>(0.0f, mapSize);
-			position.y = en::Random::get<en::F32>(0.0f, mapSize);
-			ItemID itemID = static_cast<ItemID>(en::Random::get<en::U32>(1, 3)); // TODO : Move out
-			AddNewItem(position, itemID);
+			AddNewItem(GetRandomPosition(), GetRandomAttackItem());
 		}
 	}
 
-	en::U32 itemSize = static_cast<en::U32>(mItems.size());
-	const en::U32 playerSize = static_cast<en::U32>(mPlayers.size());
-	for (en::U32 i = 0; i < playerSize; ++i)
+	// Item pick up
 	{
-		const en::Vector2f pPos = mPlayers[i].chicken.position;
-		for (en::U32 j = 0; j < itemSize; )
+		en::U32 itemSize = static_cast<en::U32>(mItems.size());
+		const en::U32 playerSize = static_cast<en::U32>(mPlayers.size());
+		for (en::U32 i = 0; i < playerSize; ++i)
 		{
-			const en::Vector2f delta = pPos - mItems[j].position;
-			if (delta.getSquaredLength() < DefaultTooCloseDistanceSqr)
+			const en::Vector2f pPos = mPlayers[i].chicken.position;
+			for (en::U32 j = 0; j < itemSize; )
 			{
-				mPlayers[i].chicken.itemID = mItems[j].item;
-				mPlayers[i].needUpdate = true;
+				const en::Vector2f delta = pPos - mItems[j].position;
+				if (delta.getSquaredLength() < DefaultTooCloseDistanceSqr)
+				{
+					mPlayers[i].chicken.itemID = mItems[j].item;
+					mPlayers[i].needUpdate = true;
 
-				SendRemoveItemPacket(mItems[j].itemID, true);
-				mItems.erase(mItems.begin() + j);
-				itemSize--;
-			}
-			else
-			{
-				j++;
+					SendRemoveItemPacket(mItems[j].itemID, true);
+					mItems.erase(mItems.begin() + j);
+					itemSize--;
+				}
+				else
+				{
+					j++;
+				}
 			}
 		}
 	}
@@ -588,6 +630,13 @@ en::I32 Server::GetPlayerIndexFromClientID(en::U32 clientID) const
 		}
 	}
 	return -1;
+}
+
+en::Vector2f Server::GetRandomPosition()
+{
+	// TODO : Improve
+	static const en::F32 mapSize = 64.0f * 30.0f;
+	return { en::Random::get<en::F32>(0.0f, mapSize), en::Random::get<en::F32>(0.0f, mapSize) };
 }
 
 void Server::AddNewSeed(const en::Vector2f& position, en::U32 clientID)

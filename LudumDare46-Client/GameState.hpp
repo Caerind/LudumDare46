@@ -3,6 +3,7 @@
 #include <Enlivengine/Application/StateManager.hpp>
 #include <Enlivengine/Math/Vector2.hpp>
 #include <Enlivengine/Graphics/View.hpp>
+#include <Enlivengine/Application/AudioSystem.hpp>
 
 #include <Common.hpp>
 
