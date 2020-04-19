@@ -200,7 +200,7 @@ void Server::HandleIncomingPackets()
 				newPlayer.clientID = clientID;
 				newPlayer.lastPacketTime = en::Time::Zero;
 				newPlayer.nickname = "Player" + std::to_string(clientID); // TODO : nickname
-				newPlayer.chicken.position = GetRandomPosition();
+				newPlayer.chicken.position = GetRandomPositionSpawn();
 				newPlayer.chicken.rotation = 0.0f;
 				newPlayer.chicken.itemID = ItemID::None; // TODO : Default
 				newPlayer.chicken.lifeMax = DefaultChickenLife;
@@ -642,7 +642,7 @@ void Server::UpdateLoots(en::Time dt)
 		else
 		{
 			spawnTimeCounter = en::Time::Zero;
-			AddNewItem(GetRandomPosition(), GetRandomAttackItem());
+			AddNewItem(GetRandomPositionItem(), GetRandomAttackItem());
 		}
 	}
 
@@ -732,6 +732,13 @@ en::I32 Server::GetPlayerIndexFromClientID(en::U32 clientID) const
 }
 
 en::Vector2f Server::GetRandomPositionSpawn()
+{
+	// TODO : Improve
+	static const en::F32 mapSize = 64.0f * 10.0f;
+	return { en::Random::get<en::F32>(0.0f, mapSize), en::Random::get<en::F32>(0.0f, mapSize) };
+}
+
+en::Vector2f Server::GetRandomPositionItem()
 {
 	// TODO : Improve
 	static const en::F32 mapSize = 64.0f * 10.0f;

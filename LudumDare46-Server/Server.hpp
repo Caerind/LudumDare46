@@ -49,7 +49,8 @@ private:
 	bool IsBlacklisted(const sf::IpAddress& remoteAddress) const { return false; } // TODO
 
 private:
-	en::Vector2f GetRandomPosition();
+	en::Vector2f GetRandomPositionSpawn();
+	en::Vector2f GetRandomPositionItem();
 
 private:
 	void AddNewSeed(const en::Vector2f& position, en::U32 clientID);
