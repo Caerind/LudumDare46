@@ -35,7 +35,7 @@ bool Server::Start(int argc, char** argv)
 	if (!mMap.LoadFromFile(DefaultServerMapPath))
 	{
 		LogError(en::LogChannel::Map, 4, "Can't load map %s", DefaultServerMapPath);
-		return false;
+		//return false;
 	}
 	//mMapSize.x = 1.0f * mMap.GetSize().x * mMap.GetTileSize().x;
 	//mMapSize.y = 1.0f * mMap.GetSize().y * mMap.GetTileSize().y;
