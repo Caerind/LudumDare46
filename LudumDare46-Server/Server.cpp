@@ -436,14 +436,14 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 	}
 
 	{ // Update angle
-		if (moved || en::Math::Abs(targetAngle - currentAngle) > 5.0f)
+		if (moved || en::Math::Abs(targetAngle - currentAngle) > 2.0f)
 		{
 			const en::F32 tc = targetAngle - currentAngle;
 			const en::F32 ct = currentAngle - targetAngle;
 			const en::F32 correctedTC = (tc >= 0.0f) ? tc : tc + 360.0f;
 			const en::F32 correctedCT = (ct >= 0.0f) ? ct : ct + 360.0f;
-			const en::F32 sign = (tc >= ct) ? 1.0f : -1.0f;
-			player.chicken.rotation += sign * DefaultRotDegPerSecond * dtSeconds;
+			const en::F32 sign = (tc <= ct) ? 1.0f : -1.0f;
+			player.chicken.rotation = en::Math::AngleMagnitude(player.chicken.rotation + sign * DefaultRotDegPerSecond * dtSeconds);
 			player.needUpdate = true;
 		}
 	}

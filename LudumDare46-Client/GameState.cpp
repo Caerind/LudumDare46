@@ -70,16 +70,11 @@ bool GameState::update(en::Time dt)
 				const en::Vector2f mPos = getApplication().GetWindow().getCursorPositionView(GameSingleton::mView);
 				const en::Vector2f pPos = GameSingleton::mPlayers[i].chicken.position;
 				en::Vector2f delta = mPos - pPos;
-				if (delta.getSquaredLength() > 20 * 20)
+				if (delta.getSquaredLength() > DefaultCameraMaxDistanceSqr)
 				{
-					delta.setLength(20);
+					delta.setLength(DefaultCameraMaxDistance);
 				}
-				else if (delta.getSquaredLength() < 0.01f)
-				{
-					delta = en::Vector2f(1, 1);
-				}
-				const en::Vector2f cPos = pPos + delta;
-				const en::Vector2f lPos = en::Vector2f::lerp(cPos, pPos, 0.6f);
+				const en::Vector2f lPos = en::Vector2f::lerp(pPos + delta, pPos, DefaultCameraLerpFactor);
 				GameSingleton::mView.setCenter(lPos);
 			}
 		}

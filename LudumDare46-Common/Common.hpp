@@ -32,6 +32,9 @@
 #define DefaultRotDegPerSecond 180.0f
 #define DefaultTargetDetectionMaxDistance 400.0f
 #define DefaultTargetDetectionMaxDistanceSqr 400.0f * 400.0f
+#define DefaultCameraLerpFactor 0.8f
+#define DefaultCameraMaxDistance 400.0f
+#define DefaultCameraMaxDistanceSqr 400.0f * 400.0f
 
 // Stats
 #define DefaultChickenLife 100.0f
