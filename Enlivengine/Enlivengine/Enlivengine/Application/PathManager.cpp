@@ -1,21 +1,61 @@
 #include <Enlivengine/Application/PathManager.hpp>
 
+#include <filesystem>
+#include <Enlivengine/System/Assert.hpp>
+
 namespace en
 {
 
 PathManager::PathManager()
-	: mScreenshotPath("")
+	: mExecutablePath("")
+	, mScreenshotPath("")
 {
+}
+
+void PathManager::SetExecutablePath(const char* executablePath)
+{
+	if (executablePath != nullptr)
+	{
+		mExecutablePath = executablePath;
+		std::filesystem::path cleanExePath = mExecutablePath;
+		mExecutablePath = cleanExePath.parent_path().generic_string();
+
+		static int a = 0;
+		a++;
+	}
 }
 
 const std::string& PathManager::GetAssetsPath() const
 {
 #ifdef ENLIVE_DEBUG
-	//static std::string assetsPath = "Assets/";
-	static std::string assetsPath = "../../Assets/";
+	static bool assetsPathDefined = false;
+	static std::string assetsPath = "";
+
+	if (!assetsPathDefined)
+	{
+		std::filesystem::path closeAssetsPath = std::filesystem::path(mExecutablePath + "/Assets");
+		std::filesystem::path farAssetsPath = std::filesystem::path(mExecutablePath + "/../../../Assets");
+		if (std::filesystem::exists(closeAssetsPath))
+		{
+			assetsPath = "Assets/";
+		}
+#ifdef ENLIVE_COMPILER_MSVC
+		else if (std::filesystem::exists(farAssetsPath))
+		{
+			assetsPath = "../../Assets/";
+		}
+#endif // ENLIVE_COMPILER_MSVC
+		else
+		{
+			assert(false);
+		}
+
+		assetsPathDefined = true;
+	}
 #else
 	static std::string assetsPath = "Assets/";
 #endif // ENLIVE_DEBUG
+
 	return assetsPath;
 }
 

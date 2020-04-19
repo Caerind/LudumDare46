@@ -6,8 +6,13 @@
 #include "ConnectingState.hpp"
 #include "GameSingleton.hpp"
 
-int main()
+int main(int argc, char** argv)
 {
+	if (argc >= 1)
+	{
+		en::PathManager::GetInstance().SetExecutablePath(argv[0]);
+	}
+
 	en::Application::GetInstance().Initialize();
 
 	en::Application& app = en::Application::GetInstance();
