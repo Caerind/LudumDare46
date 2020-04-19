@@ -904,6 +904,18 @@ void Server::SendItemInfo(const sf::IpAddress& remoteAddress, en::U16 remotePort
 	}
 }
 
+void Server::SendUpdateChickenPacket(en::U32 clientID, const Chicken& chicken)
+{
+	if (mSocket.IsRunning())
+	{
+		sf::Packet packet;
+		packet << static_cast<en::U8>(ServerPacketID::UpdateChicken);
+		packet << clientID;
+		packet << chicken;
+		SendToAllPlayers(packet);
+	}
+}
+
 void Server::SendAddSeedPacket(const Seed& seed)
 {
 	if (mSocket.IsRunning())
