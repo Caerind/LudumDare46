@@ -736,15 +736,6 @@ en::Vector2f Server::GetRandomPositionItem()
 
 void Server::AddNewSeed(const en::Vector2f& position, en::U32 clientID)
 {
-	static en::U32 seedIDGenerator = 1;
-	Seed seed;
-	seed.seedID = seedIDGenerator++;
-	seed.position = position;
-	seed.clientID = clientID;
-	seed.addTime = en::Time::Zero;
-	mSeeds.push_back(seed);
-	SendAddSeedPacket(seed);
-
 	const en::U32 seedSize = static_cast<en::U32>(mSeeds.size());
 	for (en::U32 i = 0; i < seedSize; ++i)
 	{
@@ -755,6 +746,15 @@ void Server::AddNewSeed(const en::Vector2f& position, en::U32 clientID)
 			break;
 		}
 	}
+
+	static en::U32 seedIDGenerator = 1;
+	Seed seed;
+	seed.seedID = seedIDGenerator++;
+	seed.position = position;
+	seed.clientID = clientID;
+	seed.addTime = en::Time::Zero;
+	mSeeds.push_back(seed);
+	SendAddSeedPacket(seed);
 }
 
 void Server::AddNewItem(const en::Vector2f& position, ItemID itemID) 
