@@ -317,11 +317,11 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 	// Select best seed
 	en::I32 bestSeedIndex = -1;
 	en::F32 bestSeedDistanceSqr = 999999.0f;
-	en::Vector2f deltaSeed;
+	en::Vector2f bestDeltaSeed;
 	const en::U32 seedSize = static_cast<en::U32>(mSeeds.size());
 	for (en::U32 i = 0; i < seedSize; ++i)
 	{
-		deltaSeed = mSeeds[i].position - player.chicken.position;
+		const en::Vector2f deltaSeed = mSeeds[i].position - player.chicken.position;
 		en::F32 distanceSqr = deltaSeed.getSquaredLength();
 		if (distanceSqr > DefaultSeedImpactDistanceSqr)
 		{
@@ -339,25 +339,27 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 		{
 			bestSeedDistanceSqr = distanceSqr;
 			bestSeedIndex = static_cast<en::I32>(i);
+			bestDeltaSeed = deltaSeed;
 		}
 	}
 	
 	// Select best target
 	en::I32 bestTargetIndex = -1;
 	en::F32 bestTargetDistanceSqr = 999999.0f;
-	en::Vector2f deltaTarget;
+	en::Vector2f bestDeltaTarget;
 	const en::U32 playerSize = static_cast<en::U32>(mPlayers.size());
 	for (en::U32 i = 0; i < playerSize; ++i)
 	{
 		const Player& otherPlayer = mPlayers[i];
 		if (otherPlayer.clientID != player.clientID)
 		{
-			deltaTarget = otherPlayer.chicken.position - player.chicken.position;
+			const en::Vector2f deltaTarget = otherPlayer.chicken.position - player.chicken.position;
 			const en::F32 distanceSqr = deltaTarget.getSquaredLength();
 			if (distanceSqr < bestTargetDistanceSqr && distanceSqr < DefaultTargetDetectionMaxDistanceSqr)
 			{
 				bestTargetDistanceSqr = distanceSqr;
 				bestTargetIndex = static_cast<en::I32>(i);
+				bestDeltaTarget = deltaTarget;
 			}
 		}
 	}
@@ -371,19 +373,19 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 	en::F32 targetAngle;
 	if (focusSeed)
 	{
-		if (deltaSeed.x == 0.0f)
+		if (bestDeltaSeed.x == 0.0f)
 		{
-			deltaSeed.x += 0.001f;
+			bestDeltaSeed.x += 0.001f;
 		}
-		targetAngle = en::Math::AngleMagnitude(deltaSeed.getPolarAngle());
+		targetAngle = en::Math::AngleMagnitude(bestDeltaSeed.getPolarAngle());
 	}
 	else
 	{
-		if (deltaTarget.x == 0.0f)
+		if (bestDeltaTarget.x == 0.0f)
 		{
-			deltaTarget.x += 0.001f;
+			bestDeltaTarget.x += 0.001f;
 		}
-		targetAngle = en::Math::AngleMagnitude(deltaTarget.getPolarAngle());
+		targetAngle = en::Math::AngleMagnitude(bestDeltaTarget.getPolarAngle());
 	}
 	const en::F32 currentAngle = en::Math::AngleMagnitude(player.chicken.rotation);
 	const en::F32 angleWithTarget = en::Math::AngleBetween(currentAngle, targetAngle);
