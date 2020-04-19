@@ -62,6 +62,13 @@ bool GameState::update(en::Time dt)
 
 	// Current Player
 	{
+		static en::Vector2f lastPositionSoundStart;
+		static const en::Time moveSoundDuration = en::seconds(0.2f);
+		static en::Time lastTimeSinceSoundStart = en::Time::Zero;
+		static ItemID lastItemID = ItemID::None;
+
+		lastTimeSinceSoundStart += dt;
+
 		const en::U32 playerSize = static_cast<en::U32>(GameSingleton::mPlayers.size());
 		for (en::U32 i = 0; i < playerSize; ++i)
 		{
@@ -76,6 +83,35 @@ bool GameState::update(en::Time dt)
 				}
 				const en::Vector2f lPos = en::Vector2f::lerp(pPos + delta, pPos, DefaultCameraLerpFactor);
 				GameSingleton::mView.setCenter(lPos);
+
+				if (lastTimeSinceSoundStart >= moveSoundDuration && lastPositionSoundStart != pPos)
+				{
+					lastTimeSinceSoundStart = en::Time::Zero;
+					en::AudioSystem::GetInstance().PlaySound("chicken_move").SetVolume(0.05f);
+					lastPositionSoundStart = pPos;
+				}
+
+				if (lastItemID != GameSingleton::mPlayers[i].chicken.itemID)
+				{
+					lastItemID = GameSingleton::mPlayers[i].chicken.itemID;
+					if (mMusic.IsValid())
+					{
+						mMusic.Stop();
+					}
+					mMusic = en::MusicPtr();
+					const char* name = GetItemMusicName(GameSingleton::mPlayers[i].chicken.itemID);
+					if (name != nullptr && strlen(name) > 0)
+					{
+						mMusic = en::AudioSystem::GetInstance().PlayMusic(name);
+						if (mMusic.IsValid())
+						{
+							mMusic.SetLoop(true);
+							mMusic.SetVolume(0.2f);
+						}
+					}
+				}
+
+				break;
 			}
 		}
 	}

@@ -10,7 +10,7 @@
 #define DefaultServerPort 3457
 
 // Server
-#define DefaultClientTimeout en::seconds(5.0f)
+#define DefaultClientTimeout en::seconds(10.0f)
 #define DefaultServerTimeout en::seconds(60.0f)
 #define DefaultStepInterval en::seconds(1.0f / 60.f)
 #define DefaultTickInterval en::seconds(1.0f / 20.f)
@@ -23,6 +23,8 @@
 #define DefaultSeedImpactDistance 400.0f
 #define DefaultSeedImpactDistanceSqr 400.0f * 400.0f
 #define DefaultSeedPrefFactor 0.9f
+#define DefaultItemPickUpDistance 35.0f
+#define DefaultItemPickUpDistanceSqr 35.0f * 35.0f
 #define DefaultTooCloseDistance 25.0f
 #define DefaultTooCloseDistanceSqr 25.0f * 25.0f
 #define DefaultChickenAvoidanceMinDistance 200.0f
@@ -46,7 +48,7 @@
 #define DefaultItemRange 400.0f
 
 // MapData
-#define DefaultMaxItemAmount 20
+#define DefaultMaxItemAmount 60 /* Debug */
 #define DefaultSpawnItemInterval en::seconds(3.0f)
 
 
@@ -122,6 +124,10 @@ en::Time GetItemCooldown(ItemID itemID);
 en::F32 GetItemRange(ItemID itemID);
 en::F32 GetItemWeight(ItemID itemID);
 ItemID GetRandomAttackItem();
+const char* GetItemMusicName(ItemID itemID);
+const char* GetItemSoundLootName(ItemID itemID);
+const char* GetItemSoundFireName(ItemID itemID);
+const char* GetItemSoundHitName(ItemID itemID);
 
 struct Chicken
 {

@@ -26,7 +26,6 @@ public:
 	static std::vector<Item> mItems;
 	static std::vector<Bullet> mBullets;
 	static std::vector<Blood> mBloods;
-	static std::vector<en::Vector2f> mCancelSeeds;
 	static en::Application::onApplicationStoppedType::ConnectionGuard mApplicationStoppedSlot;
 	static sf::Sprite mCursor;
 	static en::SoundID mPlayerMovementSoundID;

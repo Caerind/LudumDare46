@@ -282,14 +282,14 @@ void Server::HandleIncomingPackets()
 				{
 					if (mPlayers[playerIndex].lastSeedTime >= DefaultSeedInterval)
 					{
-						LogInfo(en::LogChannel::All, 2, "Player %d dropped seed at %f %f", mPlayers[playerIndex].clientID, position.x, position.y);
+						//LogInfo(en::LogChannel::All, 2, "Player %d dropped seed at %f %f", mPlayers[playerIndex].clientID, position.x, position.y);
 						mPlayers[playerIndex].lastSeedTime = en::Time::Zero;
 						AddNewSeed(position, clientID);
 					}
 					else
 					{
-						LogInfo(en::LogChannel::All, 2, "Player %d seed cooldown", mPlayers[playerIndex].clientID);
-						SendCancelSeedPacket(remoteAddress, remotePort, position);
+						//LogInfo(en::LogChannel::All, 2, "Player %d seed cooldown", mPlayers[playerIndex].clientID);
+						//SendCancelSeedPacket(remoteAddress, remotePort, position);
 					}
 				}
 				else
@@ -656,7 +656,7 @@ void Server::UpdateLoots(en::Time dt)
 			for (en::U32 j = 0; j < itemSize; )
 			{
 				const en::Vector2f delta = pPos - mItems[j].position;
-				if (delta.getSquaredLength() < DefaultTooCloseDistanceSqr)
+				if (delta.getSquaredLength() < DefaultItemPickUpDistanceSqr)
 				{
 					mPlayers[i].chicken.itemID = mItems[j].item;
 					mPlayers[i].needUpdate = true;
@@ -731,10 +731,10 @@ en::I32 Server::GetPlayerIndexFromClientID(en::U32 clientID) const
 	return -1;
 }
 
-en::Vector2f Server::GetRandomPosition()
+en::Vector2f Server::GetRandomPositionSpawn()
 {
 	// TODO : Improve
-	static const en::F32 mapSize = 64.0f * 30.0f;
+	static const en::F32 mapSize = 64.0f * 10.0f;
 	return { en::Random::get<en::F32>(0.0f, mapSize), en::Random::get<en::F32>(0.0f, mapSize) };
 }
 

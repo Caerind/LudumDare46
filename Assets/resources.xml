@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Resources resourceCount="20" typeCount="8">
+<Resources resourceCount="21" typeCount="8">
 	<Resource identifier="MainFont" filename="Fonts/EndlessBossBattle.ttf" type="0" />
 	<Resource identifier="chicken" filename="Textures/chicken.png" type="1" />
 	<Resource identifier="ground_sand" filename="Textures/ground_sand.png" type="1" />
@@ -14,9 +14,10 @@
 	<Resource identifier="bullets" filename="Textures/bullets.png" type="1" />
 	<Resource identifier="ground_sand-tileset" filename="Maps/ground_sand.tsx" type="2" />
 	<Resource identifier="arena" filename="Maps/arena.tmx" type="3" />
-	<Resource identifier="chiken_damage" filename="Sounds/chicken_damage.wav" type="7" />
-	<Resource identifier="chiken_kill" filename="Sounds/chiken_kill.wav" type="7" />
-	<Resource identifier="chiken_move" filename="Sounds/chiken_move.wav" type="7" />
+	<Resource identifier="shuriken_soundtrack" filename="Musics/shuriken_soundtrack.ogg" type="6" />
+	<Resource identifier="chicken_damage" filename="Sounds/chicken_damage.wav" type="7" />
+	<Resource identifier="chicken_kill" filename="Sounds/chicken_kill.wav" type="7" />
+	<Resource identifier="chicken_move" filename="Sounds/chicken_move.wav" type="7" />
 	<Resource identifier="shuriken_fire" filename="Sounds/shuriken_fire.wav" type="7" />
 	<Resource identifier="shuriken_hit" filename="Sounds/shuriken_hit.wav" type="7" />
 	<Resource identifier="shuriken_loot" filename="Sounds/shuriken_loot.wav" type="7" />

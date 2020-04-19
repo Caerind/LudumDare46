@@ -15,7 +15,6 @@ std::vector<Seed> GameSingleton::mSeeds;
 std::vector<Item> GameSingleton::mItems;
 std::vector<Bullet> GameSingleton::mBullets;
 std::vector<Blood> GameSingleton::mBloods;
-std::vector<en::Vector2f> GameSingleton::mCancelSeeds;
 en::Application::onApplicationStoppedType::ConnectionGuard GameSingleton::mApplicationStoppedSlot; 
 sf::Sprite GameSingleton::mCursor;
 en::SoundID GameSingleton::mPlayerMovementSoundID;
@@ -196,10 +195,6 @@ void GameSingleton::HandleIncomingPackets()
 		} break;
 		case ServerPacketID::CancelSeed:
 		{
-			en::Vector2f position;
-			packet >> position.x >> position.y;
-			LogInfo(en::LogChannel::All, 4, "Cancel seed %f %f", position.x, position.y);
-			mCancelSeeds.push_back(position);
 		} break;
 		case ServerPacketID::AddSeed:
 		{

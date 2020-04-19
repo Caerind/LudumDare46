@@ -57,6 +57,66 @@ ItemID GetRandomAttackItem()
 	return static_cast<ItemID>(en::Random::get<en::U32>(static_cast<en::U32>(ItemID::None) + 1, static_cast<en::U32>(ItemID::Count)));
 }
 
+const char* GetItemMusicName(ItemID itemID)
+{
+	switch (itemID)
+	{
+	case ItemID::None: return ""; // TODO : ?
+	case ItemID::Shuriken: return "shuriken_soundtrack";
+	case ItemID::Laser: return "laser_soundtrack";
+	case ItemID::Crossbow: return "crossbow_soundtrack";
+	case ItemID::Uzi: return "uzi_soundtrack";
+	case ItemID::M16: return "m16_soundtrack";
+	default: break;
+	}
+	return "";
+}
+
+const char* GetItemSoundLootName(ItemID itemID)
+{
+	switch (itemID)
+	{
+	case ItemID::None: return ""; // TODO : ?
+	case ItemID::Shuriken: return "shuriken_loot";
+	case ItemID::Laser: return "laser_loot";
+	case ItemID::Crossbow: return "crossbow_loot";
+	case ItemID::Uzi: return "uzi_loot";
+	case ItemID::M16: return "m16_loot";
+	default: break;
+	}
+	return "";
+}
+
+const char* GetItemSoundFireName(ItemID itemID)
+{
+	switch (itemID)
+	{
+	case ItemID::None: return ""; // TODO : ?
+	case ItemID::Shuriken: return "shuriken_fire";
+	case ItemID::Laser: return "laser_fire";
+	case ItemID::Crossbow: return "crossbow_fire";
+	case ItemID::Uzi: return "uzi_fire";
+	case ItemID::M16: return "m16_fire";
+	default: break;
+	}
+	return "";
+}
+
+const char* GetItemSoundHitName(ItemID itemID)
+{
+	switch (itemID)
+	{
+	case ItemID::None: return ""; // TODO : ?
+	case ItemID::Shuriken: return "shuriken_hit";
+	case ItemID::Laser: return "laser_hit";
+	case ItemID::Crossbow: return "crossbow_hit";
+	case ItemID::Uzi: return "uzi_hit";
+	case ItemID::M16: return "m16_hit";
+	default: break;
+	}
+	return "";
+}
+
 sf::Packet& operator <<(sf::Packet& packet, const Chicken& chicken)
 {
 	packet << chicken.position.x;
