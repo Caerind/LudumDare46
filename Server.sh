@@ -5,4 +5,7 @@ cd build
 cmake ..
 make
 cd ..
-./build/LudumDare46-Server/LudumDare46Server
+rm -f ServerApp
+cp build/LudumDare46-Server/LudumDare46Server ServerApp
+./ServerApp
+
