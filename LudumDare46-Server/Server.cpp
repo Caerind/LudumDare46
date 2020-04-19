@@ -140,7 +140,7 @@ void Server::Tick(en::Time dt)
 		}
 
 		// Timeout detection
-		if (mPlayers[i].lastPacketTime > DefaultTimeout)
+		if (mPlayers[i].lastPacketTime > DefaultServerTimeout)
 		{
 			SendConnectionRejectedPacket(mPlayers[i].remoteAddress, mPlayers[i].remotePort, RejectReason::Timeout);
 			SendClientLeftPacket(mPlayers[i].clientID);

@@ -34,7 +34,7 @@ bool GameState::update(en::Time dt)
 	if (GameSingleton::mClient.IsConnected())
 	{
 		GameSingleton::mLastPacketTime += dt;
-		if (GameSingleton::mLastPacketTime > DefaultTimeout)
+		if (GameSingleton::mLastPacketTime > DefaultClientTimeout)
 		{
 			GameSingleton::mClient.SetClientID(en::U32_Max);
 			GameSingleton::mClient.Stop();

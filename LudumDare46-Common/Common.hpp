@@ -10,7 +10,8 @@
 #define DefaultServerPort 3457
 
 // Server
-#define DefaultTimeout en::seconds(60.0f)
+#define DefaultClientTimeout en::seconds(5.0f)
+#define DefaultServerTimeout en::seconds(60.0f)
 #define DefaultStepInterval en::seconds(1.0f / 60.f)
 #define DefaultTickInterval en::seconds(1.0f / 20.f)
 #define DefaultSleepTime sf::seconds(1.0f / 5.f)
