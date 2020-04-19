@@ -77,7 +77,7 @@ void Application::Stop()
 	AudioSystem::GetInstance().Clear();
 
 #ifdef ENLIVE_ENABLE_IMGUI
-	ImGuiResourceBrowser::GetInstance().SaveResourceInfosToFile(PathManager::GetInstance().GetAssetsPath() + "resources.xml");
+	//ImGuiResourceBrowser::GetInstance().SaveResourceInfosToFile(PathManager::GetInstance().GetAssetsPath() + "resources.xml");
 #endif // ENLIVE_ENABLE_IMGUI
 
 #ifdef ENLIVE_ENABLE_IMGUI

@@ -755,6 +755,17 @@ void Server::AddNewSeed(const en::Vector2f& position, en::U32 clientID)
 	seed.addTime = en::Time::Zero;
 	mSeeds.push_back(seed);
 	SendAddSeedPacket(seed);
+
+	const en::U32 seedSize = static_cast<en::U32>(mSeeds.size());
+	for (en::U32 i = 0; i < seedSize; ++i)
+	{
+		if (mSeeds[i].clientID == clientID)
+		{
+			SendRemoveSeedPacket(mSeeds[i].seedID, false);
+			mSeeds.erase(mSeeds.begin() + i);
+			break;
+		}
+	}
 }
 
 void Server::AddNewItem(const en::Vector2f& position, ItemID itemID) 
@@ -889,30 +900,6 @@ void Server::SendItemInfo(const sf::IpAddress& remoteAddress, en::U16 remotePort
 		packet << static_cast<en::U32>(item.item);
 		packet << item.position.x;
 		packet << item.position.y;
-		mSocket.SendPacket(packet, remoteAddress, remotePort);
-	}
-}
-
-void Server::SendUpdateChickenPacket(en::U32 clientID, const Chicken& chicken)
-{
-	if (mSocket.IsRunning())
-	{
-		sf::Packet packet;
-		packet << static_cast<en::U8>(ServerPacketID::UpdateChicken);
-		packet << clientID;
-		packet << chicken;
-		SendToAllPlayers(packet);
-	}
-}
-
-void Server::SendCancelSeedPacket(const sf::IpAddress& remoteAddress, en::U16 remotePort, const en::Vector2f& position)
-{
-	if (mSocket.IsRunning())
-	{
-		sf::Packet packet;
-		packet << static_cast<en::U8>(ServerPacketID::CancelSeed);
-		packet << position.x;
-		packet << position.y;
 		mSocket.SendPacket(packet, remoteAddress, remotePort);
 	}
 }

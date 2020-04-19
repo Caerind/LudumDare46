@@ -3,7 +3,7 @@
 #include <Enlivengine/Application/Application.hpp>
 #include <Enlivengine/Application/StateManager.hpp>
 
-#include <SFML/Graphics/CircleShape.hpp>
+#include <fstream>
 
 #include "GameSingleton.hpp"
 #include "GameState.hpp"
@@ -20,8 +20,21 @@ public:
 			GameSingleton::mClient.SetClientID(en::U32_Max);
 			GameSingleton::mClient.Stop();
 		}
-		GameSingleton::mClient.SetServerAddress(DefaultServerAddress);
-		GameSingleton::mClient.SetServerPort(DefaultServerPort);
+
+		sf::IpAddress remoteAddress = DefaultServerAddress;
+		en::U16 remotePort = DefaultServerPort;
+		std::ifstream serverConfigFile("server.txt");
+		if (serverConfigFile)
+		{
+			std::string address;
+			serverConfigFile >> address;
+			serverConfigFile >> remotePort;
+			serverConfigFile.close();
+			remoteAddress = sf::IpAddress(address);
+		}
+
+		GameSingleton::mClient.SetServerAddress(remoteAddress);
+		GameSingleton::mClient.SetServerPort(remotePort);
 		GameSingleton::mClient.Start();
 
 		mWaitingTime = en::seconds(2.0f);

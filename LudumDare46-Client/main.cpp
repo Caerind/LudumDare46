@@ -12,6 +12,7 @@ int main(int argc, char** argv)
 	{
 		en::PathManager::GetInstance().SetExecutablePath(argv[0]);
 	}
+	printf("FontPath: %s + %s", argv[0], en::PathManager::GetInstance().GetFontsPath().c_str());
 
 	en::Application::GetInstance().Initialize();
 

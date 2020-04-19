@@ -70,7 +70,6 @@ private:
 	void SendPlayerInfo(const sf::IpAddress& remoteAddress, en::U16 remotePort, const Player& player);
 	void SendItemInfo(const sf::IpAddress& remoteAddress, en::U16 remotePort, const Item& item);
 	void SendUpdateChickenPacket(en::U32 clientID, const Chicken& chicken);
-	void SendCancelSeedPacket(const sf::IpAddress& remoteAddress, en::U16 remotePort, const en::Vector2f& position);
 	void SendAddSeedPacket(const Seed& seed);
 	void SendRemoveSeedPacket(en::U32 seedID, bool eated);
 	void SendAddItemPacket(const Item& item);

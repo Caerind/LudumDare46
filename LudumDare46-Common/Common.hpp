@@ -32,7 +32,7 @@
 #define DefaultOwnerPriority 0.6f
 #define DefaultNonOwnerPriority 1.0f
 #define DefaultWeaponOffset 20.0f, -22.0f
-#define DefaultRotDegPerSecond 200.0f
+#define DefaultRotDegPerSecond 170.0f
 #define DefaultIgnoreRotDeg 4.0f
 #define DefaultTargetDetectionMaxDistance 400.0f
 #define DefaultTargetDetectionMaxDistanceSqr 400.0f * 400.0f
@@ -42,7 +42,7 @@
 
 // Stats
 #define DefaultChickenLife 100.0f
-#define DefaultChickenSpeed 100.0f
+#define DefaultChickenSpeed 120.0f
 #define DefaultChickenAttack 20.0f
 #define DefaultProjectileSpeed 300.0f
 #define DefaultItemRange 400.0f
@@ -67,7 +67,6 @@ enum class ServerPacketID : en::U8
 	PlayerInfo,
 	ItemInfo,
 	UpdateChicken,
-	CancelSeed,
 	AddSeed,
 	RemoveSeed,
 	AddItem,

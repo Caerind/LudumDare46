@@ -193,9 +193,6 @@ void GameSingleton::HandleIncomingPackets()
 				LogWarning(en::LogChannel::All, 6, "Unknown player moved %d", packetIDRaw);
 			}
 		} break;
-		case ServerPacketID::CancelSeed:
-		{
-		} break;
 		case ServerPacketID::AddSeed:
 		{
 			Seed seed;
