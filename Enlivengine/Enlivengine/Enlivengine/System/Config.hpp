@@ -7,6 +7,7 @@
 // Some configurables choices
 // If they are not specifically given, the default value depend on the current build
 #define ENLIVE_DEBUG
+//#define ENLIVE_NO_RENDER
 #define ENLIVE_ENABLE_ASSERT
 #define ENLIVE_ENABLE_LOG
 #define ENLIVE_ENABLE_PROFILE

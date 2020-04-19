@@ -4,6 +4,8 @@
 #include <Enlivengine/System/Hash.hpp>
 #include <Enlivengine/System/Time.hpp>
 #include <Enlivengine/Math/Random.hpp>
+#include <Enlivengine/System/Log.hpp>
+#include <Enlivengine/Application/PathManager.hpp>
 
 #include <SFML/Network.hpp>
 #include <vector>
@@ -15,6 +17,7 @@
 Server::Server()
 	: mSocket()
 	, mRunning(false)
+	, mMapLoaded(false)
 	, mMap()
 	, mMapSize(2000.0f, 2000.0f)
 	, mPlayers()
@@ -26,21 +29,29 @@ Server::Server()
 
 bool Server::Start(int argc, char** argv)
 {
+	en::LogManager::GetInstance().Initialize();
+
+	if (argc >= 1)
+	{
+		en::PathManager::GetInstance().SetExecutablePath(argv[0]);
+		std::string a = en::PathManager::GetInstance().GetAssetsPath();
+	}
+
 	mSocket.SetSocketPort((argc >= 2) ? static_cast<en::U16>(std::atoi(argv[1])) : DefaultServerPort);
 	if (!mSocket.Start())
 	{
 		return false;
 	}
 
-	mMap = en::ResourceManager::GetInstance().Get<en::tmx::Map>("map");
-	if (mMap.IsValid())
+	if (mMap.LoadFromFile("Assets/Map/map.tmx"))
 	{
-		en::tmx::Map& map = mMap.Get();
-		mMapSize.x = 1.0f * map.GetSize().x * map.GetTileSize().x;
-		mMapSize.y = 1.0f * map.GetSize().y * map.GetTileSize().y;
+		mMapLoaded = true;
+		mMapSize.x = 1.0f * mMap.GetSize().x * mMap.GetTileSize().x;
+		mMapSize.y = 1.0f * mMap.GetSize().y * mMap.GetTileSize().y;
 	}
 	else
 	{
+		mMapLoaded = false;
 		mMapSize.x = DefaultMapSizeX;
 		mMapSize.y = DefaultMapSizeY;
 	}
@@ -587,12 +598,11 @@ en::I32 Server::GetPlayerIndexFromClientID(en::U32 clientID) const
 
 en::Vector2f Server::GetRandomPositionSpawn()
 {
-	if (mMap.IsValid())
+	if (mMapLoaded)
 	{
 		// TODO : Avoid water
-		en::tmx::Map& map = mMap.Get();
-		mMapSize.x = 1.0f * map.GetSize().x * map.GetTileSize().x;
-		mMapSize.y = 1.0f * map.GetSize().y * map.GetTileSize().y;
+		mMapSize.x = 1.0f * mMap.GetSize().x * mMap.GetTileSize().x;
+		mMapSize.y = 1.0f * mMap.GetSize().y * mMap.GetTileSize().y;
 		return { en::Random::get<en::F32>(64.0f, mMapSize.x - 64.0f), en::Random::get<en::F32>(64.0f, mMapSize.y - 64.0f) };
 	}
 	else
@@ -603,12 +613,11 @@ en::Vector2f Server::GetRandomPositionSpawn()
 
 en::Vector2f Server::GetRandomPositionItem()
 {
-	if (mMap.IsValid())
+	if (mMapLoaded)
 	{
 		// TODO : Avoid water
-		en::tmx::Map& map = mMap.Get();
-		mMapSize.x = 1.0f * map.GetSize().x * map.GetTileSize().x;
-		mMapSize.y = 1.0f * map.GetSize().y * map.GetTileSize().y;
+		mMapSize.x = 1.0f * mMap.GetSize().x * mMap.GetTileSize().x;
+		mMapSize.y = 1.0f * mMap.GetSize().y * mMap.GetTileSize().y;
 		return { en::Random::get<en::F32>(64.0f, mMapSize.x - 64.0f), en::Random::get<en::F32>(64.0f, mMapSize.y - 64.0f) };
 	}
 	else

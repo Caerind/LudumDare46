@@ -8,7 +8,7 @@ GameMap::GameMap()
 
 bool GameMap::load()
 {
-	mMap = en::ResourceManager::GetInstance().Get<en::tmx::Map>("arena");
+	mMap = en::ResourceManager::GetInstance().Get<en::tmx::Map>("map");
 
 	return mMap.IsValid();
 }

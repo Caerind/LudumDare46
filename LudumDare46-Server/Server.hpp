@@ -85,7 +85,8 @@ private:
 	ServerSocket mSocket;
 	bool mRunning;
 
-	en::tmx::Map::Ptr mMap;
+	bool mMapLoaded;
+	en::tmx::Map mMap;
 	en::Vector2f mMapSize;
 	std::vector<Player> mPlayers;
 	std::vector<Seed> mSeeds;
