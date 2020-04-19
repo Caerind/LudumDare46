@@ -170,7 +170,11 @@ void GameSingleton::HandleIncomingPackets()
 			mSeeds.push_back(seed);
 			if (GameSingleton::IsClient(seed.clientID))
 			{
-				en::AudioSystem::GetInstance().PlaySound("seedsSound");
+				en::SoundPtr sound = en::AudioSystem::GetInstance().PlaySound("seedsSound");
+				if (sound.IsValid())
+				{
+					sound.SetVolume(0.25f);
+				}
 			}
 		} break;
 		case ServerPacketID::RemoveSeed:
@@ -190,7 +194,11 @@ void GameSingleton::HandleIncomingPackets()
 					{
 						if (IsClient(eaterClientID))
 						{
-							en::AudioSystem::GetInstance().PlaySound("eat");
+							en::SoundPtr sound = en::AudioSystem::GetInstance().PlaySound("eat");
+							if (sound.IsValid())
+							{
+								sound.SetVolume(0.25f);
+							}
 						}
 					}
 					mSeeds.erase(mSeeds.begin() + i);
@@ -286,24 +294,34 @@ void GameSingleton::HandleIncomingPackets()
 			LogInfo(en::LogChannel::All, 2, "Hit %d", clientID);
 
 			const en::I32 receiverIndex = GetPlayerIndexFromClientID(clientID);
-			if (receiverIndex >= 0 && IsInView(mPlayers[receiverIndex].chicken.position))
+			if (receiverIndex >= 0)
 			{
-				en::SoundPtr soundDamage = en::AudioSystem::GetInstance().PlaySound("chicken_damage");
-				if (soundDamage.IsValid())
+				if (IsInView(mPlayers[receiverIndex].chicken.position))
 				{
-					soundDamage.SetVolume(0.25f);
-				}
-
-				const en::I32 killerIndex = GetPlayerIndexFromClientID(killerClientID);
-				if (killerIndex >= 0)
-				{
-					en::SoundPtr soundHit = en::AudioSystem::GetInstance().PlaySound(GetItemSoundHitName(mPlayers[killerIndex].chicken.itemID));
-					if (soundHit.IsValid())
+					en::SoundPtr soundDamage = en::AudioSystem::GetInstance().PlaySound("chicken_damage");
+					if (soundDamage.IsValid())
 					{
-						soundHit.SetVolume(0.25f);
+						soundDamage.SetVolume(0.25f);
+					}
+					const en::I32 killerIndex = GetPlayerIndexFromClientID(killerClientID);
+					if (killerIndex >= 0)
+					{
+						en::SoundPtr soundHit = en::AudioSystem::GetInstance().PlaySound(GetItemSoundHitName(mPlayers[killerIndex].chicken.itemID));
+						if (soundHit.IsValid())
+						{
+							soundHit.SetVolume(0.25f);
+						}
 					}
 				}
+
+				Blood blood;
+				blood.bloodUID = en::Random::get<en::U32>(0, 78); // Dont care, not shared
+				blood.position = mPlayers[receiverIndex].chicken.position;
+				blood.remainingTime = en::seconds(3.0f);
+				mBloods.push_back(blood);
 			}
+
+
 		} break;
 		case ServerPacketID::KillChicken:
 		{

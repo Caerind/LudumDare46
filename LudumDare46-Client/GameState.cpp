@@ -77,6 +77,22 @@ bool GameState::update(en::Time dt)
 		}
 	}
 
+	// Bloods
+	en::U32 bloodSize = static_cast<en::U32>(GameSingleton::mBloods.size());
+	for (en::U32 i = 0; i < bloodSize; )
+	{
+		GameSingleton::mBloods[i].remainingTime -= dt;
+		if (GameSingleton::mBloods[i].remainingTime < en::Time::Zero)
+		{
+			GameSingleton::mBloods.erase(GameSingleton::mBloods.begin() + i);
+			bloodSize--;
+		}
+		else
+		{
+			i++;
+		}
+	}
+
 	// Current Player
 	{
 		static en::Vector2f lastPositionSoundStart;
@@ -209,17 +225,16 @@ void GameState::render(sf::RenderTarget& target)
 	const en::U32 bulletSize = static_cast<en::U32>(GameSingleton::mBullets.size());
 	for (en::U32 i = 0; i < bulletSize; ++i)
 	{
-		if (GameSingleton::mItems[i].itemID == ItemID::Shuriken)
+		if (GameSingleton::mBullets[i].itemID == ItemID::Shuriken)
 		{
 			bulletSprite.setRotation(mShurikenRotation);
 		}
 		else
 		{
-			bulletSprite.setRotation(0.0f);
+			bulletSprite.setRotation(GameSingleton::mBullets[i].rotation + 90.0f);
 		}
-		bulletSprite.setTextureRect(GetItemBulletTextureRect(GameSingleton::mItems[i].itemID)); 
+		bulletSprite.setTextureRect(GetItemBulletTextureRect(GameSingleton::mBullets[i].itemID));
 		bulletSprite.setPosition(en::toSF(GameSingleton::mBullets[i].position));
-		bulletSprite.setRotation(GameSingleton::mBullets[i].rotation + 90.0f);
 		target.draw(bulletSprite);
 	}
 
