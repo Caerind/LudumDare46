@@ -40,6 +40,7 @@ public:
 	static inline F32 Tan(F32 value) { return std::tan(DegToRad(value)); }
 
 	static inline F32 AngleMagnitude(F32 value) { while (value >= 360.0f) { value -= 360.0f; }; while (value < 0.0f) { value += 360.0f; }; return value; }
+	static inline F32 AngleBetween(F32 a, F32 b) { const F32 x = Abs(AngleMagnitude(a) - AngleMagnitude(b)); return (x < 180.0f) ? x : 360.0f - x; };
 	static inline F32 AngleOpposite(F32 value) { return AngleMagnitude(value - 180.0f); }
 
 	static inline F32 Sqr(F32 value) { return value * value; }

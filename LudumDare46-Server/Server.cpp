@@ -317,11 +317,16 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 	// Select best seed
 	en::I32 bestSeedIndex = -1;
 	en::F32 bestSeedDistanceSqr = 999999.0f;
+	en::Vector2f deltaSeed;
 	const en::U32 seedSize = static_cast<en::U32>(mSeeds.size());
 	for (en::U32 i = 0; i < seedSize; ++i)
 	{
-		const en::Vector2f delta = mSeeds[i].position - player.chicken.position;
-		en::F32 distanceSqr = delta.getSquaredLength();
+		deltaSeed = mSeeds[i].position - player.chicken.position;
+		en::F32 distanceSqr = deltaSeed.getSquaredLength();
+		if (distanceSqr > DefaultSeedImpactDistanceSqr)
+		{
+			continue;
+		}
 		if (player.clientID == mSeeds[i].clientID)
 		{
 			distanceSqr *= DefaultOwnerPriority;
@@ -336,6 +341,84 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 			bestSeedIndex = static_cast<en::I32>(i);
 		}
 	}
+	
+	// Select best target
+	en::I32 bestTargetIndex = -1;
+	en::F32 bestTargetDistanceSqr = 999999.0f;
+	en::Vector2f deltaTarget;
+	const en::U32 playerSize = static_cast<en::U32>(mPlayers.size());
+	for (en::U32 i = 0; i < playerSize; ++i)
+	{
+		const Player& otherPlayer = mPlayers[i];
+		if (otherPlayer.clientID != player.clientID)
+		{
+			deltaTarget = otherPlayer.chicken.position - player.chicken.position;
+			const en::F32 distanceSqr = deltaTarget.getSquaredLength();
+			if (distanceSqr < bestTargetDistanceSqr && distanceSqr < DefaultTargetDetectionMaxDistanceSqr)
+			{
+				bestTargetDistanceSqr = distanceSqr;
+				bestTargetIndex = static_cast<en::I32>(i);
+			}
+		}
+	}
+
+	if (bestSeedIndex == -1 && bestTargetIndex == -1)
+		return;
+
+	// Rotate
+	bool rotated = false;
+	const bool focusSeed = bestSeedDistanceSqr * DefaultSeedPrefFactor < bestTargetDistanceSqr;
+	en::F32 targetAngle;
+	if (focusSeed)
+	{
+		if (deltaSeed.x == 0.0f)
+		{
+			deltaSeed.x += 0.001f;
+		}
+		targetAngle = en::Math::AngleMagnitude(deltaSeed.getPolarAngle());
+	}
+	else
+	{
+		if (deltaTarget.x == 0.0f)
+		{
+			deltaTarget.x += 0.001f;
+		}
+		targetAngle = en::Math::AngleMagnitude(deltaTarget.getPolarAngle());
+	}
+	const en::F32 currentAngle = en::Math::AngleMagnitude(player.chicken.rotation);
+	const en::F32 angleWithTarget = en::Math::AngleBetween(currentAngle, targetAngle);
+	if (angleWithTarget > DefaultIgnoreRotDeg)
+	{
+		const en::F32 tc = targetAngle - currentAngle;
+		const en::F32 ct = currentAngle - targetAngle;
+		const en::F32 correctedTC = (tc >= 0.0f) ? tc : tc + 360.0f;
+		const en::F32 correctedCT = (ct >= 0.0f) ? ct : ct + 360.0f;
+		const en::F32 sign = (correctedTC <= correctedCT) ? 1.0f : -1.0f;
+		player.chicken.rotation = en::Math::AngleMagnitude(player.chicken.rotation + sign * DefaultRotDegPerSecond * dtSeconds);
+		player.needUpdate = true;
+		rotated = true;
+	}
+
+	if (focusSeed && bestSeedIndex == -1)
+		return;
+	if (!focusSeed && bestTargetIndex == -1)
+		return;
+
+	if (focusSeed)
+	{
+		player.chicken.position += en::Vector2f::polar(player.chicken.rotation) * dtSeconds * player.chicken.speed * GetItemWeight(player.chicken.itemID);
+	}
+
+
+
+
+	
+
+
+
+
+	/*
+
 
 	// Movement based on seed
 	en::Vector2f movement(0.0f, 0.0f);
@@ -443,10 +526,12 @@ void Server::UpdatePlayerMovement(en::F32 dtSeconds, Player& player)
 			const en::F32 correctedTC = (tc >= 0.0f) ? tc : tc + 360.0f;
 			const en::F32 correctedCT = (ct >= 0.0f) ? ct : ct + 360.0f;
 			const en::F32 sign = (tc <= ct) ? 1.0f : -1.0f;
-			player.chicken.rotation = en::Math::AngleMagnitude(player.chicken.rotation + sign * DefaultRotDegPerSecond * dtSeconds);
+			player.chicken.rotation += sign * DefaultRotDegPerSecond * dtSeconds;
 			player.needUpdate = true;
 		}
 	}
+
+	*/
 }
 
 void Server::UpdateBullets(en::Time dt)

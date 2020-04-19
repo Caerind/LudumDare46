@@ -22,14 +22,16 @@
 #define DefaultSeedLifetime en::seconds(3.0f)
 #define DefaultSeedImpactDistance 400.0f
 #define DefaultSeedImpactDistanceSqr 400.0f * 400.0f
+#define DefaultSeedPrefFactor 0.9f
 #define DefaultTooCloseDistance 25.0f
 #define DefaultTooCloseDistanceSqr 25.0f * 25.0f
 #define DefaultChickenAvoidanceMinDistance 200.0f
 #define DefaultChickenAvoidanceMinDistanceSqr 200.0f * 200.0f
-#define DefaultOwnerPriority 0.5f
+#define DefaultOwnerPriority 0.6f
 #define DefaultNonOwnerPriority 1.0f
 #define DefaultWeaponOffset 20.0f, -22.0f
-#define DefaultRotDegPerSecond 180.0f
+#define DefaultRotDegPerSecond 200.0f
+#define DefaultIgnoreRotDeg 4.0f
 #define DefaultTargetDetectionMaxDistance 400.0f
 #define DefaultTargetDetectionMaxDistanceSqr 400.0f * 400.0f
 #define DefaultCameraLerpFactor 0.8f
