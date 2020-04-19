@@ -152,7 +152,6 @@ void GameSingleton::HandleIncomingPackets()
 		{
 			en::U32 clientID;
 			packet >> clientID;
-			LogInfo(en::LogChannel::All, 5, "PlayerPosition, ClientID %d", clientID);
 			const en::I32 playerIndex = GetPlayerIndexFromClientID(clientID);
 			if (playerIndex >= 0)
 			{

@@ -51,8 +51,8 @@
 // MapData
 #define DefaultMaxItemAmount 60 /* Debug */
 #define DefaultSpawnItemInterval en::seconds(3.0f)
-#define DefaultMapSizeX 64.0f * 64.0f
-#define DefaultMapSizeY 64.0f * 48.0f
+#define DefaultMapSizeX 1000.0f
+#define DefaultMapSizeY 600.0f
 
 // Visuals
 #define DefaultBloodCount 3
