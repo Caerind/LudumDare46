@@ -51,11 +51,13 @@
 // MapData
 #define DefaultMaxItemAmount 60 /* Debug */
 #define DefaultSpawnItemInterval en::seconds(3.0f)
+#define DefaultMapSizeX 64.0f * 64.0f
+#define DefaultMapSizeY 64.0f * 48.0f
 
 // Visuals
 #define DefaultBloodCount 3
 #define DefaultShurikenRotDegSpeed 720.0f
-#define DefaultServerMapPath "../Assets/Map/arena.tmx"
+#define DefaultServerMapPath "/home/cmailly/LudumDare46/Assets/Map/map.tmx"
 
 
 // Server -> Client
@@ -126,7 +128,7 @@ enum class ItemID : en::U32
 	Laser,
 	Crossbow,
 	Uzi,
-	M16,
+	//M16,
 
 	Count
 };

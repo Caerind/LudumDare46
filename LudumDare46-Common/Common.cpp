@@ -31,7 +31,7 @@ en::Time GetItemCooldown(ItemID itemID)
 	case ItemID::Laser: return en::seconds(0.5f);
 	case ItemID::Crossbow: return en::seconds(2.0f);
 	case ItemID::Uzi: return en::seconds(0.33f);
-	case ItemID::M16: return en::seconds(0.5f);
+	//case ItemID::M16: return en::seconds(0.5f);
 	default: break;
 	}
 	return en::seconds(3600.0f);
@@ -46,7 +46,7 @@ en::F32 GetItemRange(ItemID itemID)
 	case ItemID::Laser: return DefaultItemRange * 1.25f;
 	case ItemID::Crossbow: return DefaultItemRange * 1.15f;
 	case ItemID::Uzi: return DefaultItemRange * 0.9f;
-	case ItemID::M16: return DefaultItemRange * 1.1f;
+		//case ItemID::M16: return DefaultItemRange * 1.1f;
 	default: break;
 	}
 	return 0.0f;
@@ -61,7 +61,7 @@ en::F32 GetItemWeight(ItemID itemID)
 	case ItemID::Laser: return 0.5f;
 	case ItemID::Crossbow: return 0.8f;
 	case ItemID::Uzi: return 0.9f;
-	case ItemID::M16: return 0.75f;
+		//case ItemID::M16: return 0.75f;
 	default: break;
 	}
 	return 1.0f;
@@ -81,7 +81,7 @@ const char* GetItemTextureName(ItemID itemID)
 	case ItemID::Laser: return "chicken_laser";
 	case ItemID::Crossbow: return "chicken_crossbow";
 	case ItemID::Uzi: return "chicken_uzi";
-	case ItemID::M16: return "chicken_m16";
+		//case ItemID::M16: return "chicken_m16";
 	default: break;
 	}
 	return "chicken_vanilla";
@@ -96,7 +96,7 @@ const char* GetItemMusicName(ItemID itemID)
 	case ItemID::Laser: return "laser_soundtrack";
 	case ItemID::Crossbow: return "crossbow_soundtrack";
 	case ItemID::Uzi: return "uzi_soundtrack";
-	case ItemID::M16: return "m16_soundtrack";
+		//case ItemID::M16: return "m16_soundtrack";
 	default: break;
 	}
 	return "";
@@ -111,7 +111,7 @@ const char* GetItemSoundLootName(ItemID itemID)
 	case ItemID::Laser: return "laser_loot";
 	case ItemID::Crossbow: return "crossbow_loot";
 	case ItemID::Uzi: return "uzi_loot";
-	case ItemID::M16: return "m16_loot";
+		//case ItemID::M16: return "m16_loot";
 	default: break;
 	}
 	return "";
@@ -126,7 +126,7 @@ const char* GetItemSoundFireName(ItemID itemID)
 	case ItemID::Laser: return "laser_fire";
 	case ItemID::Crossbow: return "crossbow_fire";
 	case ItemID::Uzi: return "uzi_fire";
-	case ItemID::M16: return "m16_fire";
+		//case ItemID::M16: return "m16_fire";
 	default: break;
 	}
 	return "";
@@ -141,7 +141,7 @@ const char* GetItemSoundHitName(ItemID itemID)
 	case ItemID::Laser: return "laser_hit";
 	case ItemID::Crossbow: return "crossbow_hit";
 	case ItemID::Uzi: return "uzi_hit";
-	case ItemID::M16: return "m16_hit";
+		//case ItemID::M16: return "m16_hit";
 	default: break;
 	}
 	return "";
@@ -156,7 +156,7 @@ sf::IntRect GetItemLootTextureRect(ItemID itemID)
 	case ItemID::Laser: return sf::IntRect(32, 0, 32, 32);
 	case ItemID::Crossbow: return sf::IntRect(64, 0, 32, 32);
 	case ItemID::Uzi: return sf::IntRect(96, 0, 32, 32);
-	case ItemID::M16: return sf::IntRect(128, 0, 32, 32);
+		//case ItemID::M16: return sf::IntRect(128, 0, 32, 32);
 	default: break;
 	}
 	return sf::IntRect(0, 0, 0, 0);
@@ -171,7 +171,7 @@ sf::IntRect GetItemBulletTextureRect(ItemID itemID)
 	case ItemID::Laser: return sf::IntRect(16, 0, 16, 16);
 	case ItemID::Crossbow: return sf::IntRect(32, 0, 16, 16);
 	case ItemID::Uzi: return sf::IntRect(48, 0, 16, 16);
-	case ItemID::M16: return sf::IntRect(64, 0, 16, 16);
+		//case ItemID::M16: return sf::IntRect(64, 0, 16, 16);
 	default: break;
 	}
 	return sf::IntRect(0, 0, 0, 0);

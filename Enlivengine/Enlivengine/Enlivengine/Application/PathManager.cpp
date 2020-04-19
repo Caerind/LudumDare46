@@ -32,7 +32,6 @@ const std::string& PathManager::GetAssetsPath() const
 	{
 		std::filesystem::path closeAssetsPath = std::filesystem::path(mExecutablePath + "/Assets");
 		std::filesystem::path farAssetsPath = std::filesystem::path(mExecutablePath + "/../../../Assets");
-		std::filesystem::path midAssetsPath = std::filesystem::path(mExecutablePath + "/../../Assets");
 		if (std::filesystem::exists(closeAssetsPath))
 		{
 			assetsPath = "Assets/";
@@ -40,10 +39,6 @@ const std::string& PathManager::GetAssetsPath() const
 		else if (std::filesystem::exists(farAssetsPath))
 		{
 			assetsPath = "../../Assets/";
-		}
-		else if (std::filesystem::exists(midAssetsPath))
-		{
-			assetsPath = "../Assets/";
 		}
 
 		assetsPathDefined = true;
