@@ -43,7 +43,7 @@ bool Server::Start(int argc, char** argv)
 		return false;
 	}
 
-	if (mMap.LoadFromFile("Assets/Map/map.tmx"))
+	if (mMap.LoadFromFile(DefaultServerMapPath))
 	{
 		mMapLoaded = true;
 		mMapSize.x = 1.0f * mMap.GetSize().x * mMap.GetTileSize().x;
