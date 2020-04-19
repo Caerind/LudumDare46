@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Resources resourceCount="39" typeCount="8">
+<Resources resourceCount="41" typeCount="8">
 	<Resource identifier="MainFont" filename="Fonts/EndlessBossBattle.ttf" type="0" />
 	<Resource identifier="blood" filename="Textures/blood.png" type="1" />
 	<Resource identifier="bullets" filename="Textures/bullets.png" type="1" />
@@ -15,10 +15,12 @@
 	<Resource identifier="prof_bucket1" filename="Textures/prof_bucket1.png" type="1" />
 	<Resource identifier="prof_bucket2" filename="Textures/prof_bucket2.png" type="1" />
 	<Resource identifier="seeds" filename="Textures/seeds.png" type="1" />
+	<Resource identifier="water" filename="Textures/water.png" type="1" />
 	<Resource identifier="ground_tileset-tileset" filename="Maps/ground_tileset.tsx" type="2" />
 	<Resource identifier="map" filename="Maps/map.tmx" type="3" />
 	<Resource identifier="crossbow_soundtrack" filename="Musics/crossbow_soundtrack.ogg" type="6" />
 	<Resource identifier="laser_soundtrack" filename="Musics/laser_soundtrack.ogg" type="6" />
+	<Resource identifier="menu_soundtrack" filename="Musics/menu_soundtrack.ogg" type="6" />
 	<Resource identifier="shuriken_soundtrack" filename="Musics/shuriken_soundtrack.ogg" type="6" />
 	<Resource identifier="uzi_soundtrack" filename="Musics/uzi_soundtrack.ogg" type="6" />
 	<Resource identifier="chicken_damage" filename="Sounds/chicken_damage.wav" type="7" />

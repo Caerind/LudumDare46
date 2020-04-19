@@ -8,7 +8,7 @@ GameState::GameState(en::StateManager& manager)
 	// TODO : Move out
 	GameSingleton::mView.setSize(1024.0f, 768.0f);
 	GameSingleton::mView.setCenter(1024.0f * 0.5f, 768.0f * 0.5f);
-	GameSingleton::mView.setZoom(0.6f);
+	GameSingleton::mView.setZoom(0.65f);
 	GameSingleton::mMap.load();
 	GameSingleton::mPlayingState = GameSingleton::PlayingState::Playing;
 }
@@ -117,6 +117,18 @@ bool GameState::update(en::Time dt)
 void GameState::render(sf::RenderTarget& target)
 {
 	ENLIVE_PROFILE_FUNCTION();
+
+	static bool backgroundInitialized = false;
+	static sf::Sprite background;
+	if (!backgroundInitialized)
+	{
+		en::Texture& texture = en::ResourceManager::GetInstance().Get<en::Texture>("water").Get();
+		texture.setRepeated(true);
+		background.setTexture(texture);
+		background.setTextureRect(sf::IntRect(0, 0, 1024, 768));
+		backgroundInitialized = true;
+	}
+	target.draw(background);
 
 	const sf::View previousView = target.getView();
 	target.setView(GameSingleton::mView.getHandle());

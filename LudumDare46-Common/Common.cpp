@@ -69,7 +69,7 @@ en::F32 GetItemWeight(ItemID itemID)
 
 ItemID GetRandomAttackItem()
 {
-	return static_cast<ItemID>(en::Random::get<en::U32>(static_cast<en::U32>(ItemID::None) + 1, static_cast<en::U32>(ItemID::Crossbow)));
+	return static_cast<ItemID>(en::Random::get<en::U32>(static_cast<en::U32>(ItemID::None) + 1, static_cast<en::U32>(ItemID::Count)));
 }
 
 const char* GetItemTextureName(ItemID itemID)
