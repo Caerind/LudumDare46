@@ -300,7 +300,7 @@ void GameState::render(sf::RenderTarget& target)
 	if (playerIndex >= 0)
 	{
 		const en::Vector2f position = GameSingleton::mPlayers[playerIndex].chicken.position;
-		en::F32 bestDistanceSqr = 999999.9f;
+		en::F32 bestDistanceSqr = 9999999999.9f;
 		en::Vector2f bestPos;
 		const en::U32 playerSize = static_cast<en::U32>(GameSingleton::mPlayers.size());
 		for (en::U32 i = 0; i < playerSize; ++i)
@@ -317,7 +317,7 @@ void GameState::render(sf::RenderTarget& target)
 				}
 			}
 		}
-		if (bestDistanceSqr < 999999.f && bestDistanceSqr > 1.0f && !GameSingleton::IsInView(bestPos))
+		if (bestDistanceSqr < 999999999.9f && bestDistanceSqr > (500.0f * 500.0f) && !GameSingleton::IsInView(bestPos))
 		{
 			const en::F32 d = en::Math::Sqrt(bestDistanceSqr);
 			const en::Vector2f deltaNormalized = (bestPos - position) / d;

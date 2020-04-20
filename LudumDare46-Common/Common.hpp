@@ -32,7 +32,7 @@
 #define DefaultChickenAvoidanceMinDistanceSqr 200.0f * 200.0f
 #define DefaultOwnerPriority 0.6f
 #define DefaultNonOwnerPriority 1.0f
-#define DefaultWeaponOffset 20.0f, -22.0f
+#define DefaultWeaponOffset 22.0f, 20.0f
 #define DefaultRotDegPerSecond 170.0f
 #define DefaultIgnoreRotDeg 4.0f
 #define DefaultTargetDetectionMaxDistance 400.0f
