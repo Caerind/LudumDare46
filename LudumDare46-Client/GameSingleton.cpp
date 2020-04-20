@@ -82,6 +82,8 @@ void GameSingleton::HandleIncomingPackets()
 				newPlayer.clientID = clientID;
 				newPlayer.nickname = nickname;
 				newPlayer.chicken = chicken;
+				newPlayer.lastPos = chicken.position;
+				newPlayer.lastRotation = chicken.rotation;
 				newPlayer.sprite.setOrigin({32.0f, 32.0f});
 				mPlayers.push_back(newPlayer);
 			}
@@ -92,6 +94,8 @@ void GameSingleton::HandleIncomingPackets()
 				newPlayer.clientID = clientID;
 				newPlayer.nickname = nickname;
 				newPlayer.chicken = chicken;
+				newPlayer.lastPos = chicken.position;
+				newPlayer.lastRotation = chicken.rotation;
 				newPlayer.sprite.setOrigin({ 32.0f, 32.0f });
 			}
 		} break;
@@ -127,6 +131,8 @@ void GameSingleton::HandleIncomingPackets()
 				newPlayer.clientID = clientID;
 				newPlayer.nickname = nickname;
 				newPlayer.chicken = chicken;
+				newPlayer.lastPos = chicken.position;
+				newPlayer.lastRotation = chicken.rotation;
 				newPlayer.sprite.setOrigin({ 32.0f, 32.0f });
 				mPlayers.push_back(newPlayer);
 			}
@@ -137,6 +143,8 @@ void GameSingleton::HandleIncomingPackets()
 				newPlayer.clientID = clientID;
 				newPlayer.nickname = nickname;
 				newPlayer.chicken = chicken;
+				newPlayer.lastPos = chicken.position;
+				newPlayer.lastRotation = chicken.rotation;
 				newPlayer.sprite.setOrigin({ 32.0f, 32.0f });
 			}
 		} break;
@@ -155,6 +163,8 @@ void GameSingleton::HandleIncomingPackets()
 			if (playerIndex >= 0)
 			{
 				packet >> mPlayers[playerIndex].chicken;
+				mPlayers[playerIndex].lastPos = mPlayers[playerIndex].chicken.position;
+				mPlayers[playerIndex].lastRotation = mPlayers[playerIndex].chicken.rotation;
 			}
 			else
 			{

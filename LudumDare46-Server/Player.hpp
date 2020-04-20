@@ -5,12 +5,6 @@
 #include <Enlivengine/System/Time.hpp>
 #include <Common.hpp>
 
-enum class PlayingState
-{
-	Playing,
-	Respawning
-};
-
 struct Player
 {
 	sf::IpAddress remoteAddress;
@@ -22,6 +16,5 @@ struct Player
 	Chicken chicken;
 
 	en::Time cooldown;
-	PlayingState state;
 	bool needUpdate;
 };

@@ -1,3 +1,4 @@
+
 #include "GameState.hpp"
 
 #include "ConnectingState.hpp"
@@ -5,7 +6,6 @@
 GameState::GameState(en::StateManager& manager)
 	: en::State(manager)
 {
-	// TODO : Move out
 	GameSingleton::mView.setSize(1024.0f, 768.0f);
 	GameSingleton::mView.setCenter(1024.0f * 0.5f, 768.0f * 0.5f);
 	GameSingleton::mView.setZoom(0.5f);
@@ -66,7 +66,7 @@ bool GameState::update(en::Time dt)
 			const en::U32 size = static_cast<en::U32>(GameSingleton::mPlayers.size());
 			for (en::U32 j = 0; j < size && !remove; ++j)
 			{
-				if (GameSingleton::mBullets[i].clientID != GameSingleton::mPlayers[j].clientID && (GameSingleton::mPlayers[j].chicken.position - GameSingleton::mBullets[i].position).getSquaredLength() < DefaultDetectionRadiusSqr)
+				if (GameSingleton::mBullets[i].clientID != GameSingleton::mPlayers[j].clientID && (GameSingleton::mPlayers[j].GetPosition() - GameSingleton::mBullets[i].position).getSquaredLength() < DefaultDetectionRadiusSqr)
 				{
 					remove = true;
 					playerHitIndex = j;
@@ -80,14 +80,14 @@ bool GameState::update(en::Time dt)
 			// Add blood
 			Blood blood;
 			blood.bloodUID = en::Random::get<en::U32>(0, 78); // Don't care, not shared
-			blood.position = GameSingleton::mPlayers[playerHitIndex].chicken.position;
+			blood.position = GameSingleton::mPlayers[playerHitIndex].GetPosition();
 			blood.position.x += en::Random::get<en::F32>(-10.0f, +10.0f);
 			blood.position.y += en::Random::get<en::F32>(-10.0f, +10.0f);
 			blood.remainingTime = en::seconds(en::Random::get<en::F32>(2.0f, 4.0f));
 			GameSingleton::mBloods.push_back(blood);
 
 			// Play fire sound
-			if (GameSingleton::IsInView(GameSingleton::mPlayers[playerHitIndex].chicken.position))
+			if (GameSingleton::IsInView(GameSingleton::mPlayers[playerHitIndex].GetPosition()))
 			{
 				// Damage
 				en::SoundPtr soundDamage = en::AudioSystem::GetInstance().PlaySound("chicken_damage");
@@ -107,7 +107,7 @@ bool GameState::update(en::Time dt)
 			// Compute this here, it will be overwritten by the server
 			GameSingleton::mPlayers[playerHitIndex].chicken.life -= DefaultChickenAttack + 1.0f;
 
-			if (GameSingleton::mPlayers[playerHitIndex].chicken.life <= 0.0f && GameSingleton::IsInView(GameSingleton::mPlayers[playerHitIndex].chicken.position))
+			if (GameSingleton::mPlayers[playerHitIndex].chicken.life <= 0.0f && GameSingleton::IsInView(GameSingleton::mPlayers[playerHitIndex].GetPosition()))
 			{
 				// Kill
 				en::SoundPtr soundKill = en::AudioSystem::GetInstance().PlaySound("chicken_kill");
@@ -170,13 +170,51 @@ bool GameState::update(en::Time dt)
 		const en::U32 playerSize = static_cast<en::U32>(GameSingleton::mPlayers.size());
 		for (en::U32 i = 0; i < playerSize; ++i)
 		{
+			// Mvt client-side (~same as server)
+			{
+				en::Vector2f deltaSeed;
+				en::I32 bestSeedIndex = Seed::GetBestSeedIndex(GameSingleton::mPlayers[i].clientID, GameSingleton::mPlayers[i].lastPos, GameSingleton::mSeeds, deltaSeed);
+
+				// Rotate
+				if (bestSeedIndex >= 0)
+				{
+					const bool tooClose = (deltaSeed.getSquaredLength() < DefaultTooCloseDistanceSqr);
+
+					if (deltaSeed.x == 0.0f)
+					{
+						deltaSeed.x += 0.001f;
+					}
+					en::F32 targetAngle = en::Math::AngleMagnitude(deltaSeed.getPolarAngle());
+					const en::F32 currentAngle = en::Math::AngleMagnitude(GameSingleton::mPlayers[i].lastRotation);
+					const en::F32 angleWithTarget = en::Math::AngleBetween(currentAngle, targetAngle);
+					if (angleWithTarget > DefaultIgnoreRotDeg)
+					{
+						// Rotation direction
+						const en::F32 tc = targetAngle - currentAngle;
+						const en::F32 ct = currentAngle - targetAngle;
+						const en::F32 correctedTC = (tc >= 0.0f) ? tc : tc + 360.0f;
+						const en::F32 correctedCT = (ct >= 0.0f) ? ct : ct + 360.0f;
+						const en::F32 sign = (correctedTC <= correctedCT) ? 1.0f : -1.0f;
+
+						// Rotation speed factor
+						const en::F32 rotSpeedFactor = tooClose ? 2.0f : 1.0f;
+
+						GameSingleton::mPlayers[i].lastRotation = en::Math::AngleMagnitude(GameSingleton::mPlayers[i].lastRotation + sign * rotSpeedFactor * DefaultRotDegPerSecond * dtSeconds);
+					}
+
+					// Mvt speed factor
+					const en::F32 mvtSpeedFactor = tooClose ? 1.0f : 0.75f;
+
+					GameSingleton::mPlayers[i].lastPos += en::Vector2f::polar(GameSingleton::mPlayers[i].lastRotation) * (dtSeconds * mvtSpeedFactor * GameSingleton::mPlayers[i].chicken.speed * GetItemWeight(GameSingleton::mPlayers[i].chicken.itemID));
+				}
+			}
+
 			if (GameSingleton::IsClient(GameSingleton::mPlayers[i].clientID))
 			{
-				mPlayerPos = GameSingleton::mPlayers[i].chicken.position;
-
 				// Cam stylé effect
 				const en::Vector2f mPos = getApplication().GetWindow().getCursorPositionView(GameSingleton::mView);
-				const en::Vector2f pPos = GameSingleton::mPlayers[i].chicken.position;
+				const en::Vector2f pPos = GameSingleton::mPlayers[i].GetPosition();
+				mPlayerPos = pPos;
 				en::Vector2f delta = mPos - pPos;
 				if (delta.getSquaredLength() > DefaultCameraMaxDistanceSqr)
 				{
@@ -298,7 +336,7 @@ void GameState::render(sf::RenderTarget& target)
 	en::I32 playerIndex = GameSingleton::GetPlayerIndexFromClientID(GameSingleton::mClient.GetClientID());
 	if (playerIndex >= 0)
 	{
-		const en::Vector2f position = GameSingleton::mPlayers[playerIndex].chicken.position;
+		const en::Vector2f position = GameSingleton::mPlayers[playerIndex].GetPosition();
 		en::F32 bestDistanceSqr = 9999999999.9f;
 		en::Vector2f bestPos;
 		const en::U32 playerSize = static_cast<en::U32>(GameSingleton::mPlayers.size());
@@ -306,7 +344,7 @@ void GameState::render(sf::RenderTarget& target)
 		{
 			if (i != static_cast<en::U32>(playerIndex))
 			{
-				const en::Vector2f& otherPos = GameSingleton::mPlayers[i].chicken.position;
+				const en::Vector2f& otherPos = GameSingleton::mPlayers[i].GetPosition();
 				const en::Vector2f delta = (otherPos - position);
 				const en::F32 distanceSqr = delta.getSquaredLength();
 				if (distanceSqr < bestDistanceSqr)
@@ -384,7 +422,7 @@ void GameState::render(sf::RenderTarget& target)
 			color.b = lifeP;
 		}
 		chickenBodySprite.setColor(en::toSF(color));
-		chickenBodySprite.setPosition(en::toSF(GameSingleton::mPlayers[i].chicken.position));
+		chickenBodySprite.setPosition(en::toSF(GameSingleton::mPlayers[i].GetPosition()));
 		target.draw(chickenBodySprite);
 		GameSingleton::mPlayers[i].UpdateSprite();
 		target.draw(GameSingleton::mPlayers[i].sprite);

@@ -67,6 +67,21 @@ en::F32 GetItemWeight(ItemID itemID)
 	return 1.0f;
 }
 
+en::F32 GetItemAttack(ItemID itemID)
+{
+	switch (itemID)
+	{
+	case ItemID::None: return 1.0f;
+	case ItemID::Shuriken: return 1.0f;
+	case ItemID::Laser: return 1.0f;
+	case ItemID::Crossbow: return 1.0f;
+	case ItemID::Uzi: return 1.0f;
+		//case ItemID::M16: return 1.0f;
+	default: break;
+	}
+	return 1.0f;
+}
+
 ItemID GetRandomAttackItem()
 {
 	return static_cast<ItemID>(en::Random::get<en::U32>(static_cast<en::U32>(ItemID::None) + 1, static_cast<en::U32>(ItemID::Count)));
@@ -198,6 +213,7 @@ sf::Packet& operator>>(sf::Packet& packet, Chicken& chicken)
 	packet >> chicken.rotation;
 	packet >> itemIDRaw;
 	packet >> chicken.lifeMax;
+	packet >> chicken.life;
 	packet >> chicken.speed;
 	packet >> chicken.attack;
 	chicken.itemID = static_cast<ItemID>(itemIDRaw);

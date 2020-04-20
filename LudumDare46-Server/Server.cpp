@@ -55,7 +55,6 @@ bool Server::Start(int argc, char** argv)
 	newPlayer.chicken.speed = DefaultChickenSpeed;
 	newPlayer.chicken.attack = DefaultChickenAttack;
 	newPlayer.cooldown = en::Time::Zero;
-	newPlayer.state = PlayingState::Playing;
 	mPlayers.push_back(newPlayer);
 
 	return true;
@@ -245,7 +244,6 @@ void Server::HandleIncomingPackets()
 				newPlayer.chicken.speed = DefaultChickenSpeed;
 				newPlayer.chicken.attack = DefaultChickenAttack;
 				newPlayer.cooldown = en::Time::Zero;
-				newPlayer.state = PlayingState::Playing;
 
 				SendConnectionAcceptedPacket(remoteAddress, remotePort, clientID);
 
