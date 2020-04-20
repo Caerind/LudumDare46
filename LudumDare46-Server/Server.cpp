@@ -374,7 +374,7 @@ void Server::UpdatePlayer(en::F32 dtSeconds, Player& player)
 			// Rotation speed factor
 			const en::F32 rotSpeedFactor = tooClose ? 1.0f : 2.0f;
 
-			player.chicken.rotation = en::Math::AngleMagnitude(player.chicken.rotation + sign * DefaultRotDegPerSecond * dtSeconds);
+			player.chicken.rotation = en::Math::AngleMagnitude(player.chicken.rotation + sign * rotSpeedFactor * DefaultRotDegPerSecond * dtSeconds);
 		}
 
 		// Mvt speed factor
