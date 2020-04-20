@@ -306,3 +306,23 @@ bool Bullet::Update(en::F32 dtSeconds)
 		return false;
 	}
 }
+
+en::I32 Seed::GetBestSeedIndex(en::U32 clientID, const en::Vector2f& position, const std::vector<Seed>& seeds, en::Vector2f& delta)
+{
+	// Select best seed
+	en::I32 bestSeedIndex = -1;
+	en::F32 bestSeedDistanceSqr = 99999999.0f;
+	const en::U32 seedSize = static_cast<en::U32>(seeds.size());
+	for (en::U32 i = 0; i < seedSize; ++i)
+	{
+		const en::Vector2f deltaSeed = seeds[i].position - position;
+		const en::F32 distanceSqr = deltaSeed.getSquaredLength();
+		if (clientID == seeds[i].clientID && distanceSqr < bestSeedDistanceSqr)
+		{
+			bestSeedDistanceSqr = distanceSqr;
+			bestSeedIndex = static_cast<en::I32>(i);
+			delta = deltaSeed;
+		}
+	}
+	return bestSeedIndex;
+}

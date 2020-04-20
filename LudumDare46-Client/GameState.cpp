@@ -378,8 +378,10 @@ void GameState::render(sf::RenderTarget& target)
 		en::Color color = en::Color::White;
 		if (GameSingleton::mPlayers[i].chicken.lifeMax >= 0.0f)
 		{
-			const en::F32 redFactor = 1.0f - (GameSingleton::mPlayers[i].chicken.life / GameSingleton::mPlayers[i].chicken.lifeMax);
-			color.r = static_cast<en::U8>(en::Math::Clamp(255.0f * redFactor, 0.0f, 255.0f));
+			en::U8 lifeP = (en::U8)(255 * (GameSingleton::mPlayers[i].chicken.life / GameSingleton::mPlayers[i].chicken.lifeMax));
+			color.r = 255;
+			color.g = lifeP;
+			color.b = lifeP;
 		}
 		chickenBodySprite.setColor(en::toSF(color));
 		chickenBodySprite.setPosition(en::toSF(GameSingleton::mPlayers[i].chicken.position));

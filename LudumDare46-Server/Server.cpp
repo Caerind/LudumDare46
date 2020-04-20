@@ -347,63 +347,46 @@ void Server::HandleIncomingPackets()
 
 void Server::UpdatePlayer(en::F32 dtSeconds, Player& player)
 {
-	// Select best seed
-	en::I32 bestSeedIndex = -1;
-	en::F32 bestSeedDistanceSqr = 99999999.0f;
-	en::Vector2f bestDeltaSeed;
-	const en::U32 seedSize = static_cast<en::U32>(mSeeds.size());
-	for (en::U32 i = 0; i < seedSize; ++i)
-	{
-		const en::Vector2f deltaSeed = mSeeds[i].position - player.chicken.position;
-		en::F32 distanceSqr = deltaSeed.getSquaredLength();
-		if (distanceSqr > DefaultSeedImpactDistanceSqr && player.remotePort != 0)
-		{
-			continue;
-		}
-		if (player.clientID == mSeeds[i].clientID)
-		{
-			distanceSqr *= DefaultOwnerPriority;
-		}
-		else
-		{
-			distanceSqr *= 999999.0f * DefaultNonOwnerPriority;
-		}
-		if (distanceSqr < bestSeedDistanceSqr)
-		{
-			bestSeedDistanceSqr = distanceSqr;
-			bestSeedIndex = static_cast<en::I32>(i);
-			bestDeltaSeed = deltaSeed;
-		}
-	}
+	en::Vector2f deltaSeed;
+	en::I32 bestSeedIndex = Seed::GetBestSeedIndex(player.clientID, player.chicken.position, mSeeds, deltaSeed);
 
 	// Rotate
 	if (bestSeedIndex >= 0)
 	{
-		if (bestDeltaSeed.x == 0.0f)
-		{
-			bestDeltaSeed.x += 0.001f;
-		}
-		en::F32 targetAngle = en::Math::AngleMagnitude(bestDeltaSeed.getPolarAngle());
+		const bool tooClose = (deltaSeed.getSquaredLength() < DefaultTooCloseDistanceSqr);
 
+		if (deltaSeed.x == 0.0f)
+		{
+			deltaSeed.x += 0.001f;
+		}
+		en::F32 targetAngle = en::Math::AngleMagnitude(deltaSeed.getPolarAngle());
 		const en::F32 currentAngle = en::Math::AngleMagnitude(player.chicken.rotation);
 		const en::F32 angleWithTarget = en::Math::AngleBetween(currentAngle, targetAngle);
 		if (angleWithTarget > DefaultIgnoreRotDeg)
 		{
+			// Rotation direction
 			const en::F32 tc = targetAngle - currentAngle;
 			const en::F32 ct = currentAngle - targetAngle;
 			const en::F32 correctedTC = (tc >= 0.0f) ? tc : tc + 360.0f;
 			const en::F32 correctedCT = (ct >= 0.0f) ? ct : ct + 360.0f;
 			const en::F32 sign = (correctedTC <= correctedCT) ? 1.0f : -1.0f;
+
+			// Rotation speed factor
+			const en::F32 rotSpeedFactor = tooClose ? 1.0f : 2.0f;
+
 			player.chicken.rotation = en::Math::AngleMagnitude(player.chicken.rotation + sign * DefaultRotDegPerSecond * dtSeconds);
 		}
 
-		player.chicken.position += en::Vector2f::polar(player.chicken.rotation) * dtSeconds * player.chicken.speed * GetItemWeight(player.chicken.itemID);
+		// Mvt speed factor
+		const en::F32 mvtSpeedFactor = tooClose ? 0.75f : 1.0f;
+
+		player.chicken.position += en::Vector2f::polar(player.chicken.rotation) * (dtSeconds * mvtSpeedFactor * player.chicken.speed * GetItemWeight(player.chicken.itemID));
 		player.needUpdate = true;
 
 		// Eat seed
 		const en::Vector2f deltaSeed2 = mSeeds[bestSeedIndex].position - player.chicken.position;
 		const en::F32 distanceSqr = deltaSeed2.getSquaredLength();
-		if (distanceSqr < DefaultTooCloseDistanceSqr)
+		if (distanceSqr < DefaultItemPickUpDistanceSqr)
 		{
 			SendRemoveSeedPacket(mSeeds[bestSeedIndex].seedUID, true, player.clientID);
 			mSeeds.erase(mSeeds.begin() + bestSeedIndex);

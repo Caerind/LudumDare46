@@ -42,11 +42,13 @@ bool ProfState::update(en::Time dt)
 		{
 			mSprite.setTexture(en::ResourceManager::GetInstance().Get<en::Texture>("prof_bucket2").Get());
 		}
+		else if (i == 2)
+		{
+			GameSingleton::mIntroDone = true;
 
-		GameSingleton::mIntroDone = true;
-
-		clearStates();
-		pushState<ConnectingState>();
+			clearStates();
+			pushState<ConnectingState>();
+		}
 	}
 
 	return false;

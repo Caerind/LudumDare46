@@ -5,6 +5,7 @@
 #include <Enlivengine/Math/Vector2.hpp>
 #include <SFML/Network/Packet.hpp>
 #include <SFML/Graphics/Rect.hpp>
+#include <vector>
 
 // Network
 #define DefaultServerAddress "92.222.79.62"
@@ -26,8 +27,8 @@
 #define DefaultSeedPrefFactor 0.9f
 #define DefaultItemPickUpDistance 35.0f
 #define DefaultItemPickUpDistanceSqr 35.0f * 35.0f
-#define DefaultTooCloseDistance 25.0f
-#define DefaultTooCloseDistanceSqr 25.0f * 25.0f
+#define DefaultTooCloseDistance 150.0f
+#define DefaultTooCloseDistanceSqr 150.0f * 150.0f
 #define DefaultChickenAvoidanceMinDistance 200.0f
 #define DefaultChickenAvoidanceMinDistanceSqr 200.0f * 200.0f
 #define DefaultOwnerPriority 0.6f
@@ -169,6 +170,8 @@ struct Seed
 	en::Vector2f position;
 	en::U32 clientID;
 	en::Time remainingTime;
+
+	static en::I32 GetBestSeedIndex(en::U32 clientID, const en::Vector2f& position, const std::vector<Seed>& seeds, en::Vector2f& delta);
 };
 sf::Packet& operator<<(sf::Packet& packet, const Seed& seed);
 sf::Packet& operator>>(sf::Packet& packet, Seed& seed);
