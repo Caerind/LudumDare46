@@ -295,7 +295,7 @@ sf::Packet& operator>>(sf::Packet& packet, Blood& blood)
 bool Bullet::Update(en::F32 dtSeconds)
 {
 	const en::F32 distance = dtSeconds * DefaultProjectileSpeed;
-	position += en::Vector2f::polar(rotation, distance);
+	position += en::Vector2f::polar(rotation) * distance;
 	remainingDistance -= distance;
 	if (remainingDistance <= 0.0f)
 	{

@@ -513,38 +513,41 @@ void Server::UpdateBullets(en::Time dt)
 	en::U32 bulletSize = static_cast<en::U32>(mBullets.size());
 	for (en::U32 i = 0; i < bulletSize; )
 	{
-		if (mBullets[i].Update(dtSeconds))
+		bool remove = mBullets[i].Update(dtSeconds);
+		en::U32 playerHitIndex = en::U32_Max;
+
+		if (!remove)
+		{
+			const en::U32 size = static_cast<en::U32>(mPlayers.size());
+			for (en::U32 j = 0; j < size && !remove; ++j)
+			{
+				if (mBullets[i].clientID != mPlayers[j].clientID && (mPlayers[j].chicken.position - mBullets[i].position).getSquaredLength() < DefaultDetectionRadiusSqr)
+				{
+					remove = true;
+					playerHitIndex = j;
+				}
+			}
+		}
+
+		if (playerHitIndex != en::U32_Max)
+		{
+			SendHitChickenPacket(mPlayers[playerHitIndex].clientID, mBullets[i].clientID);
+			mPlayers[playerHitIndex].chicken.life -= DefaultChickenAttack + 1.0f; // To avoid 0 imprecision (just in case)
+			mPlayers[playerHitIndex].needUpdate = true;
+			if (mPlayers[playerHitIndex].chicken.life <= 0.0f)
+			{
+				SendKillChickenPacket(mPlayers[playerHitIndex].clientID, mBullets[i].clientID);
+			}
+		}
+
+		if (remove)
 		{
 			mBullets.erase(mBullets.begin() + i);
 			bulletSize--;
 		}
 		else
 		{
-			bool hit = false;
-			en::U32 size = static_cast<en::U32>(mPlayers.size());
-			for (en::U32 j = 0; j < size && !hit; ++j)
-			{
-				if (mBullets[i].clientID != mPlayers[j].clientID && (mPlayers[j].chicken.position - mBullets[i].position).getSquaredLength() < 35.0f * 35.0f)
-				{
-					hit = true;
-					SendHitChickenPacket(mPlayers[j].clientID, mBullets[i].clientID);
-					mPlayers[j].chicken.life -= DefaultChickenAttack + 1.0f; // To avoid 0 imprecision (just in case)
-					mPlayers[j].needUpdate = true;
-					if (mPlayers[j].chicken.life <= 0.0f)
-					{
-						SendKillChickenPacket(mPlayers[j].clientID, mBullets[i].clientID);
-					}
-				}
-			}
-			if (hit)
-			{
-				mBullets.erase(mBullets.begin() + i);
-				bulletSize--;
-			}
-			else
-			{
-				i++;
-			}
+			i++;
 		}
 	}
 }

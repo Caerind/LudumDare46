@@ -286,41 +286,7 @@ void GameSingleton::HandleIncomingPackets()
 		} break;
 		case ServerPacketID::HitChicken:
 		{
-			en::U32 clientID;
-			en::U32 killerClientID;
-			packet >> clientID >> killerClientID;
-			LogInfo(en::LogChannel::All, 2, "Hit %d", clientID);
-
-			const en::I32 receiverIndex = GetPlayerIndexFromClientID(clientID);
-			if (receiverIndex >= 0)
-			{
-				if (IsInView(mPlayers[receiverIndex].chicken.position))
-				{
-					en::SoundPtr soundDamage = en::AudioSystem::GetInstance().PlaySound("chicken_damage");
-					if (soundDamage.IsValid())
-					{
-						soundDamage.SetVolume(0.25f);
-					}
-					const en::I32 killerIndex = GetPlayerIndexFromClientID(killerClientID);
-					if (killerIndex >= 0)
-					{
-						en::SoundPtr soundHit = en::AudioSystem::GetInstance().PlaySound(GetItemSoundHitName(mPlayers[killerIndex].chicken.itemID));
-						if (soundHit.IsValid())
-						{
-							soundHit.SetVolume(0.25f);
-						}
-					}
-				}
-
-				Blood blood;
-				blood.bloodUID = en::Random::get<en::U32>(0, 78); // Dont care, not shared
-				blood.position = mPlayers[receiverIndex].chicken.position;
-				blood.position.x += en::Random::get<en::F32>(-10.0f, +10.0f);
-				blood.position.y += en::Random::get<en::F32>(-10.0f, +10.0f);
-				blood.remainingTime = en::seconds(en::Random::get<en::F32>(2.0f, 4.0f));
-				mBloods.push_back(blood);
-			}
-
+			// Computed on client side
 		} break;
 		case ServerPacketID::KillChicken:
 		{
@@ -328,16 +294,6 @@ void GameSingleton::HandleIncomingPackets()
 			en::U32 killerClientID;
 			packet >> clientID >> killerClientID;
 			LogInfo(en::LogChannel::All, 2, "Kill %d", clientID);
-
-			const en::I32 receiverIndex = GetPlayerIndexFromClientID(clientID);
-			if (receiverIndex >= 0 && IsInView(mPlayers[receiverIndex].chicken.position))
-			{
-				en::SoundPtr soundDamage = en::AudioSystem::GetInstance().PlaySound("chicken_kill");
-				if (soundDamage.IsValid())
-				{
-					soundDamage.SetVolume(0.25f);
-				}
-			}
 
 			if (IsClient(killerClientID))
 			{

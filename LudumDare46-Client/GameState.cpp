@@ -57,6 +57,96 @@ bool GameState::update(en::Time dt)
 	en::U32 bulletSize = static_cast<en::U32>(GameSingleton::mBullets.size());
 	for (en::U32 i = 0; i < bulletSize; )
 	{
+		bool remove = GameSingleton::mBullets[i].Update(dtSeconds);
+		en::U32 playerHitIndex = en::U32_Max;
+
+		if (!remove)
+		{
+			const en::U32 size = static_cast<en::U32>(GameSingleton::mPlayers.size());
+			for (en::U32 j = 0; j < size && !remove; ++j)
+			{
+				if (GameSingleton::mBullets[i].clientID != GameSingleton::mPlayers[j].clientID && (GameSingleton::mPlayers[j].chicken.position - GameSingleton::mBullets[i].position).getSquaredLength() < DefaultDetectionRadiusSqr)
+				{
+					remove = true;
+					playerHitIndex = j;
+				}
+			}
+		}
+
+		// Hit some player
+		if (playerHitIndex != en::U32_Max) 
+		{
+			// Add blood
+			Blood blood;
+			blood.bloodUID = en::Random::get<en::U32>(0, 78); // Don't care, not shared
+			blood.position = GameSingleton::mPlayers[playerHitIndex].chicken.position;
+			blood.position.x += en::Random::get<en::F32>(-10.0f, +10.0f);
+			blood.position.y += en::Random::get<en::F32>(-10.0f, +10.0f);
+			blood.remainingTime = en::seconds(en::Random::get<en::F32>(2.0f, 4.0f));
+			GameSingleton::mBloods.push_back(blood);
+
+			// Play fire sound
+			if (GameSingleton::IsInView(GameSingleton::mPlayers[playerHitIndex].chicken.position))
+			{
+				// Damage
+				en::SoundPtr soundDamage = en::AudioSystem::GetInstance().PlaySound("chicken_damage");
+				if (soundDamage.IsValid())
+				{
+					soundDamage.SetVolume(0.25f);
+				}
+
+				// Hit
+				en::SoundPtr sound = en::AudioSystem::GetInstance().PlaySound(GetItemSoundHitName(GameSingleton::mBullets[i].itemID));
+				if (sound.IsValid())
+				{
+					sound.SetVolume(0.25f);
+				}
+			}
+
+			// Compute this here, it will be overwritten by the server
+			GameSingleton::mPlayers[playerHitIndex].chicken.life -= DefaultChickenAttack + 1.0f;
+
+			if (GameSingleton::mPlayers[playerHitIndex].chicken.life <= 0.0f && GameSingleton::IsInView(GameSingleton::mPlayers[playerHitIndex].chicken.position))
+			{
+				// Kill
+				en::SoundPtr soundKill = en::AudioSystem::GetInstance().PlaySound("chicken_kill");
+				if (soundKill.IsValid())
+				{
+					soundKill.SetVolume(0.25f);
+				}
+
+				if (!GameSingleton::IsClient(GameSingleton::mPlayers[playerHitIndex].clientID))
+				{
+					// Reward
+					en::SoundPtr soundKill = en::AudioSystem::GetInstance().PlaySound("reward");
+					if (soundKill.IsValid())
+					{
+						soundKill.SetVolume(0.25f);
+					}
+				}
+				else
+				{
+					// Handle main player dying in server switch
+				}
+			}
+		}
+
+		if (remove)
+		{
+			GameSingleton::mBullets.erase(GameSingleton::mBullets.begin() + i);
+			bulletSize--;
+		}
+		else
+		{
+			i++;
+		}
+	}
+
+
+
+	en::U32 bulletSize = static_cast<en::U32>(GameSingleton::mBullets.size());
+	for (en::U32 i = 0; i < bulletSize; )
+	{
 		if (GameSingleton::mBullets[i].Update(dtSeconds))
 		{
 			GameSingleton::mBullets.erase(GameSingleton::mBullets.begin() + i);
@@ -65,16 +155,18 @@ bool GameState::update(en::Time dt)
 		else
 		{
 			bool hit = false;
-			en::U32 size = static_cast<en::U32>(GameSingleton::mPlayers.size());
+			const en::U32 size = static_cast<en::U32>(GameSingleton::mPlayers.size());
 			for (en::U32 j = 0; j < size && !hit; ++j)
 			{
-				if ((GameSingleton::mPlayers[j].chicken.position - GameSingleton::mBullets[i].position).getSquaredLength() < 35.0f * 35.0f)
+				if (GameSingleton::mBullets[i].clientID != GameSingleton::mPlayers[j].clientID && (GameSingleton::mPlayers[j].chicken.position - GameSingleton::mBullets[i].position).getSquaredLength() < 35.0f * 35.0f)
 				{
 					hit = true;
 				}
 			}
 			if (hit)
 			{
+				
+
 				GameSingleton::mBullets.erase(GameSingleton::mBullets.begin() + i);
 				bulletSize--;
 			}
