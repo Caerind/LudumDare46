@@ -53,7 +53,7 @@ bool GameState::update(en::Time dt)
 	}
 
 	// Bullets
-	mShurikenRotation += dtSeconds * DefaultShurikenRotDegSpeed;
+	mShurikenRotation = en::Math::AngleMagnitude(mShurikenRotation + dtSeconds * DefaultShurikenRotDegSpeed);
 	en::U32 bulletSize = static_cast<en::U32>(GameSingleton::mBullets.size());
 	for (en::U32 i = 0; i < bulletSize; )
 	{
@@ -274,16 +274,16 @@ void GameState::render(sf::RenderTarget& target)
 	const en::U32 bulletSize = static_cast<en::U32>(GameSingleton::mBullets.size());
 	for (en::U32 i = 0; i < bulletSize; ++i)
 	{
+		bulletSprite.setTextureRect(GetItemBulletTextureRect(GameSingleton::mBullets[i].itemID));
+		bulletSprite.setPosition(en::toSF(GameSingleton::mBullets[i].position));
 		if (GameSingleton::mBullets[i].itemID == ItemID::Shuriken)
 		{
-			bulletSprite.setRotation(mShurikenRotation);
+			bulletSprite.setRotation(GameSingleton::mBullets[i].rotation + 90.0f + mShurikenRotation);
 		}
 		else
 		{
 			bulletSprite.setRotation(GameSingleton::mBullets[i].rotation + 90.0f);
 		}
-		bulletSprite.setTextureRect(GetItemBulletTextureRect(GameSingleton::mBullets[i].itemID));
-		bulletSprite.setPosition(en::toSF(GameSingleton::mBullets[i].position));
 		
 		const en::F32 decayRange = 0.2f * DefaultItemRange * GetItemRange(GameSingleton::mBullets[i].itemID);
 		if (GameSingleton::mBullets[i].remainingDistance < decayRange)

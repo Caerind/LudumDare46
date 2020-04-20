@@ -315,10 +315,11 @@ void GameSingleton::HandleIncomingPackets()
 				Blood blood;
 				blood.bloodUID = en::Random::get<en::U32>(0, 78); // Dont care, not shared
 				blood.position = mPlayers[receiverIndex].chicken.position;
-				blood.remainingTime = en::seconds(3.0f);
+				blood.position.x += en::Random::get<en::F32>(-10.0f, +10.0f);
+				blood.position.y += en::Random::get<en::F32>(-10.0f, +10.0f);
+				blood.remainingTime = en::seconds(en::Random::get<en::F32>(2.0f, 4.0f));
 				mBloods.push_back(blood);
 			}
-
 
 		} break;
 		case ServerPacketID::KillChicken:
