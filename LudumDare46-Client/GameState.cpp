@@ -142,41 +142,6 @@ bool GameState::update(en::Time dt)
 		}
 	}
 
-
-
-	en::U32 bulletSize = static_cast<en::U32>(GameSingleton::mBullets.size());
-	for (en::U32 i = 0; i < bulletSize; )
-	{
-		if (GameSingleton::mBullets[i].Update(dtSeconds))
-		{
-			GameSingleton::mBullets.erase(GameSingleton::mBullets.begin() + i);
-			bulletSize--;
-		}
-		else
-		{
-			bool hit = false;
-			const en::U32 size = static_cast<en::U32>(GameSingleton::mPlayers.size());
-			for (en::U32 j = 0; j < size && !hit; ++j)
-			{
-				if (GameSingleton::mBullets[i].clientID != GameSingleton::mPlayers[j].clientID && (GameSingleton::mPlayers[j].chicken.position - GameSingleton::mBullets[i].position).getSquaredLength() < 35.0f * 35.0f)
-				{
-					hit = true;
-				}
-			}
-			if (hit)
-			{
-				
-
-				GameSingleton::mBullets.erase(GameSingleton::mBullets.begin() + i);
-				bulletSize--;
-			}
-			else
-			{
-				i++;
-			}
-		}
-	}
-
 	// Bloods
 	en::U32 bloodSize = static_cast<en::U32>(GameSingleton::mBloods.size());
 	for (en::U32 i = 0; i < bloodSize; )
