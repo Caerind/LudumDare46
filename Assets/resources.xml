@@ -12,6 +12,7 @@
 	<Resource identifier="cursor" filename="Textures/cursor.png" type="1" />
 	<Resource identifier="ground_tileset" filename="Textures/ground_tileset.png" type="1" />
 	<Resource identifier="loots" filename="Textures/loots.png" type="1" />
+	<Resource identifier="play_button" filename="Textures/play_button.png" type="1" />
 	<Resource identifier="prof_bucket1" filename="Textures/prof_bucket1.png" type="1" />
 	<Resource identifier="prof_bucket2" filename="Textures/prof_bucket2.png" type="1" />
 	<Resource identifier="radar" filename="Textures/radar.png" type="1" />

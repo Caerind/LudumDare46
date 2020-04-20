@@ -21,4 +21,7 @@ public:
 	bool update(en::Time dt);
 
 	void render(sf::RenderTarget& target);
+
+private:
+	sf::Sprite mSprite;
 };

@@ -3,14 +3,35 @@
 #include "ConnectingState.hpp"
 #include "ProfState.hpp"
 
+#include <Enlivengine/Application/ResourceManager.hpp>
+
 MenuState::MenuState(en::StateManager& manager)
 	: en::State(manager)
 {
+	mSprite.setTexture(en::ResourceManager::GetInstance().Get<en::Texture>("play_button").Get());
+	mSprite.setOrigin(mSprite.getGlobalBounds().width * 0.5f, mSprite.getGlobalBounds().height * 0.5f);
+	mSprite.setPosition(512, 550);
 }
 
 bool MenuState::handleEvent(const sf::Event& event)
 {
 	ENLIVE_PROFILE_FUNCTION();
+
+	if (event.type == sf::Event::MouseButtonPressed)
+	{
+		if (mSprite.getGlobalBounds().contains(en::toSF(GameSingleton::mApplication->GetWindow().getCursorPosition())))
+		{
+			clearStates();
+			if (GameSingleton::mIntroDone)
+			{
+				pushState<ConnectingState>();
+			}
+			else
+			{
+				pushState<ProfState>();
+			}
+		}
+	}
 
 	return false;
 }
@@ -18,23 +39,6 @@ bool MenuState::handleEvent(const sf::Event& event)
 bool MenuState::update(en::Time dt)
 {
 	ENLIVE_PROFILE_FUNCTION();
-
-	static en::Time timer = en::Time::Zero;
-	timer += dt;
-	if (timer > en::seconds(4.0f))
-	{
-		timer = en::Time::Zero;
-
-		clearStates();
-		if (GameSingleton::mIntroDone)
-		{
-			pushState<ConnectingState>();
-		}
-		else
-		{
-			pushState<ProfState>();
-		}
-	}
 
 	return false;
 }
@@ -47,7 +51,7 @@ void MenuState::render(sf::RenderTarget& target)
 
 	static const en::Vector2f mapSize = en::Vector2f(DefaultMapSizeX, DefaultMapSizeY);
 	en::View view;
-	view.setCenter(mapSize);
+	view.setSize(mapSize);
 	view.setCenter(mapSize * 0.5f);
 	target.setView(view.getHandle());
 	GameSingleton::mMap.render(target);
@@ -62,4 +66,6 @@ void MenuState::render(sf::RenderTarget& target)
 		init = true;
 	}
 	target.draw(screen);
+
+	target.draw(mSprite);
 }

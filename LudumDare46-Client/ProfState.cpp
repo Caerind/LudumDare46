@@ -23,9 +23,9 @@ bool ProfState::update(en::Time dt)
 	static en::Time timer = en::Time::Zero;
 
 #ifdef ENLIVE_DEBUG
-	static en::Time limit = en::seconds(7.0f);
+	static en::Time limit = en::seconds(10.0f);
 #else
-	static en::Time limit = en::seconds(7.0f);
+	static en::Time limit = en::seconds(10.0f);
 #endif
 
 	timer += dt;

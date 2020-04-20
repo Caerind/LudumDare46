@@ -518,6 +518,7 @@ void Server::UpdateBullets(en::Time dt)
 			if (mPlayers[playerHitIndex].chicken.life <= 0.0f)
 			{
 				SendKillChickenPacket(mPlayers[playerHitIndex].clientID, mBullets[i].clientID);
+				mPlayers[playerHitIndex].chicken.life = 0.0f;
 			}
 		}
 
