@@ -37,20 +37,20 @@
 #define DefaultIgnoreRotDeg 4.0f
 #define DefaultTargetDetectionMaxDistance 400.0f
 #define DefaultTargetDetectionMaxDistanceSqr 400.0f * 400.0f
-#define DefaultCameraLerpFactor 0.8f
-#define DefaultCameraMaxDistance 400.0f
-#define DefaultCameraMaxDistanceSqr 400.0f * 400.0f
+#define DefaultCameraLerpFactor 0.75f
+#define DefaultCameraMaxDistance 500.0f
+#define DefaultCameraMaxDistanceSqr 500.0f * 500.0f
 
 // Stats
 #define DefaultChickenLife 100.0f
-#define DefaultChickenSpeed 140.0f
+#define DefaultChickenSpeed 160.0f
 #define DefaultChickenAttack 20.0f
 #define DefaultProjectileSpeed 300.0f
-#define DefaultItemRange 400.0f
+#define DefaultItemRange 500.0f
 
 // MapData
 #define DefaultMaxItemAmount 40
-#define DefaultSpawnItemInterval en::seconds(2.0f)
+#define DefaultSpawnItemInterval en::seconds(0.3f)
 #define DefaultMapSizeX 64.0f * 64.0f
 #define DefaultMapSizeY 64.0f * 48.0f
 #define DefaultMapBorder 64.0f * 6.0f

@@ -64,6 +64,7 @@ public:
 	static inline constexpr T Abs(T value) { return (value < 0) ? -value : value; }
 
 	static inline constexpr F32 Lerp(F32 start, F32 end, F32 percent) { return start + percent * (end - start); }
+	static inline constexpr F32 Bezier(F32 k, F32 c) { return c * 2 * k * (1 - k) + k * k; }
 	template <typename T>
 	static inline constexpr T Fade(T value) { return value * value * value * (value * (value * 6 - 15) + 10); }
 

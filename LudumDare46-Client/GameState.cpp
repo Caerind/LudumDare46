@@ -8,7 +8,7 @@ GameState::GameState(en::StateManager& manager)
 	// TODO : Move out
 	GameSingleton::mView.setSize(1024.0f, 768.0f);
 	GameSingleton::mView.setCenter(1024.0f * 0.5f, 768.0f * 0.5f);
-	GameSingleton::mView.setZoom(0.65f);
+	GameSingleton::mView.setZoom(0.5f);
 	GameSingleton::mMap.load();
 	GameSingleton::mPlayingState = GameSingleton::PlayingState::Playing;
 }
@@ -114,7 +114,9 @@ bool GameState::update(en::Time dt)
 				{
 					delta.setLength(DefaultCameraMaxDistance);
 				}
-				const en::Vector2f lPos = en::Vector2f::lerp(pPos + delta, pPos, DefaultCameraLerpFactor);
+				en::Vector2f lPos;
+				lPos.x = en::Math::Bezier(pPos.x + delta.x, pPos.x);
+				lPos.y = en::Math::Bezier(pPos.y + delta.y, pPos.y);
 				GameSingleton::mView.setCenter(lPos);
 
 				if (lastTimeSinceSoundStart >= moveSoundDuration && lastPositionSoundStart != pPos)
@@ -210,6 +212,47 @@ void GameState::render(sf::RenderTarget& target)
 		{
 			seedSprite.setPosition(en::toSF(GameSingleton::mSeeds[i].position));
 			target.draw(seedSprite);
+		}
+	}
+
+	// Radar
+	static bool radarInitialized = false;
+	static sf::Sprite radarSprite;
+	if (!radarInitialized)
+	{
+		radarSprite.setTexture(en::ResourceManager::GetInstance().Get<en::Texture>("radar").Get());
+		radarSprite.setOrigin(8.0f, 8.0f);
+		radarSprite.setScale(3.0f, 3.0f);
+		radarInitialized = true;
+	}
+	en::I32 playerIndex = GameSingleton::GetPlayerIndexFromClientID(GameSingleton::mClient.GetClientID());
+	if (playerIndex >= 0)
+	{
+		const en::Vector2f position = GameSingleton::mPlayers[playerIndex].chicken.position;
+		en::F32 bestDistanceSqr = 999999.9f;
+		en::Vector2f bestPos;
+		const en::U32 playerSize = static_cast<en::U32>(GameSingleton::mPlayers.size());
+		for (en::U32 i = 0; i < playerSize; ++i)
+		{
+			if (i != static_cast<en::U32>(playerIndex))
+			{
+				const en::Vector2f& otherPos = GameSingleton::mPlayers[i].chicken.position;
+				const en::Vector2f delta = (otherPos - position);
+				const en::F32 distanceSqr = delta.getSquaredLength();
+				if (distanceSqr < bestDistanceSqr)
+				{
+					bestDistanceSqr = distanceSqr;
+					bestPos = otherPos;
+				}
+			}
+		}
+		if (bestDistanceSqr < 999999.f && bestDistanceSqr > 1.0f && !GameSingleton::IsInView(bestPos))
+		{
+			const en::F32 d = en::Math::Sqrt(bestDistanceSqr);
+			const en::Vector2f deltaNormalized = (bestPos - position) / d;
+			radarSprite.setPosition(en::toSF(position + deltaNormalized * 50.0f));
+			radarSprite.setRotation(deltaNormalized.getPolarAngle() + 90.0f);
+			target.draw(radarSprite);
 		}
 	}
 
