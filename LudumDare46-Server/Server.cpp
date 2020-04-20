@@ -56,6 +56,7 @@ bool Server::Start(int argc, char** argv)
 	newPlayer.chicken.attack = DefaultChickenAttack;
 	newPlayer.cooldown = en::Time::Zero;
 	newPlayer.state = PlayingState::Playing;
+	mPlayers.push_back(newPlayer);
 
 	return true;
 }
@@ -263,7 +264,7 @@ void Server::HandleIncomingPackets()
 
 				SendClientJoinedPacket(clientID, newPlayer.nickname, newPlayer.chicken);
 			}
-			else
+			else if (playerIndex == -1)
 			{
 				if (!slotAvailable)
 				{
@@ -347,14 +348,14 @@ void Server::UpdatePlayer(en::F32 dtSeconds, Player& player)
 {
 	// Select best seed
 	en::I32 bestSeedIndex = -1;
-	en::F32 bestSeedDistanceSqr = 999999.0f;
+	en::F32 bestSeedDistanceSqr = 99999999.0f;
 	en::Vector2f bestDeltaSeed;
 	const en::U32 seedSize = static_cast<en::U32>(mSeeds.size());
 	for (en::U32 i = 0; i < seedSize; ++i)
 	{
 		const en::Vector2f deltaSeed = mSeeds[i].position - player.chicken.position;
 		en::F32 distanceSqr = deltaSeed.getSquaredLength();
-		if (distanceSqr > DefaultSeedImpactDistanceSqr)
+		if (distanceSqr > DefaultSeedImpactDistanceSqr && player.remotePort != 0)
 		{
 			continue;
 		}
@@ -364,7 +365,7 @@ void Server::UpdatePlayer(en::F32 dtSeconds, Player& player)
 		}
 		else
 		{
-			distanceSqr *= 9999.0f * DefaultNonOwnerPriority;
+			distanceSqr *= 999999.0f * DefaultNonOwnerPriority;
 		}
 		if (distanceSqr < bestSeedDistanceSqr)
 		{
@@ -495,7 +496,7 @@ void Server::UpdateAIPlayer(en::F32 dtSeconds, Player& player)
 			{
 				const en::F32 rX = en::Random::get<en::F32>(-200.0f, 200.0f);
 				const en::F32 rY = en::Random::get<en::F32>(-200.0f, 200.0f);
-				AddNewSeed(bestPlayerPos + en::Vector2f(rX, rY), player.clientID);// Go near the enemy
+				AddNewSeed(bestPlayerPos + en::Vector2f(rX, rY), player.clientID); // Go near the enemy
 			}
 		}
 	}
