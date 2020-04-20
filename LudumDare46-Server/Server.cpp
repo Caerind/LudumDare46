@@ -133,6 +133,7 @@ void Server::Tick(en::Time dt)
 		{
 			playerPingPacket = static_cast<en::U32>(playerPingPacket + 1) % static_cast<en::U32>(mPlayers.size());
 			SendPingPacket(mPlayers[playerPingPacket].remoteAddress, mPlayers[playerPingPacket].remotePort);
+			antiTimeout = en::Time::Zero;
 		}
 	}
 
