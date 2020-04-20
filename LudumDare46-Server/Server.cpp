@@ -372,13 +372,13 @@ void Server::UpdatePlayer(en::F32 dtSeconds, Player& player)
 			const en::F32 sign = (correctedTC <= correctedCT) ? 1.0f : -1.0f;
 
 			// Rotation speed factor
-			const en::F32 rotSpeedFactor = tooClose ? 1.0f : 2.0f;
+			const en::F32 rotSpeedFactor = tooClose ? 2.0f : 1.0f;
 
 			player.chicken.rotation = en::Math::AngleMagnitude(player.chicken.rotation + sign * rotSpeedFactor * DefaultRotDegPerSecond * dtSeconds);
 		}
 
 		// Mvt speed factor
-		const en::F32 mvtSpeedFactor = tooClose ? 0.75f : 1.0f;
+		const en::F32 mvtSpeedFactor = tooClose ? 1.0f : 0.75f;
 
 		player.chicken.position += en::Vector2f::polar(player.chicken.rotation) * (dtSeconds * mvtSpeedFactor * player.chicken.speed * GetItemWeight(player.chicken.itemID));
 		player.needUpdate = true;
