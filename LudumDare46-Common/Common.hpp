@@ -141,6 +141,7 @@ bool IsValidItemForAttack(ItemID itemID);
 en::Time GetItemCooldown(ItemID itemID);
 en::F32 GetItemRange(ItemID itemID);
 en::F32 GetItemWeight(ItemID itemID);
+en::F32 GetItemAttack(ItemID itemID);
 ItemID GetRandomAttackItem();
 const char* GetItemTextureName(ItemID itemID);
 const char* GetItemMusicName(ItemID itemID);

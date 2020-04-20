@@ -84,6 +84,8 @@ void GameSingleton::HandleIncomingPackets()
 				newPlayer.chicken = chicken;
 				newPlayer.lastPos = chicken.position;
 				newPlayer.lastRotation = chicken.rotation;
+				newPlayer.animWalk = en::Time::Zero;
+				newPlayer.animIndex = 0;
 				newPlayer.sprite.setOrigin({32.0f, 32.0f});
 				mPlayers.push_back(newPlayer);
 			}
@@ -96,6 +98,8 @@ void GameSingleton::HandleIncomingPackets()
 				newPlayer.chicken = chicken;
 				newPlayer.lastPos = chicken.position;
 				newPlayer.lastRotation = chicken.rotation;
+				newPlayer.animWalk = en::Time::Zero;
+				newPlayer.animIndex = 0;
 				newPlayer.sprite.setOrigin({ 32.0f, 32.0f });
 			}
 		} break;
@@ -133,6 +137,8 @@ void GameSingleton::HandleIncomingPackets()
 				newPlayer.chicken = chicken;
 				newPlayer.lastPos = chicken.position;
 				newPlayer.lastRotation = chicken.rotation;
+				newPlayer.animWalk = en::Time::Zero;
+				newPlayer.animIndex = 0;
 				newPlayer.sprite.setOrigin({ 32.0f, 32.0f });
 				mPlayers.push_back(newPlayer);
 			}
@@ -145,6 +151,8 @@ void GameSingleton::HandleIncomingPackets()
 				newPlayer.chicken = chicken;
 				newPlayer.lastPos = chicken.position;
 				newPlayer.lastRotation = chicken.rotation;
+				newPlayer.animWalk = en::Time::Zero;
+				newPlayer.animIndex = 0;
 				newPlayer.sprite.setOrigin({ 32.0f, 32.0f });
 			}
 		} break;

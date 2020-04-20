@@ -513,7 +513,7 @@ void Server::UpdateBullets(en::Time dt)
 		if (playerHitIndex != en::U32_Max)
 		{
 			SendHitChickenPacket(mPlayers[playerHitIndex].clientID, mBullets[i].clientID);
-			mPlayers[playerHitIndex].chicken.life -= DefaultChickenAttack + 1.0f; // To avoid 0 imprecision (just in case)
+			mPlayers[playerHitIndex].chicken.life -= DefaultChickenAttack * GetItemAttack(mBullets[i].itemID);
 			mPlayers[playerHitIndex].needUpdate = true;
 			if (mPlayers[playerHitIndex].chicken.life <= 0.0f)
 			{

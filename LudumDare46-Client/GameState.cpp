@@ -105,7 +105,7 @@ bool GameState::update(en::Time dt)
 			}
 
 			// Compute this here, it will be overwritten by the server
-			GameSingleton::mPlayers[playerHitIndex].chicken.life -= DefaultChickenAttack + 1.0f;
+			GameSingleton::mPlayers[playerHitIndex].chicken.life -= DefaultChickenAttack * GetItemAttack(GameSingleton::mBullets[i].itemID);
 
 			if (GameSingleton::mPlayers[playerHitIndex].chicken.life <= 0.0f && GameSingleton::IsInView(GameSingleton::mPlayers[playerHitIndex].GetPosition()))
 			{
@@ -205,7 +205,37 @@ bool GameState::update(en::Time dt)
 					// Mvt speed factor
 					const en::F32 mvtSpeedFactor = tooClose ? 1.0f : 0.75f;
 
-					GameSingleton::mPlayers[i].lastPos += en::Vector2f::polar(GameSingleton::mPlayers[i].lastRotation) * (dtSeconds * mvtSpeedFactor * GameSingleton::mPlayers[i].chicken.speed * GetItemWeight(GameSingleton::mPlayers[i].chicken.itemID));
+					const en::Vector2f mvt = en::Vector2f::polar(GameSingleton::mPlayers[i].lastRotation) * (dtSeconds * mvtSpeedFactor * GameSingleton::mPlayers[i].chicken.speed * GetItemWeight(GameSingleton::mPlayers[i].chicken.itemID));
+					GameSingleton::mPlayers[i].lastPos += mvt;
+
+					if (mvt.getSquaredLength() <= 0.1f) // Not moving
+					{
+						GameSingleton::mPlayers[i].animWalk = en::Time::Zero;
+						GameSingleton::mPlayers[i].animIndex = 0;
+					}
+					else
+					{
+						GameSingleton::mPlayers[i].animWalk += dt;
+						if (GameSingleton::mPlayers[i].animIndex == 0)
+						{
+							GameSingleton::mPlayers[i].animIndex = 1;
+						}
+						static const en::Time timePerAnim = en::seconds(0.1f);
+						if (GameSingleton::mPlayers[i].animWalk >= timePerAnim)
+						{
+							GameSingleton::mPlayers[i].animWalk -= timePerAnim;
+							GameSingleton::mPlayers[i].animIndex++;
+							if (GameSingleton::mPlayers[i].animIndex > DefaultAnimCount)
+							{
+								GameSingleton::mPlayers[i].animIndex = 1;
+							}
+						}
+					}
+				}
+				else
+				{
+					GameSingleton::mPlayers[i].animWalk = en::Time::Zero;
+					GameSingleton::mPlayers[i].animIndex = 0;
 				}
 			}
 
