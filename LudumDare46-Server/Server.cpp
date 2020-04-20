@@ -454,11 +454,12 @@ void Server::UpdateAIPlayer(en::F32 dtSeconds, Player& player)
 	{
 		if (player.chicken.itemID == ItemID::None && mItems.size() > 0)
 		{
+			LogWarning(en::LogChannel::Animation, 3, "Add new seed to ITEM");
 			AddNewSeed(mItems[0].position, player.clientID); // Find random item
 		}
 		else
 		{
-			en::F32 bestDistanceSqr = 999999.0f;
+			en::F32 bestDistanceSqr = 999999999.0f;
 			en::Vector2f bestPlayerPos;
 			en::U32 playerSize = static_cast<en::U32>(mPlayers.size());
 			for (en::U32 i = 0; i < playerSize; ++i)
@@ -474,10 +475,11 @@ void Server::UpdateAIPlayer(en::F32 dtSeconds, Player& player)
 					}
 				}
 			}
-			if (bestDistanceSqr < 9999.0f)
+			if (bestDistanceSqr < 99999999.0f)
 			{
-				const en::F32 rX = en::Random::get<en::F32>(-200.0f, 200.0f);
-				const en::F32 rY = en::Random::get<en::F32>(-200.0f, 200.0f);
+				const en::F32 rX = en::Random::get<en::F32>(-300.0f, 300.0f);
+				const en::F32 rY = en::Random::get<en::F32>(-300.0f, 300.0f);
+				LogWarning(en::LogChannel::Animation, 3, "Add new seed to player %d");
 				AddNewSeed(bestPlayerPos + en::Vector2f(rX, rY), player.clientID); // Go near the enemy
 			}
 		}
