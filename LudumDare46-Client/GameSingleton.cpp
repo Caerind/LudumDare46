@@ -47,12 +47,10 @@ void GameSingleton::HandleIncomingPackets()
 		{
 		case ServerPacketID::Ping:
 		{
-			LogInfo(en::LogChannel::All, 5, "Ping%s", "");
 			SendPongPacket();
 		} break;
 		case ServerPacketID::Pong:
 		{
-			LogInfo(en::LogChannel::All, 5, "Pong%s", "");
 		} break;
 		case ServerPacketID::ConnectionAccepted:
 		{

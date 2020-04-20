@@ -184,12 +184,10 @@ void Server::HandleIncomingPackets()
 		{
 		case ClientPacketID::Ping:
 		{
-			LogInfo(en::LogChannel::All, 5, "Ping%s", "");
 			SendPongPacket(remoteAddress, remotePort);
 		} break;
 		case ClientPacketID::Pong:
 		{
-			LogInfo(en::LogChannel::All, 5, "Pong%s", "");
 		} break;
 		case ClientPacketID::Join:
 		{
@@ -287,7 +285,7 @@ void Server::HandleIncomingPackets()
 				const en::I32 playerIndex = GetPlayerIndexFromClientID(clientID);
 				if (playerIndex >= 0 && IsInMap(position))
 				{
-					LogInfo(en::LogChannel::All, 2, "Player %d dropped seed at %f %f", mPlayers[playerIndex].clientID, position.x, position.y);
+					//LogInfo(en::LogChannel::All, 2, "Player %d dropped seed at %f %f", mPlayers[playerIndex].clientID, position.x, position.y);
 					AddNewSeed(position, clientID);
 				}
 				else
