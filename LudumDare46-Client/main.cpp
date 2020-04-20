@@ -3,7 +3,7 @@
 #include <Enlivengine/Application/Window.hpp>
 #include <Enlivengine/Graphics/View.hpp>
 
-#include "ConnectingState.hpp"
+#include "MenuState.hpp"
 #include "GameSingleton.hpp"
 
 int main(int argc, char** argv)
@@ -24,14 +24,17 @@ int main(int argc, char** argv)
 
 	GameSingleton::ConnectWindowCloseSlot();
 
-	{ // Cursor setup
-
+	// Cursor setup
+	{
 		en::Application::GetInstance().GetWindow().setCursor(en::Window::Cursor::None);
 		GameSingleton::mCursor.setTexture(en::ResourceManager::GetInstance().Get<en::Texture>("cursor").Get());
 		GameSingleton::mCursor.setTextureRect(sf::IntRect(0, 0, 32, 32));
 	}
 
-	app.Start<ConnectingState>();
+	GameSingleton::mIntroDone = false;
+	GameSingleton::mMap.load();
+
+	app.Start<MenuState>();
 
 	return 0;
 }

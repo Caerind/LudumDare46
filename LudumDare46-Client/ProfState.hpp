@@ -11,10 +11,10 @@
 
 #include "Player.hpp"
 
-class GameState : public en::State
+class ProfState : public en::State
 {
 public:
-	GameState(en::StateManager& manager);
+	ProfState(en::StateManager& manager);
 
 	bool handleEvent(const sf::Event& event);
 
@@ -23,7 +23,5 @@ public:
 	void render(sf::RenderTarget& target);
 
 private:
-	en::MusicPtr mMusic;
-	en::F32 mShurikenRotation;
-	en::Vector2f mPlayerPos;
+	sf::Sprite mSprite;
 };

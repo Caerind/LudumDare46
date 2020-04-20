@@ -32,6 +32,7 @@ public:
 	static sf::Sprite mCursor;
 	static PlayingState mPlayingState;
 	static en::MusicPtr mMusic;
+	static bool mIntroDone;
 
 	static void ConnectWindowCloseSlot();
 

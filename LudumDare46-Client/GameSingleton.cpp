@@ -19,6 +19,7 @@ en::Application::onApplicationStoppedType::ConnectionGuard GameSingleton::mAppli
 sf::Sprite GameSingleton::mCursor;
 GameSingleton::PlayingState GameSingleton::mPlayingState;
 en::MusicPtr GameSingleton::mMusic;
+bool GameSingleton::mIntroDone;
 
 void GameSingleton::ConnectWindowCloseSlot()
 {

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<Resources resourceCount="42" typeCount="8">
-	<Resource identifier="MainFont" filename="Fonts/EndlessBossBattle.ttf" type="0" />
+<Resources resourceCount="45" typeCount="8">
+	<Resource identifier="MainFont" filename="Fonts/Tahoma.ttf" type="0" />
 	<Resource identifier="blood" filename="Textures/blood.png" type="1" />
 	<Resource identifier="bullets" filename="Textures/bullets.png" type="1" />
 	<Resource identifier="chicken_body" filename="Textures/chicken_body.png" type="1" />
@@ -15,6 +15,8 @@
 	<Resource identifier="prof_bucket1" filename="Textures/prof_bucket1.png" type="1" />
 	<Resource identifier="prof_bucket2" filename="Textures/prof_bucket2.png" type="1" />
 	<Resource identifier="radar" filename="Textures/radar.png" type="1" />
+	<Resource identifier="screen_connect" filename="Textures/screen_connect.png" type="1" />
+	<Resource identifier="screen_home" filename="Textures/screen_home.png" type="1" />
 	<Resource identifier="seeds" filename="Textures/seeds.png" type="1" />
 	<Resource identifier="water" filename="Textures/water.png" type="1" />
 	<Resource identifier="ground_tileset-tileset" filename="Maps/ground_tileset.tsx" type="2" />

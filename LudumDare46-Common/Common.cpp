@@ -59,7 +59,7 @@ en::F32 GetItemWeight(ItemID itemID)
 	case ItemID::None: return 1.3f;
 	case ItemID::Shuriken: return 1.3f;
 	case ItemID::Laser: return 0.7f;
-	case ItemID::Crossbow: return 0.1f;
+	case ItemID::Crossbow: return 1.0f;
 	case ItemID::Uzi: return 1.1f;
 		//case ItemID::M16: return 0.75f;
 	default: break;

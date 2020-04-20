@@ -9,7 +9,6 @@ GameState::GameState(en::StateManager& manager)
 	GameSingleton::mView.setSize(1024.0f, 768.0f);
 	GameSingleton::mView.setCenter(1024.0f * 0.5f, 768.0f * 0.5f);
 	GameSingleton::mView.setZoom(0.5f);
-	GameSingleton::mMap.load();
 	GameSingleton::mPlayingState = GameSingleton::PlayingState::Playing;
 	
 	mPlayerPos = { 0.0f, 0.0f };
@@ -404,6 +403,8 @@ void GameState::render(sf::RenderTarget& target)
 		text.setCharacterSize(24);
 		text.setPosition(1024.0f - 230.0f, 10.0f);
 		text.setFillColor(sf::Color::White);
+		text.setOutlineColor(sf::Color::Black);
+		text.setOutlineThickness(1.0f);
 		textInitialized = true;
 	}
 	text.setString("Online players: " + std::to_string(GameSingleton::mPlayers.size()));

@@ -11,19 +11,14 @@
 
 #include "Player.hpp"
 
-class GameState : public en::State
+class IntroState : public en::State
 {
 public:
-	GameState(en::StateManager& manager);
+	IntroState(en::StateManager& manager);
 
 	bool handleEvent(const sf::Event& event);
 
 	bool update(en::Time dt);
 
 	void render(sf::RenderTarget& target);
-
-private:
-	en::MusicPtr mMusic;
-	en::F32 mShurikenRotation;
-	en::Vector2f mPlayerPos;
 };
