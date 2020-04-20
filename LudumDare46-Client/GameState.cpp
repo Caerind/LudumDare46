@@ -228,7 +228,7 @@ void GameState::render(sf::RenderTarget& target)
 	{
 		radarSprite.setTexture(en::ResourceManager::GetInstance().Get<en::Texture>("radar").Get());
 		radarSprite.setOrigin(8.0f, 8.0f);
-		radarSprite.setScale(3.0f, 3.0f);
+		radarSprite.setScale(1.2f, 1.2f);
 		radarInitialized = true;
 	}
 	en::I32 playerIndex = GameSingleton::GetPlayerIndexFromClientID(GameSingleton::mClient.GetClientID());

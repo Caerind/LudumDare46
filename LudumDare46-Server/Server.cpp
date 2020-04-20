@@ -40,6 +40,23 @@ bool Server::Start(int argc, char** argv)
 
 	mRunning = true;
 
+	// Yes, it's an IA player, just to ensure you're not alone
+	Player newPlayer;
+	newPlayer.remoteAddress = sf::IpAddress::LocalHost;
+	newPlayer.remotePort = 0;
+	newPlayer.clientID = GenerateClientID(newPlayer.remoteAddress, newPlayer.remotePort);
+	newPlayer.lastPacketTime = en::Time::Zero;
+	newPlayer.nickname = "Player1"; // TODO : nickname
+	newPlayer.chicken.position = GetRandomPositionSpawn();
+	newPlayer.chicken.rotation = 0.0f;
+	newPlayer.chicken.itemID = ItemID::None;
+	newPlayer.chicken.lifeMax = DefaultChickenLife;
+	newPlayer.chicken.life = DefaultChickenLife;
+	newPlayer.chicken.speed = DefaultChickenSpeed;
+	newPlayer.chicken.attack = DefaultChickenAttack;
+	newPlayer.cooldown = en::Time::Zero;
+	newPlayer.state = PlayingState::Playing;
+
 	return true;
 }
 
@@ -70,6 +87,12 @@ bool Server::Run()
 		tickTime += dt;
 
 		HandleIncomingPackets();
+
+		if (mPlayers.size() <= 1)
+		{
+			sf::sleep(sf::seconds(3.0f));
+			continue;
+		}
 
 		while (stepTime >= stepInterval)
 		{
@@ -103,6 +126,11 @@ void Server::UpdateLogic(en::Time dt)
 	for (en::U32 i = 0; i < playerSize; ++i)
 	{
 		mPlayers[i].lastPacketTime += dt;
+		if (mPlayers[i].remotePort == 0)
+		{
+			mPlayers[i].lastPacketTime = en::Time::Zero;
+			UpdateAIPlayer(dtSeconds, mPlayers[i]);
+		}
 
 		UpdatePlayer(dtSeconds, mPlayers[i]);
 	}
@@ -123,21 +151,23 @@ void Server::UpdateLogic(en::Time dt)
 
 void Server::Tick(en::Time dt)
 {
-	static en::U32 playerPingPacket;
-	static en::Time antiTimeout;
-	if (mPlayers.size() > 0)
+	en::U32 size = static_cast<en::U32>(mPlayers.size());
+	if (size <= 1)
 	{
-		antiTimeout += dt;
-		en::Time pingPacketTime = en::seconds(1.0f / mPlayers.size());
-		if (antiTimeout >= pingPacketTime)
-		{
-			playerPingPacket = static_cast<en::U32>(playerPingPacket + 1) % static_cast<en::U32>(mPlayers.size());
-			SendPingPacket(mPlayers[playerPingPacket].remoteAddress, mPlayers[playerPingPacket].remotePort);
-			antiTimeout = en::Time::Zero;
-		}
+		return;
 	}
 
-	en::U32 size = static_cast<en::U32>(mPlayers.size());
+	static en::U32 playerPingPacket;
+	static en::Time antiTimeout; 
+	antiTimeout += dt;
+	en::Time pingPacketTime = en::seconds(1.0f / mPlayers.size());
+	if (antiTimeout >= pingPacketTime)
+	{
+		playerPingPacket = static_cast<en::U32>(playerPingPacket + 1) % static_cast<en::U32>(mPlayers.size());
+		SendPingPacket(mPlayers[playerPingPacket].remoteAddress, mPlayers[playerPingPacket].remotePort);
+		antiTimeout = en::Time::Zero;
+	}
+
 	for (en::U32 i = 0; i < size; )
 	{
 		if (mPlayers[i].needUpdate)
@@ -147,7 +177,7 @@ void Server::Tick(en::Time dt)
 		}
 
 		// Timeout detection
-		if (mPlayers[i].lastPacketTime > DefaultServerTimeout)
+		if (mPlayers[i].lastPacketTime > DefaultServerTimeout && mPlayers[i].remotePort != 0)
 		{
 			SendConnectionRejectedPacket(mPlayers[i].remoteAddress, mPlayers[i].remotePort, RejectReason::Timeout);
 			SendClientLeftPacket(mPlayers[i].clientID);
@@ -425,6 +455,56 @@ void Server::UpdatePlayer(en::F32 dtSeconds, Player& player)
 	}
 }
 
+void Server::UpdateAIPlayer(en::F32 dtSeconds, Player& player)
+{
+	en::I32 aiSeedIndex = -1;
+	en::U32 seedSize = static_cast<en::U32>(mSeeds.size());
+	for (en::U32 i = 0; i < seedSize; ++i)
+	{
+		if (mSeeds[i].clientID == player.clientID)
+		{
+			aiSeedIndex = static_cast<en::I32>(i);
+			break;
+		}
+	}
+	if (aiSeedIndex < 0)
+	{
+		if (player.chicken.itemID == ItemID::None && mItems.size() > 0)
+		{
+			AddNewSeed(mItems[0].position, player.clientID); // Find random item
+		}
+		else
+		{
+			en::F32 bestDistanceSqr = 999999.0f;
+			en::Vector2f bestPlayerPos;
+			en::U32 playerSize = static_cast<en::U32>(mPlayers.size());
+			for (en::U32 i = 0; i < playerSize; ++i)
+			{
+				if (mPlayers[i].clientID != player.clientID)
+				{
+					const en::Vector2f delta = (mPlayers[i].chicken.position - player.chicken.position);
+					const en::F32 distanceSqr = delta.getSquaredLength();
+					if (distanceSqr < bestDistanceSqr)
+					{
+						bestDistanceSqr = distanceSqr;
+						bestPlayerPos = mPlayers[i].chicken.position;
+					}
+				}
+			}
+			if (bestDistanceSqr < 9999.0f)
+			{
+				const en::F32 rX = en::Random::get<en::F32>(-200.0f, 200.0f);
+				const en::F32 rY = en::Random::get<en::F32>(-200.0f, 200.0f);
+				AddNewSeed(bestPlayerPos + en::Vector2f(rX, rY), player.clientID);// Go near the enemy
+			}
+		}
+	}
+	else
+	{
+		// Go to it
+	}
+}
+
 void Server::UpdateBullets(en::Time dt)
 {
 	const en::F32 dtSeconds = dt.asSeconds();
@@ -638,13 +718,16 @@ void Server::SendToAllPlayers(sf::Packet& packet)
 	const en::U32 size = static_cast<en::U32>(mPlayers.size());
 	for (en::U32 i = 0; i < size; ++i)
 	{
-		mSocket.SendPacket(packet, mPlayers[i].remoteAddress, mPlayers[i].remotePort);
+		if (mPlayers[i].remotePort != 0)
+		{
+			mSocket.SendPacket(packet, mPlayers[i].remoteAddress, mPlayers[i].remotePort);
+		}
 	}
 }
 
 void Server::SendPingPacket(const sf::IpAddress& remoteAddress, en::U16 remotePort)
 {
-	if (mSocket.IsRunning())
+	if (mSocket.IsRunning() && remotePort != 0)
 	{
 		sf::Packet packet;
 		packet << static_cast<en::U8>(ServerPacketID::Ping);
@@ -654,7 +737,7 @@ void Server::SendPingPacket(const sf::IpAddress& remoteAddress, en::U16 remotePo
 
 void Server::SendPongPacket(const sf::IpAddress& remoteAddress, en::U16 remotePort)
 {
-	if (mSocket.IsRunning())
+	if (mSocket.IsRunning() && remotePort != 0)
 	{
 		sf::Packet packet;
 		packet << static_cast<en::U8>(ServerPacketID::Pong);
@@ -664,7 +747,7 @@ void Server::SendPongPacket(const sf::IpAddress& remoteAddress, en::U16 remotePo
 
 void Server::SendConnectionAcceptedPacket(const sf::IpAddress& remoteAddress, en::U16 remotePort, en::U32 clientID)
 {
-	if (mSocket.IsRunning())
+	if (mSocket.IsRunning() && remotePort != 0)
 	{
 		sf::Packet packet;
 		packet << static_cast<en::U8>(ServerPacketID::ConnectionAccepted);
@@ -675,7 +758,7 @@ void Server::SendConnectionAcceptedPacket(const sf::IpAddress& remoteAddress, en
 
 void Server::SendConnectionRejectedPacket(const sf::IpAddress& remoteAddress, en::U16 remotePort, RejectReason reason)
 {
-	if (mSocket.IsRunning())
+	if (mSocket.IsRunning() && remotePort != 0)
 	{
 		sf::Packet packet;
 		packet << static_cast<en::U8>(ServerPacketID::ConnectionRejected);
@@ -722,7 +805,7 @@ void Server::SendServerStopPacket()
 
 void Server::SendServerInfo(const sf::IpAddress& remoteAddress, en::U16 remotePort)
 {
-	if (mSocket.IsRunning())
+	if (mSocket.IsRunning() && remotePort != 0)
 	{
 		sf::Packet packet;
 		packet << static_cast<en::U8>(ServerPacketID::ServerInfo);
@@ -734,7 +817,7 @@ void Server::SendServerInfo(const sf::IpAddress& remoteAddress, en::U16 remotePo
 
 void Server::SendPlayerInfo(const sf::IpAddress& remoteAddress, en::U16 remotePort, const Player& player)
 {
-	if (mSocket.IsRunning())
+	if (mSocket.IsRunning() && remotePort != 0)
 	{
 		sf::Packet packet;
 		packet << static_cast<en::U8>(ServerPacketID::PlayerInfo);
@@ -747,7 +830,7 @@ void Server::SendPlayerInfo(const sf::IpAddress& remoteAddress, en::U16 remotePo
 
 void Server::SendItemInfo(const sf::IpAddress& remoteAddress, en::U16 remotePort, const Item& item)
 {
-	if (mSocket.IsRunning())
+	if (mSocket.IsRunning() && remotePort != 0)
 	{
 		sf::Packet packet;
 		packet << static_cast<en::U8>(ServerPacketID::AddItem);

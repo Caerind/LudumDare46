@@ -31,6 +31,7 @@ private:
 	void HandleIncomingPackets();
 
 	void UpdatePlayer(en::F32 dtSeconds, Player& player);
+	void UpdateAIPlayer(en::F32 dtSeconds, Player& player);
 	void UpdateBullets(en::Time dt);
 	void UpdateLoots(en::Time dt);
 
