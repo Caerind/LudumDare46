@@ -448,7 +448,7 @@ void Server::UpdatePlayer(en::F32 dtSeconds, Player& player)
 				const en::F32 dotProduct = forward.dotProduct(normalizedDelta);
 				if (dotProduct > cos)
 				{
-					const en::Vector2f rotatedWeaponOffset = en::Vector2f(DefaultWeaponOffset).rotated(player.chicken.rotation);
+					const en::Vector2f rotatedWeaponOffset = en::Vector2f(DefaultWeaponOffset);
 					player.cooldown = en::Time::Zero;
 					AddNewBullet(player.chicken.position + rotatedWeaponOffset, bestDeltaTarget.getPolarAngle(), player.clientID, player.chicken.itemID, range);
 				}
