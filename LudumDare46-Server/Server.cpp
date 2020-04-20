@@ -97,7 +97,7 @@ void Server::UpdateLogic(en::Time dt)
 
 	static en::U32 optim = 0;
 	optim++;
-	en::U32 c = optim % 5;
+	en::U32 c = optim % 3;
 
 	const en::U32 playerSize = static_cast<en::U32>(mPlayers.size());
 	for (en::U32 i = 0; i < playerSize; ++i)
@@ -105,20 +105,6 @@ void Server::UpdateLogic(en::Time dt)
 		mPlayers[i].lastPacketTime += dt;
 
 		UpdatePlayer(dtSeconds, mPlayers[i]);
-
-		const en::U32 e = i % 3;
-		if (c == 3 && e == 0)
-		{
-			SendPingPacket(mPlayers[i].remoteAddress, mPlayers[i].remotePort);
-		}
-		if (c == 4 && e == 1)
-		{
-			SendPingPacket(mPlayers[i].remoteAddress, mPlayers[i].remotePort);
-		}
-		if (c == 5 && e == 2)
-		{
-			SendPingPacket(mPlayers[i].remoteAddress, mPlayers[i].remotePort);
-		}
 	}
 
 	if (c == 0)
@@ -137,6 +123,19 @@ void Server::UpdateLogic(en::Time dt)
 
 void Server::Tick(en::Time dt)
 {
+	static en::U32 playerPingPacket;
+	static en::Time antiTimeout;
+	if (mPlayers.size() > 0)
+	{
+		antiTimeout += dt;
+		en::Time pingPacketTime = en::seconds(1.0f / mPlayers.size());
+		if (antiTimeout >= pingPacketTime)
+		{
+			playerPingPacket = static_cast<en::U32>(playerPingPacket + 1) % static_cast<en::U32>(mPlayers.size());
+			SendPingPacket(mPlayers[playerPingPacket].remoteAddress, mPlayers[playerPingPacket].remotePort);
+		}
+	}
+
 	en::U32 size = static_cast<en::U32>(mPlayers.size());
 	for (en::U32 i = 0; i < size; )
 	{
