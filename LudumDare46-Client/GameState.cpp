@@ -122,9 +122,7 @@ bool GameState::update(en::Time dt)
 				{
 					delta.setLength(DefaultCameraMaxDistance);
 				}
-				en::Vector2f lPos;
-				lPos.x = en::Math::Bezier(pPos.x + delta.x, pPos.x);
-				lPos.y = en::Math::Bezier(pPos.y + delta.y, pPos.y);
+				const en::Vector2f lPos = en::Vector2f::lerp(pPos + delta, pPos, DefaultCameraLerpFactor);
 				GameSingleton::mView.setCenter(lPos);
 
 				if (lastTimeSinceSoundStart >= moveSoundDuration && lastPositionSoundStart != pPos)
