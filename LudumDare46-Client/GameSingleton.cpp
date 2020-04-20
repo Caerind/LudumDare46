@@ -322,7 +322,17 @@ void GameSingleton::HandleIncomingPackets()
 		} break;
 		case ServerPacketID::RespawnChicken:
 		{
-			// TODO
+			en::U32 clientID;
+			en::Vector2f position;
+			packet >> clientID >> position.x >> position.y;
+			LogInfo(en::LogChannel::All, 2, "Respawn %d", clientID, position.x, position.y);
+			const en::I32 playerIndex = GetPlayerIndexFromClientID(clientID);
+			if (playerIndex >= 0)
+			{
+				mPlayers[playerIndex].chicken.position = position;;
+				mPlayers[playerIndex].lastPos = position;
+			}
+
 		} break;
 
 		default:

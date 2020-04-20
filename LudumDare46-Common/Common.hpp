@@ -56,7 +56,7 @@
 #define DefaultSpawnItemInterval en::seconds(0.3f)
 #define DefaultMapSizeX 64.0f * 64.0f
 #define DefaultMapSizeY 64.0f * 48.0f
-#define DefaultMapBorder 64.0f * 6.0f
+#define DefaultMapBorder 64.0f * 10.0f
 
 // Visuals
 #define DefaultBloodCount 3
@@ -137,6 +137,7 @@ enum class ItemID : en::U32
 
 	Count
 };
+const char* GetItemName(ItemID itemID);
 bool IsValidItemForAttack(ItemID itemID);
 en::Time GetItemCooldown(ItemID itemID);
 en::F32 GetItemRange(ItemID itemID);

@@ -17,6 +17,21 @@ const char* GetRejectReasonString(RejectReason rejectReason)
 	return "<Unknown>";
 }
 
+const char* GetItemName(ItemID itemID)
+{
+	switch (itemID)
+	{
+	case ItemID::None: return "None"; break;
+	case ItemID::Shuriken: return "Shuriken"; break;
+	case ItemID::Laser: return "Laser"; break;
+	case ItemID::Crossbow: return "Crossbow"; break;
+	case ItemID::Uzi: return "Uzi"; break;
+	//case ItemID::M16: return "M16"; break;
+	default: break;
+	}
+	return "<Unknown>";
+}
+
 bool IsValidItemForAttack(ItemID itemID)
 {
 	return itemID > ItemID::None && itemID < ItemID::Count;
@@ -71,20 +86,20 @@ en::F32 GetItemAttack(ItemID itemID)
 {
 	switch (itemID)
 	{
-	case ItemID::None: return 1.0f;
-	case ItemID::Shuriken: return 1.0f;
-	case ItemID::Laser: return 1.0f;
-	case ItemID::Crossbow: return 1.0f;
-	case ItemID::Uzi: return 1.0f;
+	case ItemID::None: return 0.0f;
+	case ItemID::Shuriken: return 0.9f;
+	case ItemID::Laser: return 1.2f;
+	case ItemID::Crossbow: return 1.5f;
+	case ItemID::Uzi: return 0.5f;
 		//case ItemID::M16: return 1.0f;
 	default: break;
 	}
-	return 1.0f;
+	return 0.0f;
 }
 
 ItemID GetRandomAttackItem()
 {
-	return static_cast<ItemID>(en::Random::get<en::U32>(static_cast<en::U32>(ItemID::None) + 1, static_cast<en::U32>(ItemID::Count)));
+	return static_cast<ItemID>(en::Random::get<en::U32>(static_cast<en::U32>(ItemID::None) + 1, static_cast<en::U32>(ItemID::Uzi)));
 }
 
 const char* GetItemTextureName(ItemID itemID)

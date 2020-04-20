@@ -518,7 +518,10 @@ void Server::UpdateBullets(en::Time dt)
 			if (mPlayers[playerHitIndex].chicken.life <= 0.0f)
 			{
 				SendKillChickenPacket(mPlayers[playerHitIndex].clientID, mBullets[i].clientID);
-				mPlayers[playerHitIndex].chicken.life = 0.0f;
+				mPlayers[playerHitIndex].chicken.life = DefaultChickenLife;
+				mPlayers[playerHitIndex].chicken.position = GetRandomPositionSpawn();
+				mPlayers[playerHitIndex].needUpdate = true;
+				SendRespawnChickenPacket(mPlayers[playerHitIndex].clientID, mPlayers[playerHitIndex].chicken.position);
 			}
 		}
 

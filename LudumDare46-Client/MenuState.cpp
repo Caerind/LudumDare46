@@ -10,7 +10,7 @@ MenuState::MenuState(en::StateManager& manager)
 {
 	mSprite.setTexture(en::ResourceManager::GetInstance().Get<en::Texture>("play_button").Get());
 	mSprite.setOrigin(mSprite.getGlobalBounds().width * 0.5f, mSprite.getGlobalBounds().height * 0.5f);
-	mSprite.setPosition(512, 550);
+	mSprite.setPosition(512, 600);
 }
 
 bool MenuState::handleEvent(const sf::Event& event)

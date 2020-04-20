@@ -446,7 +446,7 @@ void GameState::render(sf::RenderTarget& target)
 		en::Color color = en::Color::White;
 		if (GameSingleton::mPlayers[i].chicken.lifeMax >= 0.0f)
 		{
-			en::U8 lifeP = (en::U8)(255 * (GameSingleton::mPlayers[i].chicken.life / GameSingleton::mPlayers[i].chicken.lifeMax));
+			en::U8 lifeP = static_cast<en::U8>(255.0f * (GameSingleton::mPlayers[i].chicken.life / GameSingleton::mPlayers[i].chicken.lifeMax));
 			color.r = 255;
 			color.g = lifeP;
 			color.b = lifeP;
