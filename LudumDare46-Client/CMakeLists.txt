@@ -1,5 +1,6 @@
 set(SRC_LUDUMDARE46_CLIENT
 	ClientSocket.hpp
+	ConnectingState.cpp
 	ConnectingState.hpp
 	GameMap.cpp
 	GameMap.hpp
@@ -7,8 +8,14 @@ set(SRC_LUDUMDARE46_CLIENT
 	GameSingleton.hpp
 	GameState.cpp
 	GameState.hpp
+	IntroState.cpp
+	IntroState.hpp
 	main.cpp
+	MenuState.cpp
+	MenuState.hpp
 	Player.hpp
+	ProfState.cpp
+	ProfState.hpp
 )
 source_group("" FILES ${SRC_LUDUMDARE46_CLIENT})
 
