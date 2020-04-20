@@ -440,12 +440,12 @@ void Server::UpdatePlayer(en::F32 dtSeconds, Player& player)
 			const en::F32 rangeSqr = (range + 15.0f) * (range + 15.0f); // Hack because we don't care exactly the offset in fact
 			if (bestTargetDistanceSqr < rangeSqr)
 			{
-				static const en::F32 cos30 = en::Math::Cos(30.0f);
+				static const en::F32 cos = en::Math::Cos(45.0f);
 				const en::Vector2f forward = en::Vector2f::polar(player.chicken.rotation);
 				const en::F32 distance = en::Math::Sqrt(bestTargetDistanceSqr);
 				const en::Vector2f normalizedDelta = en::Vector2f(bestDeltaTarget.x / distance, bestDeltaTarget.y / distance);
-				const en::F32 dotProduct = en::Math::Abs(forward.dotProduct(normalizedDelta));
-				if (dotProduct > cos30)
+				const en::F32 dotProduct = forward.dotProduct(normalizedDelta);
+				if (dotProduct > cos)
 				{
 					const en::Vector2f rotatedWeaponOffset = en::Vector2f(DefaultWeaponOffset).rotated(player.chicken.rotation);
 					player.cooldown = en::Time::Zero;

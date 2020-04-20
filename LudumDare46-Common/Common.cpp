@@ -26,15 +26,15 @@ en::Time GetItemCooldown(ItemID itemID)
 {
 	switch (itemID)
 	{
-	case ItemID::None: return en::seconds(3600.0f); 
-	case ItemID::Shuriken: return en::seconds(1.0f);
-	case ItemID::Laser: return en::seconds(0.5f);
-	case ItemID::Crossbow: return en::seconds(2.0f);
-	case ItemID::Uzi: return en::seconds(0.33f);
-	//case ItemID::M16: return en::seconds(0.5f);
+	case ItemID::None: return en::seconds(7200.0f); 
+	case ItemID::Shuriken: return en::seconds(0.5f);
+	case ItemID::Laser: return en::seconds(0.25f);
+	case ItemID::Crossbow: return en::seconds(1.0f);
+	case ItemID::Uzi: return en::seconds(0.16f);
+	//case ItemID::M16: return en::seconds(0.25f);
 	default: break;
 	}
-	return en::seconds(3600.0f);
+	return en::seconds(7200.0f);
 }
 
 en::F32 GetItemRange(ItemID itemID)
