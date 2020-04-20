@@ -27,8 +27,8 @@
 #define DefaultSeedPrefFactor 0.9f
 #define DefaultItemPickUpDistance 35.0f
 #define DefaultItemPickUpDistanceSqr 35.0f * 35.0f
-#define DefaultTooCloseDistance 150.0f
-#define DefaultTooCloseDistanceSqr 150.0f * 150.0f
+#define DefaultTooCloseDistance 125.0f
+#define DefaultTooCloseDistanceSqr 125.0f * 125.0f
 #define DefaultChickenAvoidanceMinDistance 200.0f
 #define DefaultChickenAvoidanceMinDistanceSqr 200.0f * 200.0f
 #define DefaultOwnerPriority 0.6f
