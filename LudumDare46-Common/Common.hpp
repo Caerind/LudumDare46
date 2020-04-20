@@ -46,7 +46,7 @@
 #define DefaultChickenSpeed 160.0f
 #define DefaultChickenAttack 20.0f
 #define DefaultProjectileSpeed 300.0f
-#define DefaultItemRange 500.0f
+#define DefaultItemRange 400.0f
 #define DefaultDetectionRadius 35.0f
 #define DefaultDetectionRadiusSqr 35.0f * 35.0f
 

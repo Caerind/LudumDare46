@@ -11,6 +11,8 @@ GameState::GameState(en::StateManager& manager)
 	GameSingleton::mView.setZoom(0.5f);
 	GameSingleton::mMap.load();
 	GameSingleton::mPlayingState = GameSingleton::PlayingState::Playing;
+	
+	mPlayerPos = { 0.0f, 0.0f };
 }
 
 bool GameState::handleEvent(const sf::Event& event)
@@ -171,6 +173,8 @@ bool GameState::update(en::Time dt)
 		{
 			if (GameSingleton::IsClient(GameSingleton::mPlayers[i].clientID))
 			{
+				mPlayerPos = GameSingleton::mPlayers[i].chicken.position;
+
 				// Cam stylé effect
 				const en::Vector2f mPos = getApplication().GetWindow().getCursorPositionView(GameSingleton::mView);
 				const en::Vector2f pPos = GameSingleton::mPlayers[i].chicken.position;
@@ -199,6 +203,10 @@ void GameState::render(sf::RenderTarget& target)
 {
 	ENLIVE_PROFILE_FUNCTION();
 
+	const sf::View previousView = target.getView();
+	target.setView(GameSingleton::mView.getHandle());
+
+	// Background
 	static bool backgroundInitialized = false;
 	static sf::Sprite background;
 	if (!backgroundInitialized)
@@ -209,10 +217,10 @@ void GameState::render(sf::RenderTarget& target)
 		background.setTextureRect(sf::IntRect(0, 0, 1024, 768));
 		backgroundInitialized = true;
 	}
+	en::I32 x = static_cast<en::I32>(mPlayerPos.x) / 64;
+	en::I32 y = static_cast<en::I32>(mPlayerPos.y) / 64;
+	background.setPosition(((x - 1) * 64.0f) - 512.0f, ((y - 1) * 64.0f) - 384.0f);
 	target.draw(background);
-
-	const sf::View previousView = target.getView();
-	target.setView(GameSingleton::mView.getHandle());
 
 	// Maps
 	GameSingleton::mMap.render(target);
@@ -285,7 +293,7 @@ void GameState::render(sf::RenderTarget& target)
 	{
 		radarSprite.setTexture(en::ResourceManager::GetInstance().Get<en::Texture>("radar").Get());
 		radarSprite.setOrigin(8.0f, 8.0f);
-		radarSprite.setScale(1.2f, 1.2f);
+		radarSprite.setScale(1.4f, 1.2f);
 		radarInitialized = true;
 	}
 	en::I32 playerIndex = GameSingleton::GetPlayerIndexFromClientID(GameSingleton::mClient.GetClientID());
@@ -313,7 +321,7 @@ void GameState::render(sf::RenderTarget& target)
 		{
 			const en::F32 d = en::Math::Sqrt(bestDistanceSqr);
 			const en::Vector2f deltaNormalized = (bestPos - position) / d;
-			radarSprite.setPosition(en::toSF(position + deltaNormalized * 50.0f));
+			radarSprite.setPosition(en::toSF(position + deltaNormalized * 65.0f));
 			radarSprite.setRotation(deltaNormalized.getPolarAngle() + 90.0f);
 			target.draw(radarSprite);
 		}
@@ -387,4 +395,17 @@ void GameState::render(sf::RenderTarget& target)
 	target.draw(GameSingleton::mCursor);
 
 	target.setView(previousView);
+
+	static bool textInitialized = false;
+	static sf::Text text;
+	if (!textInitialized)
+	{
+		text.setFont(en::ResourceManager::GetInstance().Get<en::Font>("MainFont").Get());
+		text.setCharacterSize(24);
+		text.setPosition(1024.0f - 230.0f, 10.0f);
+		text.setFillColor(sf::Color::White);
+		textInitialized = true;
+	}
+	text.setString("Online players: " + std::to_string(GameSingleton::mPlayers.size()));
+	target.draw(text);
 }

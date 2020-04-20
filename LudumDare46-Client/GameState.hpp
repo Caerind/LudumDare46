@@ -5,6 +5,8 @@
 #include <Enlivengine/Graphics/View.hpp>
 #include <Enlivengine/Application/AudioSystem.hpp>
 
+#include <SFML/Graphics/Text.hpp>
+
 #include <Common.hpp>
 
 #include "Player.hpp"
@@ -23,4 +25,5 @@ public:
 private:
 	en::MusicPtr mMusic;
 	en::F32 mShurikenRotation;
+	en::Vector2f mPlayerPos;
 };

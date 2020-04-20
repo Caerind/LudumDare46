@@ -295,11 +295,6 @@ void GameSingleton::HandleIncomingPackets()
 			packet >> clientID >> killerClientID;
 			LogInfo(en::LogChannel::All, 2, "Kill %d", clientID);
 
-			if (IsClient(killerClientID))
-			{
-				// TODO : Reward sound
-			}
-
 			if (IsClient(clientID))
 			{
 				// TODO : Die
