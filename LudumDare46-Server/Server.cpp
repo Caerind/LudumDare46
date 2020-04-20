@@ -91,7 +91,7 @@ bool Server::Run()
 
 		if (mPlayers.size() <= 1)
 		{
-			sf::sleep(sf::seconds(3.0f));
+			sf::sleep(sf::seconds(1.0f));
 			continue;
 		}
 
@@ -180,6 +180,7 @@ void Server::Tick(en::Time dt)
 		// Timeout detection
 		if (mPlayers[i].lastPacketTime > DefaultServerTimeout && mPlayers[i].remotePort != 0)
 		{
+			LogInfo(en::LogChannel::All, 2, "Player %d timeouted", mPlayers[i].clientID);
 			SendConnectionRejectedPacket(mPlayers[i].remoteAddress, mPlayers[i].remotePort, RejectReason::Timeout);
 			SendClientLeftPacket(mPlayers[i].clientID);
 			mPlayers.erase(mPlayers.begin() + i);
@@ -260,7 +261,6 @@ void Server::HandleIncomingPackets()
 					SendItemInfo(remoteAddress, remotePort, mItems[i]);
 				}
 
-				newPlayer.lastPacketTime = en::Time::Zero;
 				mPlayers.push_back(newPlayer);
 
 				SendClientJoinedPacket(clientID, newPlayer.nickname, newPlayer.chicken);
