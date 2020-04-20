@@ -37,6 +37,14 @@ bool GameState::update(en::Time dt)
 	ENLIVE_PROFILE_FUNCTION();
 	const en::F32 dtSeconds = dt.asSeconds();
 
+	static en::Time antiTimeout;
+	antiTimeout += dt;
+	if (antiTimeout >= en::seconds(1.0f))
+	{
+		GameSingleton::SendPingPacket();
+		antiTimeout = en::Time::Zero;
+	}
+
 	// Network
 	GameSingleton::HandleIncomingPackets();
 	if (GameSingleton::HasTimeout(dt) || GameSingleton::IsConnecting())

@@ -95,17 +95,32 @@ void Server::UpdateLogic(en::Time dt)
 {
 	const en::F32 dtSeconds = dt.asSeconds();
 
+	static en::U32 optim = 0;
+	optim++;
+	en::U32 c = optim % 5;
+
 	const en::U32 playerSize = static_cast<en::U32>(mPlayers.size());
 	for (en::U32 i = 0; i < playerSize; ++i)
 	{
 		mPlayers[i].lastPacketTime += dt;
 
 		UpdatePlayer(dtSeconds, mPlayers[i]);
+
+		const en::U32 e = i % 3;
+		if (c == 3 && e == 0)
+		{
+			SendPingPacket(mPlayers[i].remoteAddress, mPlayers[i].remotePort);
+		}
+		if (c == 4 && e == 1)
+		{
+			SendPingPacket(mPlayers[i].remoteAddress, mPlayers[i].remotePort);
+		}
+		if (c == 5 && e == 2)
+		{
+			SendPingPacket(mPlayers[i].remoteAddress, mPlayers[i].remotePort);
+		}
 	}
 
-	static en::U32 optim = 0;
-	optim++;
-	en::U32 c = optim % 3;
 	if (c == 0)
 	{
 		UpdateBullets(dt);
@@ -116,7 +131,7 @@ void Server::UpdateLogic(en::Time dt)
 	}
 	else
 	{
-		// 
+		// See abovve
 	}
 }
 
