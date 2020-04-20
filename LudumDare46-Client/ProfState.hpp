@@ -22,6 +22,11 @@ public:
 
 	void render(sf::RenderTarget& target);
 
+	void NextState();
+
 private:
 	sf::Sprite mSprite;
+	sf::Text mText;
+	en::U32 mStates;
+	sf::Clock mClock;
 };

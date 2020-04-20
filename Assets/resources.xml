@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Resources resourceCount="45" typeCount="8">
+<Resources resourceCount="46" typeCount="8">
 	<Resource identifier="MainFont" filename="Fonts/Tahoma.ttf" type="0" />
 	<Resource identifier="blood" filename="Textures/blood.png" type="1" />
 	<Resource identifier="bullets" filename="Textures/bullets.png" type="1" />
@@ -11,10 +11,9 @@
 	<Resource identifier="chicken_vanilla" filename="Textures/chicken_vanilla.png" type="1" />
 	<Resource identifier="cursor" filename="Textures/cursor.png" type="1" />
 	<Resource identifier="ground_tileset" filename="Textures/ground_tileset.png" type="1" />
+	<Resource identifier="intro_bucket" filename="Textures/intro_bucket.png" type="1" />
 	<Resource identifier="loots" filename="Textures/loots.png" type="1" />
 	<Resource identifier="play_button" filename="Textures/play_button.png" type="1" />
-	<Resource identifier="prof_bucket1" filename="Textures/prof_bucket1.png" type="1" />
-	<Resource identifier="prof_bucket2" filename="Textures/prof_bucket2.png" type="1" />
 	<Resource identifier="radar" filename="Textures/radar.png" type="1" />
 	<Resource identifier="screen_connect" filename="Textures/screen_connect.png" type="1" />
 	<Resource identifier="screen_home" filename="Textures/screen_home.png" type="1" />
@@ -42,6 +41,7 @@
 	<Resource identifier="shuriken_fire" filename="Sounds/shuriken_fire.wav" type="7" />
 	<Resource identifier="shuriken_hit" filename="Sounds/shuriken_hit.wav" type="7" />
 	<Resource identifier="shuriken_loot" filename="Sounds/shuriken_loot.wav" type="7" />
+	<Resource identifier="type" filename="Sounds/type.wav" type="7" />
 	<Resource identifier="uzi_fire" filename="Sounds/uzi_fire.wav" type="7" />
 	<Resource identifier="uzi_hit" filename="Sounds/uzi_hit.wav" type="7" />
 	<Resource identifier="uzi_loot" filename="Sounds/uzi_loot.wav" type="7" />

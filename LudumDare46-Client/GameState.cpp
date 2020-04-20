@@ -10,6 +10,11 @@ GameState::GameState(en::StateManager& manager)
 	GameSingleton::mView.setCenter(1024.0f * 0.5f, 768.0f * 0.5f);
 	GameSingleton::mView.setZoom(0.5f);
 	GameSingleton::mPlayingState = GameSingleton::PlayingState::Playing;
+
+	if (GameSingleton::mMusic.IsValid())
+	{
+		GameSingleton::mMusic.Stop();
+	}
 	
 	mPlayerPos = { 0.0f, 0.0f };
 }
