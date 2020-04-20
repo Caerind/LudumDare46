@@ -234,7 +234,7 @@ void Server::HandleIncomingPackets()
 				newPlayer.remoteAddress = remoteAddress;
 				newPlayer.remotePort = remotePort;
 				newPlayer.clientID = clientID;
-				newPlayer.lastPacketTime = en::Time::Zero;
+				newPlayer.lastPacketTime = -DefaultServerTimeout;
 				newPlayer.nickname = "Player" + std::to_string(clientID); // TODO : nickname
 				newPlayer.chicken.position = GetRandomPositionSpawn();
 				newPlayer.chicken.rotation = 0.0f;
@@ -260,6 +260,7 @@ void Server::HandleIncomingPackets()
 					SendItemInfo(remoteAddress, remotePort, mItems[i]);
 				}
 
+				newPlayer.lastPacketTime = en::Time::Zero;
 				mPlayers.push_back(newPlayer);
 
 				SendClientJoinedPacket(clientID, newPlayer.nickname, newPlayer.chicken);
