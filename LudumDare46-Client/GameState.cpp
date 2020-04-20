@@ -284,6 +284,18 @@ void GameState::render(sf::RenderTarget& target)
 		}
 		bulletSprite.setTextureRect(GetItemBulletTextureRect(GameSingleton::mBullets[i].itemID));
 		bulletSprite.setPosition(en::toSF(GameSingleton::mBullets[i].position));
+		
+		const en::F32 decayRange = 0.2f * DefaultItemRange * GetItemRange(GameSingleton::mBullets[i].itemID);
+		if (GameSingleton::mBullets[i].remainingDistance < decayRange)
+		{
+			en::F32 factor = GameSingleton::mBullets[i].remainingDistance / decayRange;
+			bulletSprite.setScale(0.5f + (factor * 0.5f), 0.5f + (factor * 0.5f));
+		}
+		else
+		{
+			bulletSprite.setScale(1.0f, 1.0f);
+		}
+		
 		target.draw(bulletSprite);
 	}
 

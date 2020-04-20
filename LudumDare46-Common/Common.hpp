@@ -57,6 +57,7 @@
 
 // Visuals
 #define DefaultBloodCount 3
+#define DefaultAnimCount 4
 #define DefaultShurikenRotDegSpeed 720.0f
 #define DefaultServerMapPath "Assets/Maps/map.tmx"
 

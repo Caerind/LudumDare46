@@ -16,6 +16,9 @@ struct Player
 	Chicken chicken;
 
 	sf::Sprite sprite;
+	en::Vector2f lastPos;
+	en::Time animWalk;
+	en::U32 animIndex;
 
 	void UpdateSprite()
 	{
