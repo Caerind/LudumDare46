@@ -20,6 +20,9 @@ sf::Sprite GameSingleton::mCursor;
 GameSingleton::PlayingState GameSingleton::mPlayingState;
 en::MusicPtr GameSingleton::mMusic;
 bool GameSingleton::mIntroDone;
+en::U32 GameSingleton::mBestKills;
+std::string GameSingleton::mBestNickname;
+std::string GameSingleton::mInputNickname;
 
 void GameSingleton::ConnectWindowCloseSlot()
 {
@@ -253,7 +256,14 @@ void GameSingleton::HandleIncomingPackets()
 						en::SoundPtr sound = en::AudioSystem::GetInstance().PlaySound(GetItemSoundLootName(mItems[i].itemID));
 						if (sound.IsValid())
 						{
-							sound.SetVolume(0.25f);
+							if (mItems[i].itemID == ItemID::Laser || mItems[i].itemID == ItemID::Uzi)
+							{
+								sound.SetVolume(0.4f);
+							}
+							else
+							{
+								sound.SetVolume(0.25f);
+							}
 						}
 
 						// Play music
@@ -271,7 +281,14 @@ void GameSingleton::HandleIncomingPackets()
 								if (mMusic.IsValid())
 								{
 									mMusic.SetLoop(true);
-									mMusic.SetVolume(0.2f);
+									if (GameSingleton::mItems[i].itemID == ItemID::Uzi)
+									{
+										mMusic.SetVolume(0.1f);
+									}
+									else
+									{
+										mMusic.SetVolume(0.2f);
+									}
 								}
 							}
 						}
@@ -334,6 +351,10 @@ void GameSingleton::HandleIncomingPackets()
 			}
 
 		} break;
+		case ServerPacketID::ServerInfo:
+		{
+			packet >> mBestNickname >> mBestKills;
+		}
 
 		default:
 		{
@@ -396,6 +417,7 @@ void GameSingleton::SendJoinPacket()
 	{
 		sf::Packet joinPacket;
 		joinPacket << static_cast<en::U8>(ClientPacketID::Join);
+		joinPacket << GameSingleton::mInputNickname;
 		mClient.SendPacket(joinPacket);
 	}
 }

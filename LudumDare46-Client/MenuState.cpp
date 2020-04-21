@@ -10,7 +10,14 @@ MenuState::MenuState(en::StateManager& manager)
 {
 	mSprite.setTexture(en::ResourceManager::GetInstance().Get<en::Texture>("play_button").Get());
 	mSprite.setOrigin(mSprite.getGlobalBounds().width * 0.5f, mSprite.getGlobalBounds().height * 0.5f);
-	mSprite.setPosition(512, 600);
+	mSprite.setPosition(512, 650);
+
+	mNicknameInput.setFont(en::ResourceManager::GetInstance().Get<en::Font>("MainFont").Get());
+	mNicknameInput.setCharacterSize(24);
+	mNicknameInput.setPosition(324.0f, 424.0f);
+	mNicknameInput.setFillColor(sf::Color::White);
+	mNicknameInput.setOutlineColor(sf::Color::Black);
+	mNicknameInput.setOutlineThickness(1.0f);
 
 	if (GameSingleton::mMusic.IsValid())
 	{
@@ -54,6 +61,42 @@ bool MenuState::handleEvent(const sf::Event& event)
 		}
 	}
 
+	if (event.type == sf::Event::TextEntered)
+	{
+		if (event.text.unicode < 128 && GameSingleton::mInputNickname.size() < 12)
+		{
+			char c = static_cast<char>(event.text.unicode);
+			if (c == '\b')
+			{
+				if (GameSingleton::mInputNickname.size() > 0)
+				{
+					GameSingleton::mInputNickname.pop_back();
+				}
+			}
+			else if (c == '\t' || c == ' ' || c == '\0')
+			{
+			}
+			else if (c == '\r')
+			{
+				clearStates();
+				if (GameSingleton::mIntroDone)
+				{
+					pushState<ConnectingState>();
+				}
+				else
+				{
+					pushState<ProfState>();
+				}
+			}
+			else
+			{
+				GameSingleton::mInputNickname += c;
+			}
+
+			mNicknameInput.setString(GameSingleton::mInputNickname);
+		}
+	}
+
 	return false;
 }
 
@@ -89,4 +132,6 @@ void MenuState::render(sf::RenderTarget& target)
 	target.draw(screen);
 
 	target.draw(mSprite);
+
+	target.draw(mNicknameInput);
 }

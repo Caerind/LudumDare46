@@ -70,7 +70,7 @@ private:
 	void SendClientJoinedPacket(en::U32 clientID, const std::string& nickname, const Chicken& chicken);
 	void SendClientLeftPacket(en::U32 clientID);
 	void SendServerStopPacket();
-	void SendServerInfo(const sf::IpAddress& remoteAddress, en::U16 remotePort);
+	void SendServerInfo(const std::string& nickname, en::U32 kills);
 	void SendPlayerInfo(const sf::IpAddress& remoteAddress, en::U16 remotePort, const Player& player);
 	void SendItemInfo(const sf::IpAddress& remoteAddress, en::U16 remotePort, const Item& item);
 	void SendUpdateChickenPacket(en::U32 clientID, const Chicken& chicken);

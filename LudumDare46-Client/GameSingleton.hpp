@@ -33,6 +33,9 @@ public:
 	static PlayingState mPlayingState;
 	static en::MusicPtr mMusic;
 	static bool mIntroDone;
+	static en::U32 mBestKills;
+	static std::string mBestNickname;
+	static std::string mInputNickname;
 
 	static void ConnectWindowCloseSlot();
 

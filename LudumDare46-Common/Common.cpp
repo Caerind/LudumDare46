@@ -87,10 +87,10 @@ en::F32 GetItemAttack(ItemID itemID)
 	switch (itemID)
 	{
 	case ItemID::None: return 0.0f;
-	case ItemID::Shuriken: return 0.9f;
+	case ItemID::Shuriken: return 1.0f;
 	case ItemID::Laser: return 1.2f;
 	case ItemID::Crossbow: return 1.5f;
-	case ItemID::Uzi: return 0.5f;
+	case ItemID::Uzi: return 0.8f;
 		//case ItemID::M16: return 1.0f;
 	default: break;
 	}
@@ -99,7 +99,7 @@ en::F32 GetItemAttack(ItemID itemID)
 
 ItemID GetRandomAttackItem()
 {
-	return static_cast<ItemID>(en::Random::get<en::U32>(static_cast<en::U32>(ItemID::None) + 1, static_cast<en::U32>(ItemID::Uzi)));
+	return static_cast<ItemID>(en::Random::get<en::U32>(static_cast<en::U32>(ItemID::None) + 1, static_cast<en::U32>(ItemID::Count) - 1));
 }
 
 const char* GetItemTextureName(ItemID itemID)
@@ -213,6 +213,7 @@ sf::Packet& operator<<(sf::Packet& packet, const Chicken& chicken)
 	packet << chicken.position.y;
 	packet << chicken.rotation;
 	packet << static_cast<en::U32>(chicken.itemID);
+	packet << chicken.kills;
 	packet << chicken.lifeMax;
 	packet << chicken.life;
 	packet << chicken.speed;
@@ -227,6 +228,7 @@ sf::Packet& operator>>(sf::Packet& packet, Chicken& chicken)
 	packet >> chicken.position.y;
 	packet >> chicken.rotation;
 	packet >> itemIDRaw;
+	packet << chicken.kills;
 	packet >> chicken.lifeMax;
 	packet >> chicken.life;
 	packet >> chicken.speed;

@@ -24,4 +24,5 @@ public:
 
 private:
 	sf::Sprite mSprite;
+	sf::Text mNicknameInput;
 };

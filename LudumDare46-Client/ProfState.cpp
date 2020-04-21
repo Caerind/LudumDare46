@@ -23,7 +23,7 @@ static constexpr const char* texts[] = {
 static constexpr en::U32 textCount = ENLIVE_ARRAY_SIZE(texts);
 
 static sf::Time limitClick = sf::seconds(0.3f);
-static sf::Time limit = sf::seconds(2.5f);
+static sf::Time limit = sf::seconds(2.0f);
 
 ProfState::ProfState(en::StateManager& manager)
 	: en::State(manager)

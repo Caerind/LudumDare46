@@ -98,7 +98,7 @@ bool GameState::update(en::Time dt)
 				en::SoundPtr soundDamage = en::AudioSystem::GetInstance().PlaySound("chicken_damage");
 				if (soundDamage.IsValid())
 				{
-					soundDamage.SetVolume(0.25f);
+					soundDamage.SetVolume(0.125f);
 				}
 
 				// Hit
@@ -277,6 +277,36 @@ void GameState::render(sf::RenderTarget& target)
 
 	const sf::View previousView = target.getView();
 	target.setView(GameSingleton::mView.getHandle());
+
+	static bool textInitialized = false;
+	static sf::Text text;
+	static sf::Text textBest;
+	static sf::Text textNickname;
+	if (!textInitialized)
+	{
+		text.setFont(en::ResourceManager::GetInstance().Get<en::Font>("MainFont").Get());
+		text.setCharacterSize(24);
+		text.setPosition(1024.0f - 230.0f, 10.0f);
+		text.setFillColor(sf::Color::White);
+		text.setOutlineColor(sf::Color::Black);
+		text.setOutlineThickness(1.0f);
+
+		textBest.setFont(en::ResourceManager::GetInstance().Get<en::Font>("MainFont").Get());
+		textBest.setCharacterSize(24);
+		textBest.setPosition(10.f, 750.0f);
+		textBest.setFillColor(sf::Color::White);
+		textBest.setOutlineColor(sf::Color::Black);
+		textBest.setOutlineThickness(1.0f);
+
+		textNickname.setFont(en::ResourceManager::GetInstance().Get<en::Font>("MainFont").Get());
+		textNickname.setCharacterSize(8);
+		textNickname.setFillColor(sf::Color::White);
+		textNickname.setOutlineColor(sf::Color::Black);
+		textNickname.setOutlineThickness(1.0f);
+
+		textInitialized = true;
+	}
+
 
 	// Background
 	static bool backgroundInitialized = false;
@@ -461,6 +491,11 @@ void GameState::render(sf::RenderTarget& target)
 		target.draw(chickenBodySprite);
 		GameSingleton::mPlayers[i].UpdateSprite();
 		target.draw(GameSingleton::mPlayers[i].sprite);
+
+		textNickname.setString(GameSingleton::mPlayers[i].nickname);
+		textNickname.setOrigin(textNickname.getGlobalBounds().width * 0.5f, textNickname.getGlobalBounds().height * 0.5f);
+		textNickname.setPosition(en::toSF(GameSingleton::mPlayers[i].GetPosition()) + sf::Vector2f(0.0f, -64.0f));
+		target.draw(textNickname);
 	}
 
 	// Cursor
@@ -470,18 +505,7 @@ void GameState::render(sf::RenderTarget& target)
 
 	target.setView(previousView);
 
-	static bool textInitialized = false;
-	static sf::Text text;
-	if (!textInitialized)
-	{
-		text.setFont(en::ResourceManager::GetInstance().Get<en::Font>("MainFont").Get());
-		text.setCharacterSize(24);
-		text.setPosition(1024.0f - 230.0f, 10.0f);
-		text.setFillColor(sf::Color::White);
-		text.setOutlineColor(sf::Color::Black);
-		text.setOutlineThickness(1.0f);
-		textInitialized = true;
-	}
 	text.setString("Online players: " + std::to_string(GameSingleton::mPlayers.size()));
+	textBest.setString("MVP: " + GameSingleton::mBestNickname + " with " + std::to_string(GameSingleton::mBestKills) + " kills");
 	target.draw(text);
 }

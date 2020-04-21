@@ -46,7 +46,7 @@ bool Server::Start(int argc, char** argv)
 	newPlayer.remotePort = 0;
 	newPlayer.clientID = GenerateClientID(newPlayer.remoteAddress, newPlayer.remotePort);
 	newPlayer.lastPacketTime = en::Time::Zero;
-	newPlayer.nickname = "Player1"; // TODO : nickname
+	newPlayer.nickname = "xXx_B0T_xXx";
 	newPlayer.chicken.position = GetRandomPositionSpawn();
 	newPlayer.chicken.rotation = 0.0f;
 	newPlayer.chicken.itemID = ItemID::None;
@@ -222,6 +222,7 @@ void Server::HandleIncomingPackets()
 		} break;
 		case ClientPacketID::Join:
 		{
+			std::string nickname = "";
 			const en::U32 clientID = GenerateClientID(remoteAddress, remotePort);
 			const en::I32 playerIndex = GetPlayerIndexFromClientID(clientID);
 			const bool slotAvailable = (mPlayers.size() < DefaultMaxPlayers);
@@ -235,7 +236,14 @@ void Server::HandleIncomingPackets()
 				newPlayer.remotePort = remotePort;
 				newPlayer.clientID = clientID;
 				newPlayer.lastPacketTime = -DefaultServerTimeout;
-				newPlayer.nickname = "Player" + std::to_string(clientID); // TODO : nickname
+				if (nickname.size() == 0)
+				{
+					newPlayer.nickname = "Player" + en::Math::Abs(std::to_string(clientID));
+				}
+				else
+				{
+					newPlayer.nickname = nickname;
+				}
 				newPlayer.chicken.position = GetRandomPositionSpawn();
 				newPlayer.chicken.rotation = 0.0f;
 				newPlayer.chicken.itemID = ItemID::None;
@@ -247,7 +255,6 @@ void Server::HandleIncomingPackets()
 
 				SendConnectionAcceptedPacket(remoteAddress, remotePort, clientID);
 
-				SendServerInfo(remoteAddress, remotePort);
 				const en::U32 playerSize = static_cast<en::U32>(mPlayers.size());
 				for (en::U32 i = 0; i < playerSize; ++i)
 				{
@@ -454,7 +461,6 @@ void Server::UpdateAIPlayer(en::F32 dtSeconds, Player& player)
 	{
 		if (player.chicken.itemID == ItemID::None && mItems.size() > 0)
 		{
-			LogWarning(en::LogChannel::Animation, 3, "Add new seed to ITEM%s", "");
 			AddNewSeed(mItems[0].position, player.clientID); // Find random item
 		}
 		else
@@ -479,19 +485,13 @@ void Server::UpdateAIPlayer(en::F32 dtSeconds, Player& player)
 			{
 				const en::F32 rX = en::Random::get<en::F32>(-300.0f, 300.0f);
 				const en::F32 rY = en::Random::get<en::F32>(-300.0f, 300.0f);
-				LogWarning(en::LogChannel::Animation, 3, "Add new seed to PLAYER%s", "");
 				AddNewSeed(bestPlayerPos + en::Vector2f(rX, rY), player.clientID); // Go near the enemy
-			}
-			else
-			{
-				LogWarning(en::LogChannel::Animation, 3, "Don't move%s", "");
 			}
 		}
 	}
 	else
 	{
 		// Go to it
-		LogWarning(en::LogChannel::Animation, 3, "Move%s", "");
 	}
 }
 
@@ -527,8 +527,29 @@ void Server::UpdateBullets(en::Time dt)
 				SendKillChickenPacket(mPlayers[playerHitIndex].clientID, mBullets[i].clientID);
 				mPlayers[playerHitIndex].chicken.life = DefaultChickenLife;
 				mPlayers[playerHitIndex].chicken.position = GetRandomPositionSpawn();
-				mPlayers[playerHitIndex].needUpdate = true;
+				mPlayers[playerHitIndex].needUpdate = true; 
 				SendRespawnChickenPacket(mPlayers[playerHitIndex].clientID, mPlayers[playerHitIndex].chicken.position);
+
+				en::U32 bestKills = 0;
+				en::I32 bestKillerIndex = -1;
+				const en::U32 size = static_cast<en::U32>(mPlayers.size());
+				for (en::U32 j = 0; j < size; ++j)
+				{
+					if (mPlayers[j].clientID == mBullets[i].clientID)
+					{
+						mPlayers[j].chicken.kills++;
+						mPlayers[j].needUpdate = true;
+ 					}
+					if (mPlayers[j].chicken.kills > bestKills)
+					{
+						bestKills = mPlayers[j].chicken.kills;
+						bestKillerIndex = static_cast<en::I32>(j);
+					}
+				}
+				if (bestKillerIndex >= 0)
+				{
+					SendServerInfo(mPlayers[bestKillerIndex].nickname, bestKills);
+				}
 			}
 		}
 
@@ -800,15 +821,15 @@ void Server::SendServerStopPacket()
 	}
 }
 
-void Server::SendServerInfo(const sf::IpAddress& remoteAddress, en::U16 remotePort)
+void Server::SendServerInfo(const std::string& nickname, en::U32 kills)
 {
-	if (mSocket.IsRunning() && remotePort != 0)
+	if (mSocket.IsRunning())
 	{
 		sf::Packet packet;
 		packet << static_cast<en::U8>(ServerPacketID::ServerInfo);
-		packet << mMapSize.x;
-		packet << mMapSize.y;
-		mSocket.SendPacket(packet, remoteAddress, remotePort);
+		packet << nickname;
+		packet << kills;
+		SendToAllPlayers(packet);
 	}
 }
 

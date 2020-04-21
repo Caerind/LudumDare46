@@ -52,7 +52,7 @@
 #define DefaultDetectionRadiusSqr 35.0f * 35.0f
 
 // MapData
-#define DefaultMaxItemAmount 40
+#define DefaultMaxItemAmount 30
 #define DefaultSpawnItemInterval en::seconds(0.3f)
 #define DefaultMapSizeX 64.0f * 64.0f
 #define DefaultMapSizeY 64.0f * 48.0f
@@ -158,6 +158,7 @@ struct Chicken
 	en::F32 rotation;
 	ItemID itemID;
 
+	en::U32 kills;
 	en::F32 lifeMax;
 	en::F32 life;
 	en::F32 speed;
