@@ -46,6 +46,7 @@ void ConsoleInstance::SendCommand(const std::string& command)
 	}
 }
 
+#ifdef ENLIVE_DEBUG
 DebugConsole::DebugConsole()
 	: ConsoleInstance()
 	, mThread(&DebugConsole::Run, this)
@@ -85,6 +86,7 @@ void DebugConsole::Run()
 		}
 	}
 }
+#endif // ENLIVE_DEBUG
 
 Console::Console()
 	: mConsoleInstance(nullptr)

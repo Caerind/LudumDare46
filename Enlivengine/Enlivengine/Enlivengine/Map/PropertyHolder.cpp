@@ -2,6 +2,7 @@
 
 #include <Enlivengine/System/String.hpp>
 #include <Enlivengine/System/Log.hpp>
+#include <Enlivengine/System/Assert.hpp>
 
 namespace en
 {

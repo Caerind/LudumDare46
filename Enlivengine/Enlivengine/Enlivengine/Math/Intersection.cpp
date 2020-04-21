@@ -257,7 +257,11 @@ bool intersects(const Ray & a1, const AABB & a2, F32 * distance)
 		F32 tmin = (min - ori) / dir;
 		F32 tmax = (max - ori) / dir;
 		if (tmin > tmax)
-			std::swap(tmin, tmax);
+		{
+			F32 ttemp = tmin;
+			tmin = tmax;
+			tmax = ttemp;
+		}
 
 		if (tmax < tfirst)
 			return false;

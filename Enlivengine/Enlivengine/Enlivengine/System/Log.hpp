@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Enlivengine/System/PrimitiveTypes.hpp>
+#include <Enlivengine/System/PlatformDetection.hpp>
 
 #ifdef ENLIVE_ENABLE_LOG
 
@@ -8,7 +9,6 @@
 #include <fstream>
 #include <vector>
 
-#include <Enlivengine/System/PlatformDetection.hpp>
 #include <Enlivengine/System/Singleton.hpp>
 
 // TODO : Encapsulate info in class Message for 'post-filter' (now its filtered out on write())

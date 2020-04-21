@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstring> // memcpy
 #include <limits> // epsilon<T>
+#include <algorithm> // std::swap
 
 // TODO : Real : Float/Double
 // TODO : More constexpr + fast functions

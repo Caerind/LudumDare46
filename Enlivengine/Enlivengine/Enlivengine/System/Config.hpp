@@ -6,18 +6,18 @@
 
 // Some configurables choices
 // If they are not specifically given, the default value depend on the current build
-#define ENLIVE_DEBUG
+//#define ENLIVE_DEBUG
 //#define ENLIVE_NO_RENDER
-#define ENLIVE_ENABLE_ASSERT
-#define ENLIVE_ENABLE_LOG
-#define ENLIVE_ENABLE_PROFILE
-#define ENLIVE_ENABLE_IMGUI
-#define ENLIVE_ENABLE_GRAPHICS_API_DEBUG
+//#define ENLIVE_ENABLE_ASSERT
+//#define ENLIVE_ENABLE_LOG
+//#define ENLIVE_ENABLE_PROFILE
+//#define ENLIVE_ENABLE_IMGUI
+//#define ENLIVE_ENABLE_GRAPHICS_API_DEBUG
 //#define ENLIVE_ENABLE_METADATA // TEMP : Disable for LD46
 
 
 // Some more specific choices
-#define ENLIVE_ENABLE_DEFAULT_LOGGER
+//#define ENLIVE_ENABLE_DEFAULT_LOGGER
 //#define ENLIVE_ENABLE_DOUBLE_PRECISION // Define Real = float/double
 //#define ENLIVE_ENABLE_HASH_COLLISION_DETECTION // Check if hash is found for another different string
 //#define ENLIVE_ENABLE_METADATA_CHECKING // Check that the meta data are valid // TEMP : Disable for LD46

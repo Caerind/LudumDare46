@@ -66,6 +66,10 @@ void Window::create(sf::VideoMode mode, const std::string& title, sf::Uint32 sty
 		}
 		mSettings = settings;
 	#else
+		ENLIVE_UNUSED(mode);
+		ENLIVE_UNUSED(title);
+		ENLIVE_UNUSED(style);
+
 		mFullscreen = true;
 		mFullscreenVideoMode = sf::VideoMode::getDesktopMode();
 		mTitle = "";
@@ -404,6 +408,8 @@ void Window::setCursorPosition(const Vector2f& position)
 {
 	#ifdef ENLIVE_PLATFORM_DESKTOP
 		sf::Mouse::setPosition(mWindow.mapCoordsToPixel(toSF(position), mMainView.getHandle()));
+	#else
+		ENLIVE_UNUSED(position);
 	#endif
 }
 

@@ -51,9 +51,11 @@ bool Application::Initialize()
 	LogManager::GetInstance().Initialize();
 #endif // ENLIVE_ENABLE_LOG
 
-	mInitialized = true;
-
+#ifdef ENLIVE_ENABLE_IMGUI
 	ImGuiConsole::GetInstance().RegisterConsole();
+#endif // ENLIVE_ENABLE_IMGUI
+
+	mInitialized = true;
 
 	mWindowClosedSlot.connect(mWindow.onWindowClosed, [this](const en::Window*) { Stop(); });
 
@@ -91,7 +93,7 @@ void Application::Stop()
 
 	mRunning = false;
 
-	std::exit(EXIT_SUCCESS);
+	//std::exit(EXIT_SUCCESS);
 }
 
 void Application::PopState()
@@ -127,7 +129,7 @@ bool Application::LoadResources()
 	return ImGuiResourceBrowser::GetInstance().LoadResourceInfosFromFile(PathManager::GetInstance().GetAssetsPath() + "resources.xml");
 #else
 	ParserXml xml;
-	if (!xml.loadFromFile(filename))
+	if (!xml.loadFromFile(PathManager::GetInstance().GetAssetsPath() + "resources.xml"))
 	{
 		LogError(en::LogChannel::Application, 9, "Can't open resources file at %s", filename.c_str());
 		return false;
@@ -150,7 +152,7 @@ bool Application::LoadResources()
 					I32 typeInt;
 					xml.getAttribute("type", typeInt);
 					ResourceID resourceID;
-					LoadResource(type, identifierStr, filenameStr, resourceID);
+					LoadResource(typeInt, identifierStr, filenameStr, resourceID);
 				} while (xml.nextSibling("Resource"));
 				xml.closeNode();
 			}
@@ -490,7 +492,6 @@ void Application::RegisterTools()
     ImGuiAnimationEditor::GetInstance().Register();
 	ImGuiConsole::GetInstance().Register();
 	ImGuiDemoWindow::GetInstance().Register();
-
 	// Engine
 	ImGuiEntt::GetInstance().Register();
 

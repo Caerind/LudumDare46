@@ -63,6 +63,12 @@ void ProfState::render(sf::RenderTarget& target)
 {
 	target.draw(mSprite);
 	target.draw(mText);
+
+
+	// Cursor
+	GameSingleton::mCursor.setPosition(en::toSF(GameSingleton::mApplication->GetWindow().getCursorPosition()));
+	GameSingleton::mCursor.setTextureRect(sf::IntRect(0, 0, 32, 32));
+	target.draw(GameSingleton::mCursor);
 }
 
 void ProfState::NextState()

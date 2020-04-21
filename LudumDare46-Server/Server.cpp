@@ -27,7 +27,9 @@ Server::Server()
 
 bool Server::Start(int argc, char** argv)
 {
+#ifdef ENLIVE_ENABLE_LOG
 	en::LogManager::GetInstance().Initialize();
+#endif
 
 	mSocket.SetSocketPort((argc >= 2) ? static_cast<en::U16>(std::atoi(argv[1])) : DefaultServerPort);
 	if (!mSocket.Start())

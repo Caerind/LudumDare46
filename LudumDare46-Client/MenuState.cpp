@@ -134,4 +134,10 @@ void MenuState::render(sf::RenderTarget& target)
 	target.draw(mSprite);
 
 	target.draw(mNicknameInput);
+	
+
+	// Cursor
+	GameSingleton::mCursor.setPosition(en::toSF(GameSingleton::mApplication->GetWindow().getCursorPosition()));
+	GameSingleton::mCursor.setTextureRect(sf::IntRect(0, 0, 32, 32));
+	target.draw(GameSingleton::mCursor);
 }
