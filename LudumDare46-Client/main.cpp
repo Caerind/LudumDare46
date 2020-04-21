@@ -31,7 +31,8 @@ int main(int argc, char** argv)
 		GameSingleton::mCursor.setTextureRect(sf::IntRect(0, 0, 32, 32));
 	}
 
-	en::AudioSystem::GetInstance().SetGlobalVolume(0.5f);
+	en::AudioSystem::GetInstance().SetSoundVolume(0.1f);
+	en::AudioSystem::GetInstance().SetMusicVolume(0.1f);
 
 	GameSingleton::mIntroDone = false;
 	GameSingleton::mMap.load();
