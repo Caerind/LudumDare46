@@ -53,7 +53,7 @@
 
 // MapData
 #define DefaultMaxItemAmount 30
-#define DefaultSpawnItemInterval en::seconds(0.3f)
+#define DefaultSpawnItemInterval en::seconds(5.0f)
 #define DefaultMapSizeX 64.0f * 64.0f
 #define DefaultMapSizeY 64.0f * 48.0f
 #define DefaultMapBorder 64.0f * 10.0f

@@ -90,7 +90,7 @@ bool Server::Run()
 
 		if (mPlayers.size() <= 1)
 		{
-			sf::sleep(sf::seconds(1.0f));
+			sf::sleep(sf::seconds(0.2f));
 			continue;
 		}
 
@@ -291,6 +291,9 @@ void Server::HandleIncomingPackets()
 					SendConnectionRejectedPacket(remoteAddress, remotePort, RejectReason::UnknownError);
 				}
 			}
+
+			LogInfo(en::LogChannel::All, 5, "%d players connected", mPlayers.size());
+
 
 		} break;
 		case ClientPacketID::Leave:

@@ -293,7 +293,7 @@ void GameState::render(sf::RenderTarget& target)
 
 		textBest.setFont(en::ResourceManager::GetInstance().Get<en::Font>("MainFont").Get());
 		textBest.setCharacterSize(24);
-		textBest.setPosition(10.f, 750.0f);
+		textBest.setPosition(10.f, 730.0f);
 		textBest.setFillColor(sf::Color::White);
 		textBest.setOutlineColor(sf::Color::Black);
 		textBest.setOutlineThickness(1.0f);
@@ -486,7 +486,7 @@ void GameState::render(sf::RenderTarget& target)
 			color.g = lifeP;
 			color.b = lifeP;
 		}
-		chickenBodySprite.setColor(en::toSF(color));
+		//chickenBodySprite.setColor(en::toSF(color));
 		chickenBodySprite.setPosition(en::toSF(GameSingleton::mPlayers[i].GetPosition()));
 		target.draw(chickenBodySprite);
 		GameSingleton::mPlayers[i].UpdateSprite();
@@ -494,7 +494,7 @@ void GameState::render(sf::RenderTarget& target)
 
 		textNickname.setString(GameSingleton::mPlayers[i].nickname);
 		textNickname.setOrigin(textNickname.getGlobalBounds().width * 0.5f, textNickname.getGlobalBounds().height * 0.5f);
-		textNickname.setPosition(en::toSF(GameSingleton::mPlayers[i].GetPosition()) + sf::Vector2f(0.0f, -48.0f));
+		textNickname.setPosition(en::toSF(GameSingleton::mPlayers[i].GetPosition()) + sf::Vector2f(0.0f, -40.0f));
 		target.draw(textNickname);
 	}
 
