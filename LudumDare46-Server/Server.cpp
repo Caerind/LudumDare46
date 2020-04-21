@@ -54,6 +54,7 @@ bool Server::Start(int argc, char** argv)
 	newPlayer.chicken.life = DefaultChickenLife;
 	newPlayer.chicken.speed = DefaultChickenSpeed;
 	newPlayer.chicken.attack = DefaultChickenAttack;
+	newPlayer.chicken.kills = 0;// DefaultChickenAttack;
 	newPlayer.cooldown = en::Time::Zero;
 	mPlayers.push_back(newPlayer);
 
@@ -247,6 +248,7 @@ void Server::HandleIncomingPackets()
 				}
 				newPlayer.chicken.position = GetRandomPositionSpawn();
 				newPlayer.chicken.rotation = 0.0f;
+				newPlayer.chicken.kills = 0;// DefaultChickenAttack;
 				newPlayer.chicken.itemID = ItemID::None;
 				newPlayer.chicken.lifeMax = DefaultChickenLife;
 				newPlayer.chicken.life = DefaultChickenLife;
