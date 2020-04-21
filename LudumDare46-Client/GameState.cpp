@@ -494,7 +494,7 @@ void GameState::render(sf::RenderTarget& target)
 
 		textNickname.setString(GameSingleton::mPlayers[i].nickname);
 		textNickname.setOrigin(textNickname.getGlobalBounds().width * 0.5f, textNickname.getGlobalBounds().height * 0.5f);
-		textNickname.setPosition(en::toSF(GameSingleton::mPlayers[i].GetPosition()) + sf::Vector2f(0.0f, -64.0f));
+		textNickname.setPosition(en::toSF(GameSingleton::mPlayers[i].GetPosition()) + sf::Vector2f(0.0f, -48.0f));
 		target.draw(textNickname);
 	}
 
@@ -508,4 +508,5 @@ void GameState::render(sf::RenderTarget& target)
 	text.setString("Online players: " + std::to_string(GameSingleton::mPlayers.size()));
 	textBest.setString("MVP: " + GameSingleton::mBestNickname + " with " + std::to_string(GameSingleton::mBestKills) + " kills");
 	target.draw(text);
+	target.draw(textBest);
 }

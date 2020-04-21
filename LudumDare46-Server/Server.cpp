@@ -223,6 +223,7 @@ void Server::HandleIncomingPackets()
 		case ClientPacketID::Join:
 		{
 			std::string nickname = "";
+			receivedPacket >> nickname;
 			const en::U32 clientID = GenerateClientID(remoteAddress, remotePort);
 			const en::I32 playerIndex = GetPlayerIndexFromClientID(clientID);
 			const bool slotAvailable = (mPlayers.size() < DefaultMaxPlayers);
