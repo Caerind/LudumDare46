@@ -239,7 +239,7 @@ void Server::HandleIncomingPackets()
 				newPlayer.lastPacketTime = -DefaultServerTimeout;
 				if (nickname.size() == 0)
 				{
-					newPlayer.nickname = "Player" + en::Math::Abs(std::to_string(clientID));
+					newPlayer.nickname = "Player" + std::to_string(clientID % 6678);
 				}
 				else
 				{
